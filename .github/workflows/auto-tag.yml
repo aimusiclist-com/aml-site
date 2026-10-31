@@ -1,0 +1,22 @@
+# Tag new version — 공개 템플릿 저장소(aimusiclist-com/aml-site)에서만 동작한다.
+# package.json 의 version 이 바뀌어 main 에 올라오면 v{version} 태그를 붙인다 → 아티스트의 "Update from template" 이 그 태그를 받는다.
+# 아티스트가 Deploy 버튼으로 복사한 저장소에서는 아래 if 때문에 실행되지 않는다(실행 시간 0).
+name: Tag new version (aimusiclist template only)
+on:
+  push:
+    branches: [main]
+    paths: [package.json, .github/workflows/auto-tag.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  tag:
+    if: github.repository == 'aimusiclist-com/aml-site'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag v{package.json version}
+        run: |
+          v=$(node -p "require('./package.json').version")
+          if git ls-remote --exit-code --tags origin "refs/tags/v$v" >/dev/null; then echo "v$v already tagged"; exit 0; fi
+          git tag "v$v" && git push origin "v$v" && echo "tagged v$v"
