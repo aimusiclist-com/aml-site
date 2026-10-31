@@ -38,7 +38,7 @@ import {
 import { listPosts, addPost, deletePost } from './guestbook.js';
 import { normalizeDomain, reachCheck, requestUrlChange, visitorRedirect } from './domain.js';
 import { getUsage } from './usage.js';
-import { loadDb, saveDb, artistOf } from './db.js';
+import { loadDb, saveDb, artistOf, pubCount, pubShort, checkMinPublic } from './db.js';
 import { vLangs, langsForCatalog, vSocials, cleanSocials, defaultSongLang } from './lists.js';
 import { vAiTool, aiToolForCatalog } from './aitools.js';
 import { loadFields, mergeExt, extForCatalog, fieldOf, vLocal, refreshFields, cronFields, fieldsState } from './fields.js';
@@ -335,7 +335,9 @@ function buildCatalog(db, env, eff, origin, now, fdoc) {
 
 // 변경 마무리: db 저장 + catalog 갱신 + ping (즉시 반영). defer면 db만 저장하고 나중에 commit 1번.
 // 규칙 위반이면 아무것도 저장하지 않고 오류.
-async function finish(env, ctx, db, etag, origin, defer) {
+// 3-21: 공개 곡이 10곡(곡이 그보다 적으면 전부)보다 적어지는 변경은 거부. 곡 지우기만 예외(allowFewer).
+async function finish(env, ctx, db, etag, origin, defer, allowFewer) {
+  if (!allowFewer) checkMinPublic(db);
   if (defer) {
     await saveDb(env, db, etag);
     await env.BUCKET.put(KEY.todoCommit, nowIso()); // 화면이 commit을 못 보내고 닫혀도 cron이 2분 뒤 반영
@@ -691,6 +693,8 @@ async function trackAudio(request, env, ctx, id, origin, defer) {
     const { db, etag } = await loadDb(env);
     const t = getTrack(db, id);
     Object.assign(t, { has_audio: true, size, type, audio_updated_at: nowIso() });
+    // 3-21: 새로 음원이 생긴 곡 때문에 공개 곡이 모자라게 되면 그 곡은 공개로 (곡이 10곡보다 적으면 모두 공개)
+    if (!t.aml && pubShort(pubCount(db)) > pubShort(db._pub0)) t.aml = true;
     try {
       const result = await finish(env, ctx, db, etag, origin, defer);
       return json({ ok: true, track: t, ...result });
@@ -708,7 +712,7 @@ async function trackDelete(env, ctx, id, origin) {
     a.track_ids = a.track_ids.filter((x) => x !== id);
   }
   delete db.tracks[t.id];
-  const result = await finish(env, ctx, db, etag, origin, false);
+  const result = await finish(env, ctx, db, etag, origin, false, true);   // 3-21: 곡 지우기는 언제나 된다
   await env.BUCKET.delete([KEY.audio(id), KEY.trackImg(id), KEY.trackImgL(id), KEY.lyrics(id)]); // 3-6: 곡 이미지·가사도 함께 (3-16 큰 그림도)
   return json({ ok: true, deleted: id, ...result });
 }

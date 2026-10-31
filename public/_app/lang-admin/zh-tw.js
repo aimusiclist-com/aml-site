@@ -467,4 +467,12 @@ AML.addLang('zh-tw', {
   "mmuse.limited": "今天的免費額度已用完，因此在 {time} 之前，訪客會看到簡短的「即將恢復」頁面。你的管理後台和 aimusiclist.com 上的歌曲播放不受影響。",
   "mmuse.upgrade": "增加使用額度（升級）",
   "mmuse.notify": "超過 80% 時，每天寄一封電子郵件通知我",
+  // 3-21 "10곡은 꼭 공개"
+  "err.track.min_public": "設為不公開後，公開歌曲只剩 {public} 首。至少要保留 {need} 首公開歌曲。",
+  "pubmin.count": "公開 {n} 首 · 至少 {need} 首",
+  "pubmin.fix": "請將公開歌曲調整為 {need} 首以上。",
+  "pubmin.pick": "要公開哪 10 首歌，由你自己選。",
+  "pubmin.delete": "不想公開的歌曲可以刪除。",
+  "pubmin.few": "歌曲少於 10 首時，全部都會公開。",
+  "pubmin.go": "選擇歌曲",
 });

@@ -36,6 +36,7 @@
     songLangs: [], socials: [], socialMax: 5, socialMaxUrl: 200,   // 3-7 목록 (정적 JSON)
     sel: {}, onlyNoLang: false, sns: null,                          // 3-7 여러 곡 선택 · 곡 언어 없는 곡만 · SNS 입력 중인 칸
     bulkKey: '',                                                    // 3-8 여러 곡 한꺼번에 — 고른 확장 항목
+    pubMinErr: '',                                                  // 3-21 공개 곡이 모자라 막혔을 때 목록 위 안내
   };
   var $ = function (id) { return document.getElementById(id); };
   var panel = $('panel');
@@ -856,6 +857,7 @@
 
   function render() {
     if (!S.state) return;
+    if (S.tab !== (location.hash.slice(1) || S.tab)) S.pubMinErr = '';   // 3-21 다른 탭으로 가면 막힘 안내는 지운다
     $('site-name').textContent = S.state.site.name || t('admin.title');
     S.tab = (location.hash.slice(1) || S.tab);
     if (S.tab === 'token') { S.tab = 'site'; history.replaceState(null, '', '#site'); setTimeout(goToken, 0); }   // M-5 포털에서 #token
@@ -866,6 +868,7 @@
     if (tab.id === 'tracks') { renderQueue(); filterTracks(); updateBulk(); }
     if (tab.after) tab.after();
     renderLangNote();
+    renderPubNote();   // 3-21
     renderProfileNote();   // 3-9
     renderVerNote();
     renderAmlLine();
@@ -1067,6 +1070,7 @@
           '<button type="button" class="small danger" data-act="track-del" data-id="' + esc(x.id) + '">' + esc(t('track.delete')) + '</button></span></td></tr>';
     }).join('');
     var table = '<section class="card"><h2>' + esc(t('track.list.title')) + ' (' + S.state.tracks.length + ')</h2>' +
+      '<div id="pub-min">' + pubMinHtml() + '</div>' +   // 3-21 공개 n곡 · 최소 10곡
       (rows ? '<input id="t-search" class="search" type="search" placeholder="' + esc(t('track.search')) + '" aria-label="' + esc(t('track.search')) + '" value="' + esc(S.q) + '">' +
         '<label class="check" style="margin:0 0 8px"><input type="checkbox" id="t-nolang"' + (S.onlyNoLang ? ' checked' : '') + '> ' + esc(t('track.filter.nolang')) + '</label>' +
         // 3-7 여러 곡 한꺼번에: 왼쪽 체크로 고른 곡의 곡 언어를 한 번에
@@ -1597,6 +1601,44 @@
     return '<label class="sw"' + (why ? ' title="' + esc(why) + '"' : '') + '><input type="checkbox" role="switch" data-act="' + act + '" data-id="' + esc(id) + '"' +
       (on ? ' checked' : '') + (dis ? ' disabled' : '') + '><span class="sw-ui" aria-hidden="true"></span><span class="sw-tx">' + esc(t(on ? 'pub.on' : 'pub.off')) + '</span></label>';
   }
+  // ── 3-21 "10곡은 꼭 공개": 공개 곡 수 ≥ min(10, 전체 곡 수). 서버(src/db.js pubCount)와 같은 셈 ──
+  // 공개 = 음원 있음 + (곡 공개 켜짐 또는 공개 앨범에 들어 있음) / 전체 = 음원이 있는 곡
+  var MIN_PUBLIC = 10;
+  function pubState() {
+    var pub = 0, total = 0;
+    S.state.tracks.forEach(function (x) { if (!x.has_audio) return; total++; if (x.aml || inAmlAlbum(x.id)) pub++; });
+    return { pub: pub, total: total, need: Math.min(MIN_PUBLIC, total) };
+  }
+  function pubMinHints() {
+    return '<ul class="muted" style="margin:6px 0 0;padding-left:18px"><li>' + esc(t('pubmin.pick')) + '</li><li>' + esc(t('pubmin.delete')) + '</li><li>' + esc(t('pubmin.few')) + '</li></ul>';
+  }
+  function pubMinHtml() {
+    var c = pubState();
+    if (!c.total) return '';
+    var html = '<p class="muted" style="margin:0 0 8px">' + esc(t('pubmin.count', { n: c.pub, need: c.need })) + '</p>';
+    if (S.pubMinErr) html += '<div class="notice" role="alert" style="margin:0 0 10px"><b>' + esc(S.pubMinErr) + '</b>' + pubMinHints() + '</div>';
+    else if (c.pub < c.need) html += '<div class="notice" style="margin:0 0 10px"><b>' + esc(t('pubmin.fix', { need: c.need })) + '</b>' + pubMinHints() + '</div>';
+    return html;
+  }
+  function renderPubMin() { var el = $('pub-min'); if (el) el.innerHTML = pubMinHtml(); renderPubNote(); }
+  // 관리 화면 맨 위: 공개 곡이 모자란 사이트(3-21 이전에 비공개로 둔 곳·곡을 지운 곳) 안내 한 줄. 강제로 바꾸지 않는다.
+  function renderPubNote() {
+    var el = $('pubmin-note'); if (!el || !S.state) return;
+    var c = pubState();
+    el.hidden = !(c.pub < c.need);
+    el.innerHTML = el.hidden ? '' : '<b>' + esc(t('pubmin.fix', { need: c.need })) + '</b> <span class="muted">' + esc(t('pubmin.count', { n: c.pub, need: c.need })) + '</span> ' +
+      '<button type="button" class="small primary" data-act="pubmin-go">' + esc(t('pubmin.go')) + '</button>';
+  }
+  function pubMinGo() {
+    S.editTrack = null;
+    if (location.hash !== '#tracks') { S.tab = 'tracks'; location.hash = '#tracks'; } else render();
+    setTimeout(function () { var b = $('pub-min'); if (b) b.scrollIntoView({ block: 'center' }); }, 0);
+  }
+  // 공개 곡이 모자라 막힌 경우: 목록 위에 안내를 띄운다 (그 밖의 오류는 지금처럼 알림)
+  function pubFail(e) {
+    if (e && e.code === 'err.track.min_public') { S.pubMinErr = AML.errText(e); renderPubMin(); var el = $('pub-min'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest' }); }
+    fail(e);
+  }
   function pubTx(el) { var s = el.parentNode.querySelector('.sw-tx'); if (s) s.textContent = t(el.checked ? 'pub.on' : 'pub.off'); }
   // 처음 한 번 안내 (다시 보지 않기 = localStorage)
   function pubTipHtml() {
@@ -1611,8 +1653,8 @@
   function toggleTrackAml(el, id) {
     el.disabled = true; pubTx(el); pubTip(el);
     api('PATCH', '/api/admin/tracks/' + encodeURIComponent(id), { aml: el.checked })
-      .then(function (r) { var tr = trackById(id); if (tr) tr.aml = r.track.aml; toast(t(r.track.aml ? 'aml.saved_on' : 'aml.saved_off')); })
-      .catch(function (e) { el.checked = !el.checked; pubTx(el); fail(e); })
+      .then(function (r) { var tr = trackById(id); if (tr) tr.aml = r.track.aml; S.pubMinErr = ''; renderPubMin(); toast(t(r.track.aml ? 'aml.saved_on' : 'aml.saved_off')); })
+      .catch(function (e) { el.checked = !el.checked; pubTx(el); pubFail(e); })
       .then(function () { el.disabled = false; });
   }
 
@@ -1675,6 +1717,7 @@
     }).join('');
     return form + '<section class="card"><h2>' + esc(t('album.list.title')) + '</h2>' +
       '<p class="muted" style="margin:0 0 6px">' + esc(t('pub.album_help')) + '</p>' + (rows ? pubTipHtml() : '') +
+      (rows ? '<div id="pub-min">' + pubMinHtml() + '</div>' : '') +   // 3-21 앨범을 비공개로 할 때도 같은 규칙
       (rows ? '<table><thead><tr><th>' + esc(t('pub.col')) + '</th><th></th><th></th><th></th></tr></thead><tbody>' + rows + '</tbody></table>' : '<p class="muted">' + esc(t('album.list.empty')) + '</p>') + '</section>';
   }
   // 3-6 앨범 커버: 200×200 (자르기 또는 전체 줄이기). 고른 이미지는 "앨범 저장" 때 함께 올라간다.
@@ -1713,8 +1756,8 @@
   function toggleAlbumAml(el, id) {
     el.disabled = true; pubTx(el); pubTip(el);
     api('PATCH', '/api/admin/albums/' + encodeURIComponent(id), { aml: el.checked })
-      .then(function (r) { toast(t(r.album.aml ? 'aml.saved_on' : 'aml.saved_off')); return reload(); })
-      .catch(function (e) { el.checked = !el.checked; pubTx(el); el.disabled = false; fail(e); });
+      .then(function (r) { S.pubMinErr = ''; toast(t(r.album.aml ? 'aml.saved_on' : 'aml.saved_off')); return reload(); })
+      .catch(function (e) { el.checked = !el.checked; pubTx(el); el.disabled = false; pubFail(e); });
   }
 
   // ── B-3. 스킨 ───────────────────────────────────────────────────────────────
@@ -1760,7 +1803,7 @@
 
   // ── 3-10 스킨 둘러보기 ─────────────────────────────────────────────────────
   var G = { items: null, err: false, busy: '', f: 'all', upd: {}, pv: null };
-  var GV = '8';   // 관리 화면이 따로 부르는 파일(lang-admin·분석·통계·WAV 변환) 주소 뒤 버전. 그 파일들을 고치면 올린다
+  var GV = '9';   // 관리 화면이 따로 부르는 파일(lang-admin·분석·통계·WAV 변환) 주소 뒤 버전. 그 파일들을 고치면 올린다
   var ID_RE = /^[a-z0-9-]{1,32}$/, VER_RE = /^\d{1,6}(\.\d{1,6}){0,3}$/;
   function cmpVer(a, b) {
     var x = String(a).split('.'), y = String(b).split('.');
@@ -2431,6 +2474,7 @@
       case 'ai-fill': aiFill(el); break;                // 3-20
       case 'fields-update': fieldsUpdate(el); break;    // 3-8
       case 'lang-fix': langFix(); break;
+      case 'pubmin-go': pubMinGo(); break;   // 3-21
       // 3-7 SNS
       case 'sns-add': { var dd = snsDraft(); if (dd.more.length < S.socialMax) { dd.more.push({ key: '', url: '', saved: '', err: '' }); snsRedraw(); var k1 = $('snsm-' + (dd.more.length - 1) + '-k'); if (k1) k1.focus(); } break; }
       case 'sns-up': case 'sns-down': {

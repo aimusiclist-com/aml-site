@@ -468,4 +468,12 @@ AML.addLang('tr', {
   "mmuse.limited": "Bugünkü ücretsiz kullanım hakkın doldu. {time} saatine kadar ziyaretçiler kısa bir \"Yakında döneceğiz\" sayfası görür. Yönetim panelin ve aimusiclist.com'daki oynatmalar çalışmaya devam eder.",
   "mmuse.upgrade": "Daha fazla alan (yükselt)",
   "mmuse.notify": "Kullanım %80'i geçerse günde bir kez bana e-posta gönder",
+  // 3-21 "10곡은 꼭 공개"
+  "err.track.min_public": "Bu durumda yalnızca {public} şarkı yayında kalır. En az {need} şarkı yayında kalmalı.",
+  "pubmin.count": "Yayında: {n} · En az: {need}",
+  "pubmin.fix": "Lütfen en az {need} şarkıyı yayına al.",
+  "pubmin.pick": "Yayında kalacak 10 şarkıyı sen seçersin.",
+  "pubmin.delete": "Paylaşmak istemediğin şarkıları silebilirsin.",
+  "pubmin.few": "10'dan az şarkın varsa hepsi yayında olur.",
+  "pubmin.go": "Şarkıları seç",
 });

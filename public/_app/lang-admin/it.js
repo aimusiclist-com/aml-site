@@ -467,4 +467,12 @@ AML.addLang('it', {
   "mmuse.limited": "Hai esaurito la quota gratuita di oggi. Fino alle {time}, i visitatori vedranno una breve pagina con scritto \"Torniamo presto\". La tua area di amministrazione e la riproduzione su aimusiclist.com continueranno a funzionare.",
   "mmuse.upgrade": "Più spazio a disposizione (upgrade)",
   "mmuse.notify": "Avvisami via e-mail una volta al giorno se supera l’80%",
+  // 3-21 "10곡은 꼭 공개"
+  "err.track.min_public": "Resterebbero solo {public} brani pubblici. Almeno {need} brani devono restare pubblici.",
+  "pubmin.count": "Pubblici: {n} · Minimo: {need}",
+  "pubmin.fix": "Rendi pubblici almeno {need} brani.",
+  "pubmin.pick": "Scegli tu quali 10 brani rendere pubblici.",
+  "pubmin.delete": "Puoi eliminare i brani che non vuoi condividere.",
+  "pubmin.few": "Se hai meno di 10 brani, sono tutti pubblici.",
+  "pubmin.go": "Scegli i brani",
 });

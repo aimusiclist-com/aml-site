@@ -57,6 +57,7 @@ Open your address right away. The **Create your admin account** screen appears (
 **곡** 탭 → 한 번에 **20곡까지** 끌어다 놓기(MP3/M4A, 30초~15분, 곡당 15MB) → 장르 고르기 → **올리기**.
 
 - The file name becomes the title. **Also publish on aimusiclist.com** is checked by default. / 파일 이름이 제목이 됩니다. **aimusiclist.com에 함께 공개**가 기본으로 체크되어 있습니다.
+- **At least 10 songs stay public on aimusiclist.com.** You choose which 10; any others can be private. If you have fewer than 10 songs, all of them are public. You can delete any song you don't want to share. / **aimusiclist.com 에는 10곡 이상 공개됩니다.** 어느 10곡인지는 직접 고르고, 나머지는 비공개로 둘 수 있습니다. 곡이 10곡보다 적으면 모두 공개됩니다. 공개하고 싶지 않은 곡은 지울 수 있습니다.
 - Everything is saved immediately — there is no "Save" button. / 모든 변경은 바로 저장됩니다. "저장" 버튼이 없습니다.
 - Your site connects to aimusiclist.com **by itself** (status line at the top of the admin page). / aimusiclist.com 연결은 **자동**입니다(관리 화면 위쪽 상태 줄).
 - Later, log in from the **⚙ Admin** link at the bottom of your site. / 다음부터는 내 사이트 맨 아래 **⚙ 관리** 링크로 로그인합니다.

@@ -474,4 +474,12 @@ AML.addLang('ja', {
   "mmuse.limited": "今日の無料利用量を使い切ったため、{time}まで訪問者には「まもなく再開します」という案内が表示されます。管理画面と aimusiclist.com での再生はそのまま使えます。",
   "mmuse.upgrade": "もっと余裕を持って使う（アップグレード）",
   "mmuse.notify": "80%を超えたら1日1回メールで知らせる",
+  // 3-21 "10곡은 꼭 공개"
+  "err.track.min_public": "非公開にすると公開曲が{public}曲になります。公開曲は{need}曲以上必要です。",
+  "pubmin.count": "公開 {n}曲 · 最低 {need}曲",
+  "pubmin.fix": "公開曲を{need}曲以上にしてください。",
+  "pubmin.pick": "公開する10曲は自分で選べます。",
+  "pubmin.delete": "公開したくない曲は削除できます。",
+  "pubmin.few": "曲が10曲未満なら、すべて公開されます。",
+  "pubmin.go": "曲を選ぶ",
 });

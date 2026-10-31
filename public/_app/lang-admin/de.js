@@ -467,4 +467,12 @@ AML.addLang('de', {
   "mmuse.limited": "Das kostenlose Tageskontingent ist aufgebraucht. Bis {time} sehen Besucher eine kurze Seite mit \"Bald wieder da\". Dein Verwaltungsbereich und die Wiedergabe auf aimusiclist.com funktionieren weiter.",
   "mmuse.upgrade": "Mehr Spielraum (Upgrade)",
   "mmuse.notify": "Einmal täglich per E-Mail benachrichtigen, wenn 80 % überschritten werden",
+  // 3-21 "10곡은 꼭 공개"
+  "err.track.min_public": "Dann wären nur noch {public} Songs öffentlich. Mindestens {need} Songs müssen öffentlich bleiben.",
+  "pubmin.count": "Öffentlich: {n} · Mindestens: {need}",
+  "pubmin.fix": "Bitte stelle mindestens {need} Songs auf öffentlich.",
+  "pubmin.pick": "Welche 10 Songs öffentlich sind, wählst du selbst.",
+  "pubmin.delete": "Songs, die du nicht teilen möchtest, kannst du löschen.",
+  "pubmin.few": "Hast du weniger als 10 Songs, sind alle öffentlich.",
+  "pubmin.go": "Songs auswählen",
 });

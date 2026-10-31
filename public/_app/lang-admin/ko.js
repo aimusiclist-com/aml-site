@@ -474,4 +474,12 @@ AML.addLang('ko', {
   "mmuse.limited": "오늘 무료 사용량을 다 써서 {time}까지 방문자에게 \"곧 다시 열려요\" 안내 화면이 보여요. 관리 화면과 aimusiclist.com 에서의 재생은 그대로 돼요.",
   "mmuse.upgrade": "더 넉넉하게 쓰기 (업그레이드)",
   "mmuse.notify": "80%를 넘으면 하루 1번 메일로 알려 주기",
+  // 3-21 "10곡은 꼭 공개"
+  "err.track.min_public": "비공개로 하면 공개 곡이 {public}곡만 남아요. 공개 곡은 {need}곡 이상이어야 해요.",
+  "pubmin.count": "공개 {n}곡 · 최소 {need}곡",
+  "pubmin.fix": "공개 곡을 {need}곡 이상으로 맞춰 주세요.",
+  "pubmin.pick": "공개할 10곡은 직접 고를 수 있어요.",
+  "pubmin.delete": "공개하고 싶지 않은 곡은 지울 수 있어요.",
+  "pubmin.few": "곡이 10곡보다 적으면 모두 공개돼요.",
+  "pubmin.go": "곡 고르기",
 });

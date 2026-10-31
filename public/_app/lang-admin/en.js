@@ -476,4 +476,12 @@ AML.addLang('en', {
   "mmuse.limited": "Today's free usage is used up, so visitors see a short \"back soon\" page until {time}. Your dashboard and plays on aimusiclist.com keep working.",
   "mmuse.upgrade": "Get more room (upgrade)",
   "mmuse.notify": "Email me once a day when it passes 80%",
+  // 3-21 "10곡은 꼭 공개"
+  "err.track.min_public": "If you make this private, only {public} songs stay public. At least {need} songs must stay public.",
+  "pubmin.count": "Public: {n} · Minimum: {need}",
+  "pubmin.fix": "Please make at least {need} songs public.",
+  "pubmin.pick": "You choose which 10 songs are public.",
+  "pubmin.delete": "You can delete any song you don't want to share.",
+  "pubmin.few": "If you have fewer than 10 songs, all of them are public.",
+  "pubmin.go": "Choose songs",
 });

@@ -168,7 +168,7 @@
   #pub-tip { margin: 0 0 8px; }
   @media (max-width: 600px) { label.sw { flex-direction: column; gap: 3px; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; font-size: 10.5px; line-height: 1.2; text-align: center; width: 62px; } #t-table .trow > span { min-width: 0; overflow-wrap: anywhere; } }
   /* 3-7: 곡 언어 여러 곡 · SNS */
-  #lang-note { margin: 0 0 12px; }
+  #lang-note, #pubmin-note { margin: 0 0 12px; }
   .lang-tx { color: var(--text); }
   .bulk { border: 1px dashed var(--line); border-radius: 8px; padding: 8px 12px; margin: 0 0 10px; }
   .bulk:not(.on) b { font-weight: 400; color: var(--muted); font-size: 13px; }
@@ -270,6 +270,7 @@
     <p id="ver-note" class="notice row" hidden></p>
     <p id="aml-line" class="amlline"></p>
     <p id="lang-note" class="notice row" hidden></p>
+    <p id="pubmin-note" class="notice row" hidden></p>
     <p id="profile-note" class="notice info row" hidden></p>
     <p id="genre-note" class="muted" hidden data-t="admin.genres.sample"></p>
     <nav class="tabs" id="tabs"></nav>
@@ -280,6 +281,6 @@
 <div id="toast" hidden role="status"></div>
 
 <script src="/_app/strings.js?v=13"></script>
-<script src="/_app/admin.js?v=17"></script>
+<script src="/_app/admin.js?v=18"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 {
   "name": "aml-site",
-  "version": "3.22.1",
+  "version": "3.23.0",
   "private": true,
   "description": "aimusiclist personal music site (Cloudflare Workers + R2)",
   "scripts": {

@@ -467,4 +467,12 @@ AML.addLang('id', {
   "mmuse.limited": "Kuota gratis hari ini sudah habis. Sampai {time}, pengunjung akan melihat halaman singkat \"segera kembali\". Panel pengelolaan dan pemutaran di aimusiclist.com tetap berjalan.",
   "mmuse.upgrade": "Tambah kapasitas (upgrade)",
   "mmuse.notify": "Kirim email sekali sehari saat penggunaan melewati 80%",
+  // 3-21 "10곡은 꼭 공개"
+  "err.track.min_public": "Nanti hanya tersisa {public} lagu publik. Minimal {need} lagu harus tetap publik.",
+  "pubmin.count": "Publik: {n} · Minimal: {need}",
+  "pubmin.fix": "Jadikan minimal {need} lagu publik.",
+  "pubmin.pick": "Kamu sendiri yang memilih 10 lagu yang publik.",
+  "pubmin.delete": "Lagu yang tidak ingin kamu bagikan bisa dihapus.",
+  "pubmin.few": "Jika lagumu kurang dari 10, semuanya publik.",
+  "pubmin.go": "Pilih lagu",
 });

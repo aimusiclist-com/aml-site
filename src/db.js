@@ -30,10 +30,10 @@ export function normalizeDb(db) {
 }
 export async function loadDb(env) {
   const obj = await env.BUCKET.get(KEY.db);
-  if (!obj) return { db: emptyDb(), etag: null };
+  if (!obj) return { db: withPub0(emptyDb()), etag: null };
   let data = null;
   try { data = await obj.json(); } catch {}
-  return { db: normalizeDb(data), etag: obj.etag };
+  return { db: withPub0(normalizeDb(data)), etag: obj.etag };
 }
 export async function saveDb(env, db, etag) {
   db.updated_at = nowIso();
@@ -45,3 +45,32 @@ export async function saveDb(env, db, etag) {
 }
 export const artistOf = (x, site) => x.artist || site.name;
 
+
+// ===== 3-21: "10곡은 꼭 공개" — 공개 곡 수 ≥ min(10, 전체 곡 수) =====
+// 공개 = aimusiclist catalog 에 들어가는 곡(음원 있음 + (곡 공개 켜짐 또는 공개 앨범에 들어 있음)).
+// 전체 = 음원이 있는 곡 (음원을 아직 안 올린 곡은 어느 쪽에도 세지 않는다).
+// aimusiclist 가 신고 등으로 숨긴 곡은 엔진이 모른다 → catalog 에 그대로 있으므로 "공개"로 센다.
+// php/app/lib/catalog.php Change::pubCount 와 같은 규칙.
+export const MIN_PUBLIC = 10;
+export function pubCount(db) {
+  const inAlbum = new Set();
+  for (const a of Object.values(db.albums || {})) if (a.aml) for (const id of a.track_ids || []) inAlbum.add(id);
+  let pub = 0, total = 0;
+  for (const t of Object.values(db.tracks || {})) {
+    if (!t.has_audio) continue;
+    total++;
+    if (t.aml || inAlbum.has(t.id)) pub++;
+  }
+  return { pub, total, need: Math.min(MIN_PUBLIC, total) };
+}
+// 모자란 곡 수 (0 = 규칙 지킴)
+export const pubShort = (c) => Math.max(0, c.need - c.pub);
+// 읽은 그대로의 공개 상태를 db 에 숨겨 붙인다(저장되지 않음) → finish 가 바뀐 뒤와 비교
+function withPub0(db) { Object.defineProperty(db, '_pub0', { value: pubCount(db), configurable: true }); return db; }
+// 변경 뒤 모자란 곡 수가 읽었을 때보다 늘면 거부 (규칙보다 적은 기존 사이트는 그대로 두고, 더 줄이는 것만 막는다)
+export function checkMinPublic(db) {
+  const before = db._pub0;
+  if (!before) return;
+  const after = pubCount(db);
+  if (pubShort(after) > pubShort(before)) fail(422, 'err.track.min_public', { public: after.pub, need: after.need, total: after.total });
+}

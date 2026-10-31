@@ -468,4 +468,12 @@ AML.addLang('vi', {
   "mmuse.limited": "Bạn đã dùng hết mức miễn phí của hôm nay, nên đến {time}, khách truy cập sẽ thấy một trang thông báo ngắn \"Sẽ sớm trở lại\". Trang quản trị và việc phát nhạc trên aimusiclist.com vẫn hoạt động bình thường.",
   "mmuse.upgrade": "Tăng dung lượng (nâng cấp)",
   "mmuse.notify": "Gửi email cho tôi mỗi ngày một lần khi mức sử dụng vượt 80%",
+  // 3-21 "10곡은 꼭 공개"
+  "err.track.min_public": "Khi đó chỉ còn {public} bài công khai. Cần giữ ít nhất {need} bài công khai.",
+  "pubmin.count": "Công khai: {n} · Tối thiểu: {need}",
+  "pubmin.fix": "Hãy để ít nhất {need} bài ở chế độ công khai.",
+  "pubmin.pick": "Bạn tự chọn 10 bài sẽ công khai.",
+  "pubmin.delete": "Bạn có thể xóa những bài không muốn chia sẻ.",
+  "pubmin.few": "Nếu có ít hơn 10 bài, tất cả đều được công khai.",
+  "pubmin.go": "Chọn bài hát",
 });
