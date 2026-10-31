@@ -1,0 +1,20 @@
+{
+  "schema": "skin-1",
+  "id": "solar-eclipse",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Solar Eclipse",
+    "ko": "솔라 이클립스",
+    "ja": "ソーラー・エクリプス"
+  },
+  "description": {
+    "en": "Cinematic charcoal and amber carve out space around each track.",
+    "ko": "차콜과 호박빛으로 한 곡마다 영화 같은 여백을 만드는 스킨.",
+    "ja": "チャコールと琥珀色が一曲ごとに映画のような余白を生むスキン。"
+  },
+  "mode": "dark",
+  "tags": ["dark", "cinematic", "amber", "soundtrack"],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

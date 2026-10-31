@@ -1,0 +1,27 @@
+{
+  "name": "aml-site",
+  "version": "3.22.1",
+  "private": true,
+  "description": "aimusiclist personal music site (Cloudflare Workers + R2)",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "lang-check": "node tools/lang-check.js"
+  },
+  "devDependencies": {
+    "wrangler": "^4.50.0"
+  },
+  "cloudflare": {
+    "bindings": {
+      "BUCKET": {
+        "description": "Storage for your songs (R2). Keep the default name, or change it if it already exists in your account. / 곡이 저장될 공간(R2)입니다. 기본 이름 그대로 두세요. 내 계정에 같은 이름이 이미 있으면 `aml-music-2`처럼 바꾸세요."
+      },
+      "AML_API_BASE": {
+        "description": "aimusiclist.com address. **Do not change.** / aimusiclist.com 주소입니다. **바꾸지 마세요.**"
+      },
+      "SKIN_INDEX_URL": {
+        "description": "Skin gallery list (meshmelo.com). **Do not change.** / 스킨 둘러보기 목록 주소입니다. **바꾸지 마세요.**"
+      }
+    }
+  }
+}

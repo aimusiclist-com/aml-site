@@ -1,0 +1,20 @@
+{
+  "schema": "skin-1",
+  "id": "paper-riot",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Paper Riot",
+    "ko": "페이퍼 라이엇",
+    "ja": "ペーパー・ライオット"
+  },
+  "description": {
+    "en": "Bold zine typography and stark ink lines for independent music.",
+    "ko": "굵은 글자와 선명한 검은 선, 붉은 포인트로 완성한 인디 음악용 진 스타일.",
+    "ja": "太い文字と黒い輪郭線、赤のアクセントで仕上げたインディー音楽向けのジン風スキン。"
+  },
+  "mode": "light",
+  "tags": ["bold", "zine", "indie", "punk", "light"],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

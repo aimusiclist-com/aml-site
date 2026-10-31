@@ -1,0 +1,20 @@
+{
+  "schema": "skin-1",
+  "id": "forest-nocturne",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Forest Nocturne",
+    "ko": "포레스트 녹턴",
+    "ja": "フォレスト・ノクターン"
+  },
+  "description": {
+    "en": "Deep evergreen calm for long, distraction-free listening.",
+    "ko": "오래 들어도 편안한 깊은 숲색의 고요함.",
+    "ja": "深い常緑の静けさに包まれ、長く心地よく音楽を楽しめるスキン。"
+  },
+  "mode": "dark",
+  "tags": ["dark", "evergreen", "ambient", "minimal"],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

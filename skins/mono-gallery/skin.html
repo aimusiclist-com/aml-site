@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#FAFAFA">
+<title>{{site_name}}</title>
+<style>
+  /* Mono Gallery: printed type, measured white space, and unframed cover art. */
+  :root {
+    --aml-bg: #FAFAFA;
+    --aml-panel: #F1F1F1;
+    --aml-panel-2: #E7E7E7;
+    --aml-text: #111111;
+    --aml-muted: #555555;
+    --aml-line: rgb(17 17 17 / .15);
+    --aml-glass: rgb(250 250 250 / .98);
+    --aml-accent: #313131;
+    --aml-accent-fill: #313131;
+    --aml-accent-ink: #FAFAFA;
+    --aml-font: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      "Pretendard Variable", Pretendard, "Apple SD Gothic Neo",
+      "Hiragino Sans", system-ui, "Segoe UI", Roboto,
+      "Noto Sans Thai", "Leelawadee UI", "Noto Sans Devanagari",
+      "Nirmala UI", sans-serif;
+    --aml-hero-a: 5%;
+    --aml-art-shadow: none;
+    --aml-viz-color: #313131;
+    --aml-viz-opacity: .18;
+    --aml-viz-gap: 3px;
+    --aml-max: 1100px;
+    --aml-player-left: 0;
+    --aml-modal-bg: #FAFAFA;
+    --aml-modal-text: #111111;
+    --aml-card-bg: #F1F1F1;
+    --aml-footer-color: #555555;
+    --aml-social-color: #313131;
+    --aml-ext-color: #555555;
+  }
+
+  .aml-kit { font-size: 15px; line-height: 1.45; }
+  .aml-kit .aml-hero {
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--aml-line);
+    background: var(--aml-bg);
+  }
+  .aml-kit .aml-hero-in {
+    grid-template-columns: 72px minmax(0, 1fr) minmax(0, 228px);
+    grid-template-areas: "pic name soc" "pic meta act" "pic desc act";
+    column-gap: 20px;
+    row-gap: 1px;
+  }
+  .aml-kit .aml-hero .aml-profile { width: 72px; height: 72px; }
+  .aml-kit .aml-hero-name {
+    font-size: 42px;
+    line-height: 1.07;
+    font-weight: 800;
+    letter-spacing: normal;
+  }
+  .aml-kit .aml-hero-meta { font-size: 13px; }
+  .aml-kit .aml-hero-desc { margin-top: 0; line-height: 1.4; }
+  .aml-kit .aml-hero-desc p { -webkit-line-clamp: 1; }
+  /* The fade on the description ends on the hero's true background. */
+  .aml-kit .aml-hero-more {
+    background: linear-gradient(90deg, transparent, var(--aml-bg) 1.6em);
+  }
+  .aml-kit .aml-hero .aml-socials {
+    justify-content: flex-end;
+    max-width: 228px;
+    margin: 0;
+  }
+  .aml-kit .aml-hero-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-top: 0;
+  }
+
+  .aml-kit .aml-bar {
+    border-bottom: 1px solid var(--aml-line);
+    background: var(--aml-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .aml-kit .aml-menu-item {
+    border-radius: 2px;
+    background: transparent;
+  }
+  .aml-kit .aml-menu-item:hover { background: var(--aml-panel); }
+  .aml-kit .aml-menu-item.is-active {
+    background: var(--aml-accent);
+    color: var(--aml-accent-ink);
+    box-shadow: none;
+  }
+  .aml-kit .aml-lang-select { border-radius: 2px; }
+  .aml-kit .aml-btn,
+  .aml-kit .aml-play-all,
+  .aml-kit .aml-gb-submit { border-radius: 4px; }
+
+  .aml-kit .aml-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: normal;
+  }
+  .aml-kit .aml-list { gap: 0; }
+  .aml-kit .aml-track {
+    height: 60px;
+    border: 0;
+    border-bottom: 1px solid var(--aml-line);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .aml-kit .aml-play { border-radius: 2px; }
+  .aml-kit .aml-track-title {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: normal;
+  }
+  .aml-kit .aml-track-time,
+  .aml-kit .aml-player-time { font-variant-numeric: tabular-nums; }
+  .aml-kit .aml-albums {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .aml-kit .aml-album-cover,
+  .aml-kit .aml-album-head .aml-album-cover {
+    border-radius: 2px;
+    box-shadow: none;
+  }
+  .aml-kit .aml-gb-form,
+  .aml-kit .aml-gb-post,
+  .aml-kit .aml-view-links .aml-social {
+    border-radius: 2px;
+    box-shadow: none;
+  }
+
+  @media (min-width: 1200px) {
+    .aml-kit .aml-albums { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  }
+  @media (max-width: 733px) {
+    .aml-kit .aml-hero { padding: 10px 16px; }
+    .aml-kit .aml-hero-in {
+      grid-template-columns: 72px minmax(0, 1fr);
+      grid-template-areas: "pic name" "pic meta" "pic soc" "desc desc" "act act";
+      column-gap: 12px;
+      row-gap: 2px;
+    }
+    .aml-kit .aml-hero-name { font-size: 22px; }
+    .aml-kit .aml-hero-desc { margin-top: 4px; }
+    .aml-kit .aml-hero-desc p { -webkit-line-clamp: 2; }
+    .aml-kit .aml-hero .aml-socials {
+      justify-content: flex-start;
+      max-width: 100%;
+      margin-top: 4px;
+    }
+    .aml-kit .aml-hero-actions { justify-content: flex-start; margin-top: 8px; }
+    .aml-kit .aml-section-title { font-size: 18px; }
+    .aml-kit .aml-track { height: 60px; }
+    .aml-kit .aml-albums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
+</head>
+<body class="aml-kit">
+{{banner}}
+{{hero}}
+<div class="aml-bar">{{menu}}{{lang_select}}</div>
+{{ad_top}}
+{{content}}
+{{footer}}
+{{player}}
+</body>
+</html>

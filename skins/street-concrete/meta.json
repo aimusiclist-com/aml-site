@@ -1,0 +1,24 @@
+{
+  "schema": "skin-1",
+  "id": "street-concrete",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Street Concrete",
+    "ko": "스트리트 콘크리트",
+    "ja": "ストリート・コンクリート"
+  },
+  "description": {
+    "en": "Cold concrete charcoal and acid-yellow type for hip-hop, trap and drill.",
+    "ko": "차가운 콘크리트 회색과 애시드 옐로를 조합한 힙합·트랩·드릴 스킨.",
+    "ja": "冷たいコンクリートグレーと蛍光イエローのヒップホップ向けスキン。"
+  },
+  "mode": "dark",
+  "tags": [
+    "hiphop",
+    "street",
+    "dark"
+  ],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

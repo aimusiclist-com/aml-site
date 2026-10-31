@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#161515">
+<title>{{site_name}}</title>
+<style>
+  /* Solar Eclipse: cinematic charcoal, a quiet amber rim, and open artwork. */
+  :root {
+    --aml-bg: #161515;
+    --aml-panel: #262223;
+    --aml-panel-2: #34302F;
+    --aml-text: #F6F2E8;
+    --aml-muted: #C6B6A6;
+    --aml-line: rgb(240 191 116 / .16);
+    --aml-glass: rgb(22 21 21 / .97);
+    --aml-accent: #F0BF74;
+    --aml-accent-fill: #F0BF74;
+    --aml-accent-ink: #161515;
+    --aml-font: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      "Pretendard Variable", Pretendard, "Apple SD Gothic Neo",
+      "Hiragino Sans", system-ui, "Segoe UI", Roboto,
+      "Noto Sans Thai", "Leelawadee UI", "Noto Sans Devanagari",
+      "Nirmala UI", sans-serif;
+    --aml-hero-a: 0%;
+    --aml-art-shadow: none;
+    --aml-viz-color: #F0BF74;
+    --aml-viz-opacity: .18;
+    --aml-viz-gap: 3px;
+    --aml-max: 1100px;
+    --aml-player-left: 0;
+    --aml-modal-bg: #262223;
+    --aml-modal-text: #F6F2E8;
+    --aml-card-bg: #262223;
+    --aml-footer-color: #C6B6A6;
+    --aml-social-color: #F0BF74;
+    --aml-ext-color: #C6B6A6;
+    color-scheme: dark;
+  }
+
+  .aml-kit {
+    font-size: 15px;
+    line-height: 1.55;
+    font-variant-numeric: tabular-nums;
+  }
+  html:lang(ko) .aml-kit,
+  html:lang(ja) .aml-kit,
+  html:lang(zh) .aml-kit { line-height: 1.6; }
+
+  /* A single, static rim of light that ends in the actual page color. */
+  .aml-kit .aml-hero {
+    margin: 12px 16px 0;
+    padding: 22px 32px 20px;
+    border: 1px solid var(--aml-line);
+    border-radius: 12px;
+    background: radial-gradient(circle 118px at 84% 0%,
+      rgb(240 191 116 / .11) 0%, var(--aml-bg) 100%);
+  }
+  .aml-kit .aml-hero-in {
+    grid-template-columns: 88px minmax(0, 1fr);
+    column-gap: 22px;
+  }
+  .aml-kit .aml-hero .aml-profile { width: 88px; height: 88px; }
+  .aml-kit .aml-hero-name {
+    font-size: 40px;
+    font-weight: 750;
+    letter-spacing: -.01em;
+  }
+  .aml-kit .aml-hero-meta { font-size: 13px; font-weight: 450; }
+  .aml-kit .aml-hero-desc { line-height: 1.5; }
+  .aml-kit .aml-hero-more {
+    background: linear-gradient(90deg, transparent, var(--aml-bg) 1.6em);
+  }
+
+  /* Horizontal menu, rendered without a costly background blur. */
+  .aml-kit .aml-bar {
+    background: var(--aml-glass);
+    border-bottom: 1px solid var(--aml-line);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .aml-kit .aml-menu { gap: 10px; }
+  .aml-kit .aml-menu-item {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--aml-muted);
+    font-weight: 550;
+  }
+  .aml-kit .aml-menu-item:hover {
+    background: var(--aml-panel-2);
+    color: var(--aml-text);
+  }
+  .aml-kit .aml-menu-item.is-active {
+    background: var(--aml-panel);
+    border-color: var(--aml-line);
+    color: var(--aml-accent);
+  }
+  .aml-kit .aml-lang-select { border-radius: 8px; }
+
+  .aml-kit .aml-section-title {
+    font-size: 20px;
+    font-weight: 650;
+    letter-spacing: normal;
+  }
+  .aml-kit .aml-list { gap: 7px; }
+  .aml-kit .aml-track {
+    height: 72px;
+    border: 1px solid var(--aml-line);
+    border-radius: 8px;
+    box-shadow: none;
+  }
+  .aml-kit .aml-track-title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.24;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+  .aml-kit .aml-track-artist,
+  .aml-kit .aml-genres,
+  .aml-kit .aml-track-time { font-size: 13px; font-weight: 450; }
+
+  .aml-kit .aml-albums {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px 18px;
+  }
+  .aml-kit .aml-album-cover,
+  .aml-kit .aml-album-head .aml-album-cover {
+    border-radius: 8px;
+    box-shadow: none;
+  }
+  .aml-kit .aml-gb-form,
+  .aml-kit .aml-gb-post,
+  .aml-kit .aml-view-links .aml-social {
+    border: 1px solid var(--aml-line);
+    border-radius: 8px;
+    box-shadow: none;
+  }
+  .aml-kit .aml-social.is-highlight {
+    box-shadow: none;
+    outline: 1px solid var(--aml-accent);
+  }
+
+  @media (min-width: 1068px) {
+    .aml-kit .aml-albums {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 733px) {
+    .aml-kit .aml-hero {
+      margin: 8px 12px 0;
+      padding: 12px 16px;
+    }
+    .aml-kit .aml-hero-in {
+      grid-template-columns: 68px minmax(0, 1fr);
+      column-gap: 12px;
+    }
+    .aml-kit .aml-hero .aml-profile { width: 68px; height: 68px; }
+    .aml-kit .aml-hero-name {
+      font-size: 22px;
+      letter-spacing: normal;
+    }
+    .aml-kit .aml-hero-desc { margin-top: 4px; }
+    .aml-kit .aml-hero-actions { margin-top: 6px; }
+    .aml-kit .aml-section-title { font-size: 18px; margin: 8px 0; }
+    .aml-kit .aml-list { gap: 5px; }
+    .aml-kit .aml-track { height: 72px; }
+    .aml-kit .aml-albums {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px 12px;
+    }
+  }
+</style>
+</head>
+<body class="aml-kit">
+{{banner}}
+{{hero}}
+<div class="aml-bar">{{menu}}{{lang_select}}</div>
+{{ad_top}}
+{{content}}
+{{footer}}
+{{player}}
+</body>
+</html>

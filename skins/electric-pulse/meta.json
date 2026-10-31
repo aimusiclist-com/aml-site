@@ -1,0 +1,20 @@
+{
+  "schema": "skin-1",
+  "id": "electric-pulse",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Electric Pulse",
+    "ko": "일렉트릭 펄스",
+    "ja": "エレクトリック・パルス"
+  },
+  "description": {
+    "en": "Precise neon accents power a minimal late-night dance floor.",
+    "ko": "네온을 한 방울만 얹은 정교한 심야 댄스 플로어.",
+    "ja": "ミニマルな深夜のダンスフロアに、控えめなネオンの光を添えるスキン。"
+  },
+  "mode": "dark",
+  "tags": ["dark", "edm", "neon", "minimal"],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

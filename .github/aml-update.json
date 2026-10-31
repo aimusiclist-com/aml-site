@@ -1,0 +1,4 @@
+{
+  "_comment": "업데이트 받기(.github/workflows/update.yml)가 새 버전을 가져올 공개 템플릿 저장소. / Public template repository for 'Update from template'.",
+  "template": "aimusiclist-com/aml-site"
+}

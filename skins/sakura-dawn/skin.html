@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#FFF6F7">
+<title>{{site_name}}</title>
+<style>
+  /* Sakura Dawn: a blush-white listening gallery, free of ornamental media. */
+  :root {
+    --aml-bg: #FFF6F7;
+    --aml-panel: #FFFFFF;
+    --aml-panel-2: #F8ECEF;
+    --aml-text: #35272E;
+    --aml-muted: #725C67;
+    --aml-line: rgb(154 70 93 / .13);
+    --aml-glass: rgb(255 246 247 / .97);
+    --aml-accent: #9A465D;
+    --aml-accent-fill: #9A465D;
+    --aml-accent-ink: #FFFFFF;
+    --aml-font: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      "Pretendard Variable", Pretendard, "Apple SD Gothic Neo",
+      "Hiragino Sans", system-ui, "Segoe UI", Roboto,
+      "Noto Sans Thai", "Leelawadee UI", "Noto Sans Devanagari",
+      "Nirmala UI", sans-serif;
+    --aml-hero-a: 6%;
+    --aml-art-shadow: none;
+    --aml-viz-color: #9A465D;
+    --aml-viz-opacity: .18;
+    --aml-viz-gap: 3px;
+    --aml-max: 1100px;
+    --aml-player-left: 0;
+    --aml-modal-bg: #FFFFFF;
+    --aml-modal-text: #35272E;
+    --aml-card-bg: #FFFFFF;
+    --aml-footer-color: #725C67;
+    --aml-social-color: #9A465D;
+    --aml-ext-color: #725C67;
+  }
+
+  .aml-kit { font-size: 15px; line-height: 1.6; }
+  .aml-kit .aml-hero {
+    max-width: 1100px;
+    margin: 12px auto 0;
+    padding: 12px 24px 14px;
+    border: 1px solid var(--aml-line);
+    border-radius: 18px;
+    background: var(--aml-panel);
+  }
+  /* The fading 'more' button must match the hero's actual white surface. */
+  .aml-kit .aml-hero-more {
+    background: linear-gradient(90deg, transparent, var(--aml-panel) 1.6em);
+  }
+  .aml-kit .aml-hero-meta { font-size: 13px; font-weight: 450; }
+  .aml-kit .aml-hero-name {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+  .aml-kit .aml-hero-desc { margin-top: 4px; line-height: 1.45; }
+  .aml-kit .aml-hero .aml-socials { margin-top: 4px; }
+  .aml-kit .aml-hero-actions { margin-top: 6px; }
+
+  /* Flat navigation: an outline, not a solid active-state block. */
+  .aml-kit .aml-bar {
+    border-bottom: 1px solid var(--aml-line);
+    background: var(--aml-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .aml-kit .aml-menu-item {
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 10px;
+  }
+  .aml-kit .aml-menu-item:hover { background: var(--aml-panel-2); }
+  .aml-kit .aml-menu-item.is-active {
+    border-color: var(--aml-accent);
+    background: var(--aml-panel);
+    color: var(--aml-accent);
+  }
+  .aml-kit .aml-lang-select { border-radius: 10px; }
+
+  .aml-kit .aml-section-title { font-size: 18px; font-weight: 700; }
+  .aml-kit .aml-list { gap: 6px; }
+  .aml-kit .aml-track {
+    height: 68px;
+    border: 1px solid var(--aml-line);
+    border-radius: 10px;
+    box-shadow: none;
+  }
+  .aml-kit .aml-track-title {
+    padding-inline-start: 9px;
+    border-inline-start: 2px solid rgb(154 70 93 / .3);
+    font-size: 15px;
+    letter-spacing: -.01em;
+  }
+  .aml-kit .aml-albums {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px 16px;
+  }
+  .aml-kit .aml-album-cover,
+  .aml-kit .aml-album-head .aml-album-cover { border-radius: 10px; box-shadow: none; }
+  .aml-kit .aml-gb-form,
+  .aml-kit .aml-gb-post,
+  .aml-kit .aml-view-links .aml-social {
+    border-radius: 10px;
+    box-shadow: none;
+  }
+
+  @media (min-width: 734px) {
+    .aml-kit .aml-hero-in {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "pic" "name" "meta" "desc" "soc" "act";
+      justify-items: center;
+      text-align: center;
+      row-gap: 3px;
+    }
+    .aml-kit .aml-hero .aml-profile {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto;
+    }
+    .aml-kit .aml-hero .aml-socials { justify-content: center; }
+    .aml-kit .aml-hero-actions { justify-content: center; }
+  }
+
+  @media (max-width: 733px) {
+    .aml-kit .aml-hero {
+      margin: 8px 12px 0;
+      padding: 10px 12px;
+    }
+    .aml-kit .aml-hero-in {
+      grid-template-columns: 72px minmax(0, 1fr);
+      justify-items: stretch;
+      text-align: left;
+    }
+    .aml-kit .aml-hero .aml-profile { width: 72px; height: 72px; }
+    .aml-kit .aml-hero-name { font-size: 20px; }
+    .aml-kit .aml-hero .aml-socials { justify-content: flex-start; }
+    .aml-kit .aml-hero-actions { justify-content: flex-start; }
+    .aml-kit .aml-section-title { font-size: 18px; }
+    .aml-kit .aml-track { height: 68px; }
+    .aml-kit .aml-albums {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px 12px;
+    }
+  }
+</style>
+</head>
+<body class="aml-kit">
+{{banner}}
+{{hero}}
+<div class="aml-bar">{{menu}}{{lang_select}}</div>
+{{ad_top}}
+{{content}}
+{{footer}}
+{{player}}
+</body>
+</html>

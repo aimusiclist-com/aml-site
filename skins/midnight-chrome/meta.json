@@ -1,0 +1,20 @@
+{
+  "schema": "skin-1",
+  "id": "midnight-chrome",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Midnight Chrome",
+    "ko": "미드나이트 크롬",
+    "ja": "ミッドナイト・クローム"
+  },
+  "description": {
+    "en": "A polished midnight listening room with restrained metallic light.",
+    "ko": "금속빛 하이라이트를 살짝만 더한 차분한 심야 감상실.",
+    "ja": "控えめな金属の光が漂う、洗練された真夜中のリスニングルーム。"
+  },
+  "mode": "dark",
+  "tags": ["dark", "chrome", "minimal"],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

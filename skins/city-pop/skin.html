@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#FFF8EE">
+<title>{{site_name}}</title>
+<style>
+:root {
+  --aml-bg:#FFF8EE; --aml-panel:#FFFFFF; --aml-panel-2:#F9EEE1;
+  --aml-text:#1F2238; --aml-muted:#555A73; --aml-line:#F0E2CF;
+  --aml-glass:rgb(255 248 238 / .98);
+  --aml-accent:#C2410C; --aml-accent-fill:#C2410C; --aml-accent-ink:#FFFFFF;
+  --aml-font:-apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard,
+    "Apple SD Gothic Neo", "Hiragino Sans", system-ui, "Segoe UI", Roboto,
+    "Noto Sans Thai", "Leelawadee UI", "Noto Sans Devanagari", "Nirmala UI", sans-serif;
+  --aml-hero-a:0%; --aml-art-shadow:none;
+  --aml-viz-color:#0F766E; --aml-viz-opacity:.14; --aml-viz-gap:3px;
+  --aml-max:1100px; --aml-player-left:0;
+  --aml-modal-bg:#FFFFFF; --aml-modal-text:#1F2238;
+  --aml-card-bg:#FFFFFF; --aml-footer-color:#555A73;
+  --aml-social-color:#C2410C; --aml-ext-color:#555A73;
+  --aml-rank-up:#0F766E; --aml-rank-down:#555A73;
+  color-scheme:light;
+}
+/* City Pop: sunset coral, violet, and teal on warm cream. */
+.aml-kit { font-size:15px; line-height:1.52; letter-spacing:normal; }
+.aml-kit .aml-hero {
+  position:relative; max-width:1100px; margin:12px auto 0;
+  padding:24px 28px 18px; overflow:hidden;
+  border:1px solid var(--aml-line); border-radius:10px;
+  background:var(--aml-panel); box-shadow:none;
+}
+/* The only decorative gradient: a single 6px horizontal sunset stripe. */
+.aml-kit .aml-hero::before {
+  content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg, #C2410C 0%, #94569B 49%, #0F766E 100%);
+}
+.aml-kit .aml-hero-in {
+  grid-template-columns:88px minmax(0,1fr); column-gap:20px;
+}
+.aml-kit .aml-hero .aml-profile {
+  width:88px; height:88px; border-radius:50%; object-fit:cover;
+  border:1px solid var(--aml-line);
+}
+.aml-kit .aml-hero-name {
+  font-size:40px; font-weight:800; line-height:1.1;
+  font-style:normal; letter-spacing:-.015em; overflow-wrap:anywhere;
+}
+.aml-kit .aml-hero-desc { line-height:1.5; margin-top:4px; }
+.aml-kit .aml-hero-more {
+  background:linear-gradient(90deg, transparent, var(--aml-panel) 1.6em);
+}
+.aml-kit .aml-bar {
+  background:var(--aml-bg); border-bottom:1px solid var(--aml-line);
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+}
+.aml-kit .aml-menu { gap:9px; }
+.aml-kit .aml-menu-item {
+  border-radius:8px; border:1px solid transparent;
+  background:var(--aml-panel); color:var(--aml-text);
+  font-size:14px; font-weight:600;
+}
+.aml-kit .aml-menu-item:hover {
+  color:var(--aml-accent); background:var(--aml-panel-2);
+}
+.aml-kit .aml-menu-item.is-active {
+  color:var(--aml-accent); border-color:var(--aml-line);
+  background:var(--aml-panel);
+}
+.aml-kit .aml-section-title { font-size:21px; font-weight:750; }
+.aml-kit .aml-list { gap:7px; }
+.aml-kit .aml-track {
+  height:64px; min-height:64px; background:var(--aml-panel);
+  border:1px solid var(--aml-line); border-inline-start:4px solid transparent;
+  border-radius:10px; box-shadow:none;
+}
+.aml-kit .aml-track.is-playing {
+  background:var(--aml-panel); border-inline-start-color:#0F766E;
+}
+.aml-kit .aml-track.is-playing .aml-track-title { color:#0F766E; }
+.aml-kit .aml-track-title {
+  font-size:16px; font-weight:700; line-height:1.25; overflow-wrap:anywhere;
+}
+.aml-kit .aml-track-artist, .aml-kit .aml-genres,
+.aml-kit .aml-track-time { font-size:13px; color:var(--aml-muted); }
+.aml-kit .aml-genre.is-main { color:#0F766E; }
+.aml-kit .aml-albums {
+  grid-template-columns:repeat(4,minmax(0,1fr)); gap:23px 16px;
+}
+.aml-kit .aml-album-cover, .aml-kit .aml-album-head .aml-album-cover {
+  border-radius:8px; box-shadow:none;
+}
+.aml-kit .aml-album-title { font-size:15px; font-weight:700; }
+.aml-kit .aml-gb-form, .aml-kit .aml-gb-post,
+.aml-kit .aml-view-links .aml-social {
+  border-radius:10px; border:1px solid var(--aml-line); box-shadow:none;
+}
+.aml-kit .aml-load-more {
+  background:var(--aml-panel); color:var(--aml-accent);
+  border:1px solid var(--aml-line); border-radius:8px;
+}
+@media (max-width:733px) {
+  .aml-kit .aml-hero { margin:8px 12px 0; padding:14px 14px 10px; }
+  .aml-kit .aml-hero-in {
+    grid-template-columns:64px minmax(0,1fr); column-gap:12px;
+  }
+  .aml-kit .aml-hero .aml-profile { width:64px; height:64px; }
+  .aml-kit .aml-hero-name { font-size:27px; }
+  .aml-kit .aml-hero-desc { margin-top:3px; line-height:1.45; }
+  .aml-kit .aml-hero-actions { margin-top:5px; }
+  .aml-kit .aml-section-title { font-size:18px; }
+  .aml-kit .aml-list { gap:5px; }
+  .aml-kit .aml-albums {
+    grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 12px;
+  }
+}
+</style>
+</head>
+<body class="aml-kit">
+{{banner}}
+{{hero}}
+<div class="aml-bar">{{menu}}{{lang_select}}</div>
+{{ad_top}}
+{{content}}
+{{footer}}
+{{player}}
+</body>
+</html>

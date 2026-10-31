@@ -1,0 +1,20 @@
+{
+  "schema": "skin-1",
+  "id": "ivory-atelier",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Ivory Atelier",
+    "ko": "아이보리 아틀리에",
+    "ja": "アイボリー・アトリエ"
+  },
+  "description": {
+    "en": "A quiet editorial gallery where every album feels hand-curated.",
+    "ko": "앨범 한 장 한 장이 큐레이션된 듯한 고요한 편집형 갤러리.",
+    "ja": "アルバム一枚一枚を丁寧に選んだような、静かなエディトリアルギャラリー。"
+  },
+  "mode": "light",
+  "tags": ["editorial", "warm", "minimal"],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

@@ -1,0 +1,285 @@
+<!doctype html>
+<!-- 개인사이트 관리 화면 (주소: /admin/, 첫 설치 때는 / 에서도 열린다). 문장은 /_app/strings.js 의 키(data-t)로 채운다. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Site admin</title>
+<link rel="stylesheet" href="/_app/fonts/pretendard-1.3.9/pretendard.css">
+<style>
+  /* 3-9: 우리사이트·개인사이트 기본 스킨과 같은 색·글꼴·버튼 (디자인규격 v1). 기능·배치는 그대로 */
+  :root { --bg:#f5f5f7; --card:#fff; --text:#1d1d1f; --muted:#6e6e73; --line:rgb(0 0 0 / .1); --accent:#6b4eff; --accent-text:#fff;
+          --warn:#a34700; --warn-bg:#fff6e5; --err:#d70015; --ok:#1d8649; --radius:12px; --bar:#e8e8ed; --chip:#e8e8ed;
+          font: 15px/1.47 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Hiragino Sans", system-ui, "Segoe UI", Roboto, sans-serif;
+          -webkit-font-smoothing: antialiased; color-scheme: light dark; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#000; --card:#1c1c1e; --text:#f5f5f7; --muted:#98989d; --line:rgb(255 255 255 / .12); --accent:#8f7dff; --accent-text:#fff; --warn:#ff9f0a; --warn-bg:#2b2112; --err:#ff453a; --ok:#30d158; --bar:#2c2c2e; --chip:#2c2c2e; }
+    button.primary, .btn.primary { background: #7457ff !important; border-color: #7457ff !important; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); }
+  [hidden] { display: none !important; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 16px; }
+  .card.narrow { max-width: 560px; margin: 0 auto 16px; }
+  .card { background: var(--card); border: 0; border-radius: var(--radius); padding: 20px; margin: 0 0 16px; box-shadow: 0 0 0 .5px var(--line); }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; } h2 { font-size: 17px; margin: 0 0 12px; } h3 { font-size: 15px; margin: 16px 0 8px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .grow { flex: 1; }
+  .muted { color: var(--muted); font-size: 13px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  label.check { display: flex; gap: 8px; align-items: flex-start; color: var(--text); font-size: 14px; margin: 12px 0 4px; }
+  label.check input { margin-top: 3px; }
+  input[type=text], input[type=password], input[type=email], input[type=search], select, textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--text); font: inherit; }
+  :focus-visible { outline: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 40%, transparent); }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  button, .btn { font: inherit; font-weight: 500; padding: 7px 16px; border-radius: 999px; border: 0; background: var(--chip); color: var(--text); cursor: pointer; text-decoration: none; display: inline-block; }
+  button:hover, .btn:hover { filter: brightness(.96); }
+  button.primary, .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+  button.small { padding: 4px 12px; font-size: 13px; }
+  button.danger { color: var(--err); }
+  button:disabled { opacity: .5; cursor: default; }
+  header.top { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  nav.tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+  nav.tabs a { text-decoration: none; color: var(--muted); padding: 6px 14px; border-radius: 999px; }
+  nav.tabs a.on { background: var(--text); color: var(--bg); }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 6px; border-top: 1px solid var(--line); vertical-align: middle; }
+  th { font-size: 12px; color: var(--muted); font-weight: 500; border-top: 0; }
+  td.num { font-variant-numeric: tabular-nums; color: var(--muted); }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); margin: 1px 2px 1px 0; }
+  .tag.main { font-weight: 600; }
+  .tag.warn { color: var(--warn); border-color: var(--warn); }
+  .pick { max-height: 260px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+  .pick label { display: flex; gap: 8px; align-items: center; margin: 0; padding: 4px; color: var(--text); font-size: 14px; }
+  ol.sel { margin: 0; padding-left: 22px; } ol.sel li { padding: 3px 0; }
+  .skins { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .skin { border: 0; background: var(--bg); border-radius: var(--radius); padding: 14px; }
+  .skin.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .msg { margin: 8px 0 0; font-size: 14px; } .msg.err { color: var(--err); } .msg.ok { color: var(--ok); }
+  #toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 14px; max-width: 90vw; z-index: 20; }
+  #toast.err { background: var(--err); color: #fff; }
+  .langbar { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .langbar select { width: auto; padding: 4px 8px; font-size: 13px; }
+  details.guide { margin-top: 14px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: var(--bg); }
+  details.guide summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+  details.guide ol { margin: 8px 0 4px; padding-left: 20px; font-size: 14px; } details.guide li { margin: 4px 0; }
+  .notice { background: var(--warn-bg); border: 0; box-shadow: inset 3px 0 0 var(--warn); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+  .notice.info { background: color-mix(in srgb, var(--accent) 9%, var(--card)); box-shadow: inset 3px 0 0 var(--accent); }
+  /* 사용량 */
+  .usage .bars { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 18px; }
+  .ubar .lbl { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
+  .ubar .track { height: 10px; background: var(--bar); border-radius: 999px; overflow: hidden; margin: 4px 0 2px; }
+  .ubar .fill { height: 100%; background: var(--ok); border-radius: 999px; min-width: 2px; }
+  .ubar.warn .fill { background: var(--warn); } .ubar.danger .fill { background: var(--err); }
+  .ubar .num { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  /* M-5: 곡 올리기 진행바 · 사용량 키 카드 그림 */
+  td.upst { min-width: 150px; }
+  td.upst progress { display: block; width: 100%; max-width: 220px; height: 8px; border: 0; border-radius: 999px; background: var(--bar); overflow: hidden; accent-color: var(--accent); appearance: none; -webkit-appearance: none; }
+  td.upst progress::-webkit-progress-bar { background: var(--bar); border-radius: 999px; }
+  td.upst progress::-webkit-progress-value { background: var(--accent); border-radius: 999px; }
+  td.upst progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
+  td.upst .upn { display: block; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--text); margin-top: 3px; white-space: nowrap; }
+  input.masked { -webkit-text-security: disc; }
+  .tok-set { color: var(--ok); font-weight: 600; font-variant-numeric: tabular-nums; flex: 1; }
+  #token-card b.ui { font-weight: 600; background: var(--bg); padding: 0 5px; border-radius: 5px; white-space: nowrap; }
+  svg.shot { display: block; width: 100%; max-width: 460px; height: auto; margin: 8px 0; border-radius: 10px; }
+  svg.shot .fr { fill: var(--card); stroke: var(--line); } svg.shot .row { fill: var(--bg); } svg.shot .box { fill: var(--card); stroke: var(--line); }
+  svg.shot .t { fill: var(--muted); font: 500 11px system-ui, sans-serif; } svg.shot .tb { fill: var(--text); font: 600 11px system-ui, sans-serif; } svg.shot .big { font-size: 15px; font-weight: 700; }
+  svg.shot .ring { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: 5 4; } svg.shot .nb { fill: var(--accent); } svg.shot .nbt { fill: #fff; font: 700 10.5px system-ui, sans-serif; }
+  .amlline { margin: 0 0 12px; font-size: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .amlline .ok { color: var(--ok); } .amlline .bad { color: var(--err); } .amlline .wait { color: var(--warn); }
+  /* 업로드 */
+  .drop { border: 2px dashed var(--line); border-radius: var(--radius); padding: 22px; text-align: center; color: var(--muted); }
+  .drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); color: var(--text); }
+  .drop input[type=file] { display: none; }
+  .queue { max-height: 320px; overflow: auto; margin-top: 10px; }
+  .queue td { padding: 5px 6px; font-size: 14px; }
+  .st-done { color: var(--ok); } .st-fail { color: var(--err); } .st-up, .st-check, .st-conv { color: var(--warn); }
+  .st-conv { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .amlbox { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; margin-top: 12px; }
+  .amlbox p { margin: 4px 0 0 24px; font-size: 13px; color: var(--muted); }
+  .search { margin: 0 0 8px; }
+  /* 3-6: 곡 썸네일·이미지 편집·배너·프로필·방명록 */
+  .trow { display: flex; gap: 10px; align-items: center; }
+  .tthumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; background: var(--bar); flex: none; display: inline-block; }
+  .tthumb.big { width: 100px; height: 100px; border-radius: 8px; }
+  .cover-prev { width: 100px; height: 100px; border-radius: 8px; object-fit: cover; background: var(--bar); display: inline-block; }
+  .banner-prev { display: block; width: 100%; height: auto; max-height: 200px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+  .profile-prev { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; background: var(--bar); display: inline-block; flex: none; }
+  .imged { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 30; }
+  .imged-box { background: var(--card); border-radius: var(--radius); padding: 16px 18px; width: 100%; max-width: 540px; max-height: 92vh; overflow: auto; }
+  .imged-stage { width: 100%; display: flex; justify-content: center; background: var(--bg); border-radius: 8px; padding: 8px; margin: 8px 0; }
+  .imged-stage canvas { max-width: 100%; height: auto; cursor: move; touch-action: none; }
+  .imged-out { border: 1px solid var(--line); max-width: 200px; height: auto; }
+  .imged-out.round { border-radius: 50%; }
+  #imged-zoom { width: 100%; }
+  .ok-line { color: var(--ok); font-weight: 600; }
+  /* 3-9: 프로필 사진 자르기 (유튜브 방식) */
+  .crop-box { max-width: 420px; }
+  .crop-stage { width: 100%; max-width: 320px; aspect-ratio: 1; margin: 0 auto; border-radius: 12px; overflow: hidden; background: #111; touch-action: none; cursor: grab; display: grid; place-items: center; }
+  .crop-stage:active { cursor: grabbing; }
+  .crop-stage canvas { display: block; }
+  .crop-tools { display: flex; align-items: center; gap: 8px; max-width: 320px; margin: 12px auto 0; }
+  .crop-tools input[type=range] { flex: 1; accent-color: var(--accent); }
+  .icon-btn { width: 32px; height: 32px; padding: 0; display: inline-grid; place-items: center; }
+  .sic { width: 18px; height: 18px; vertical-align: -4px; fill: none; }
+  .crop-prev { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 14px; }
+  .crop-prev canvas { border-radius: 50%; background: var(--bar); }
+  #profile-note { margin: 0 0 12px; }
+  .skin-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .skin-head h2 { margin: 0; flex: 1; }
+  .seg { display: inline-flex; padding: 2px; border-radius: 999px; background: var(--chip); }
+  .seg span { padding: 4px 14px; border-radius: 999px; font-size: 13px; }
+  .seg .on { background: var(--card); box-shadow: 0 1px 3px rgb(0 0 0 / .12); font-weight: 600; }
+  /* 3-10 스킨 둘러보기·미리보기 */
+  .seg button { padding: 4px 14px; border-radius: 999px; font-size: 13px; background: transparent; }
+  .seg button.on { background: var(--card); box-shadow: 0 1px 3px rgb(0 0 0 / .12); font-weight: 600; }
+  .tag.new { color: var(--accent); border-color: var(--accent); }
+  nav.tabs .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--err); vertical-align: 2px; }
+  .gintro { align-items: flex-start; } .gintro h3 { font-size: 21px; margin: 4px 0 2px; letter-spacing: -.01em; } .gintro p { margin: 0 0 14px; font-size: 14px; }
+  .chips { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; margin: 0 0 14px; padding-bottom: 2px; } .chips .chip { flex: none; } .chip { padding: 4px 12px; font-size: 13px; } .chip.on { background: var(--text); color: var(--bg); }
+  .gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .gcard { background: var(--bg); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+  .gcard.on { box-shadow: 0 0 0 2px var(--accent); }
+  .gshot { display: block; padding: 0; border-radius: 0; width: 100%; aspect-ratio: 16 / 10; background: var(--chip); overflow: hidden; }
+  .gshot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .gbody { padding: 12px 14px 14px; } .gbody p { margin: 0 0 4px; } .gbody .row { margin-top: 10px; }
+  .g1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+  .gpv { position: fixed; inset: 0; background: rgb(0 0 0 / .6); z-index: 40; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .gpv-in { background: var(--card); border-radius: 16px; padding: 14px 16px; width: min(1240px, 100%); max-height: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .gpv-in p { margin: 0; }
+  .gpv-frame { height: min(74vh, 800px); width: 100%; margin: 0 auto; border-radius: 12px; overflow: hidden; background: var(--bg); display: flex; align-items: center; justify-content: center; transition: width .2s; }
+  .gpv-frame.m { width: 390px; max-width: 100%; box-shadow: 0 0 0 8px var(--chip); border-radius: 18px; }
+  .gpv-frame iframe { border: 0; width: 100%; height: 100%; display: block; background: #fff; }
+  @media (max-width: 600px) { .chips { flex-wrap: nowrap; overflow-x: auto; margin-right: -20px; padding-right: 20px; scrollbar-width: none; } .chip { flex: none; } .gpv { padding: 0; } .gpv-in { border-radius: 0; height: 100%; } .gpv-frame { flex: 1; height: auto; } .gpv-frame.m { box-shadow: none; } }
+  .gb-text { white-space: pre-wrap; word-break: break-word; margin-top: 4px; font-size: 14px; }
+  /* 3-11: aimusiclist 공개 스위치 (곡 목록·앨범) — 왼쪽 선택 체크(□)와 모양을 다르게 */
+  label.sw { display: inline-flex; align-items: center; gap: 8px; margin: 0; color: var(--text); font-size: 13px; cursor: pointer; position: relative; white-space: nowrap; }
+  .sw input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+  .sw-ui { flex: none; width: 40px; height: 24px; border-radius: 12px; background: var(--bar); box-shadow: inset 0 0 0 1px var(--line); position: relative; transition: background .15s; }
+  .sw-ui::after { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .3); transition: transform .15s; }
+  .sw input:checked + .sw-ui { background: var(--ok); box-shadow: none; }
+  .sw input:checked + .sw-ui::after { transform: translateX(16px); }
+  .sw input:focus-visible + .sw-ui { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 40%, transparent); }
+  .sw-tx { color: var(--muted); } .sw input:checked ~ .sw-tx { color: var(--text); font-weight: 600; }
+  label.sw:has(input:disabled) { cursor: default; opacity: .55; }
+  #pub-tip { margin: 0 0 8px; }
+  @media (max-width: 600px) { label.sw { flex-direction: column; gap: 3px; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; font-size: 10.5px; line-height: 1.2; text-align: center; width: 62px; } #t-table .trow > span { min-width: 0; overflow-wrap: anywhere; } }
+  /* 3-7: 곡 언어 여러 곡 · SNS */
+  #lang-note { margin: 0 0 12px; }
+  .lang-tx { color: var(--text); }
+  .bulk { border: 1px dashed var(--line); border-radius: 8px; padding: 8px 12px; margin: 0 0 10px; }
+  .bulk:not(.on) b { font-weight: 400; color: var(--muted); font-size: 13px; }
+  .bulk:not(.on) .bulk-body { display: none; }
+  .bulk.on { border-color: var(--accent); }
+  .bulk label { margin-top: 4px; }
+  input.sel { width: 18px; height: 18px; }
+  ol.sns { list-style: none; margin: 0; padding: 0; }
+  .sns-row { display: grid; grid-template-columns: 190px 1fr auto; gap: 6px 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
+  .sns-row:first-child { border-top: 0; }
+  .sns-row.bad input[type=url] { border-color: var(--err); }
+  .sns-name { display: flex; gap: 8px; align-items: center; min-width: 0; }
+  .sns-name select { min-width: 0; }
+  .sns-row input[type=url] { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); font: inherit; }
+  .sns-err { grid-column: 1 / -1; margin: 0; }
+  .sicon { width: 22px; height: 22px; fill: currentColor; flex: none; }
+  /* 3-8: 추가 정보(확장 항목) · 새 버전 안내 */
+  fieldset.extbox { border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px 10px; margin: 14px 0 0; min-width: 0; }
+  fieldset.extbox legend { font-size: 14px; font-weight: 600; padding: 0 6px; }
+  .xgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 8px; }
+  .xfield.xf-multiselect, .xfield.xf-text { grid-column: span 3; }
+  .xlabel { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  .xopts { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+  .xopts label.xopt { display: inline-flex; gap: 6px; align-items: center; margin: 0; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--text); font-size: 14px; cursor: pointer; }
+  .xopts label.xopt:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .xopts label.xopt:has(input:disabled) { opacity: .45; cursor: default; }
+  .xhelp { margin: 3px 0 0; }
+  .xunsupported { margin: 6px 0 0; }
+  input[type=number] { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); font: inherit; }
+  .bulk-ext { border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 8px; }
+  #ver-note { margin: 0 0 12px; }
+  #ver-note.danger { border-color: var(--err); background: color-mix(in srgb, var(--err) 10%, var(--card)); }
+  #ver-note.danger b { color: var(--err); }
+  .pl-sm { display: none; }   /* 3-14 휴대폰: 곡 목록 재생 횟수를 제목 아래에 */
+  @media (max-width: 640px) { .grid3, .usage .bars, .xgrid { grid-template-columns: 1fr; } .hide-sm { display: none; } .pl-sm { display: inline; }
+    .xfield.xf-multiselect, .xfield.xf-text { grid-column: auto; }
+    #t-table th, #t-table td { padding: 8px 3px; }   /* 3-8: 휴대폰에서 곡 표가 몇 px 넘치던 것 */
+    .sns-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 언어 선택 (strings.js 의 AML.langSelect 가 채운다) -->
+  <div class="langbar"><span id="lang-pick"></span></div>
+
+  <!-- 1) 관리자 만들기 (첫 설치) -->
+  <section id="setup" class="card narrow" hidden>
+    <h2 data-t="setup.title"></h2>
+    <p data-t="setup.intro"></p>
+    <form id="setup-form" novalidate>
+      <div id="su-legacy-box" hidden>
+        <label for="su-legacy" data-t="setup.legacy"></label>
+        <input id="su-legacy" type="password" autocomplete="off">
+        <p class="muted" data-t="setup.legacy_help"></p>
+      </div>
+      <label for="su-email" data-t="setup.email"></label>
+      <input id="su-email" type="email" autocomplete="username" maxlength="254" required>
+      <p class="muted" data-t="setup.email_hint"></p>
+      <label for="su-pw" data-t="setup.password"></label>
+      <input id="su-pw" type="password" autocomplete="new-password" minlength="6" maxlength="200" required>
+      <label for="su-pw2" data-t="setup.password2"></label>
+      <input id="su-pw2" type="password" autocomplete="new-password" maxlength="200" required>
+      <label for="su-token" data-t="setup.token"></label>
+      <input id="su-token" type="password" autocomplete="off" spellcheck="false" maxlength="200" required>
+      <p id="su-token-state" class="msg" role="status"></p>
+      <div id="su-acc-box" hidden><label for="su-acc" data-t="setup.account"></label><select id="su-acc"></select></div>
+      <!-- 3-7: 토큰이 계정 목록을 못 볼 때(Account Settings: Read 없음) 계정 ID 직접 입력 -->
+      <div id="su-accid-box" hidden><label for="su-accid" data-t="setup.account_id"></label>
+        <input id="su-accid" type="text" maxlength="32" spellcheck="false" autocomplete="off" placeholder="0123456789abcdef0123456789abcdef">
+        <p class="muted" data-t="setup.account_id_help"></p></div>
+      <details class="guide" open><summary data-t="token.guide.title"></summary><ol id="token-guide"></ol></details>
+      <p class="row" style="margin-top:16px"><button class="primary" id="su-submit" data-t="setup.button"></button><span id="su-msg" class="msg err"></span></p>
+    </form>
+  </section>
+
+  <!-- 2) 로그인 -->
+  <section id="login" class="card narrow" hidden>
+    <h2 data-t="admin.login.title"></h2>
+    <form id="login-form">
+      <label for="login-email" data-t="setup.email"></label>
+      <input id="login-email" type="email" autocomplete="username" required>
+      <label for="login-pw" data-t="setup.password"></label>
+      <input id="login-pw" type="password" autocomplete="current-password" required>
+      <p class="row" style="margin-top:14px"><button class="primary" id="login-submit" data-t="admin.login.button"></button><a href="/" data-t="admin.view_site"></a></p>
+    </form>
+    <p id="login-msg" class="msg err" role="alert"></p>
+    <details class="guide"><summary data-t="help.forgot.title"></summary><ol class="forgot-guide"></ol></details>
+  </section>
+
+  <!-- 3) 관리 화면 -->
+  <div id="app" hidden>
+    <header class="top">
+      <h1 id="site-name" class="grow"></h1>
+      <a href="/" target="_blank" rel="noopener" data-t="admin.view_site"></a>
+      <button class="small" data-act="logout" data-t="admin.logout"></button>
+    </header>
+    <section id="usage" class="card usage"></section>
+    <p id="ver-note" class="notice row" hidden></p>
+    <p id="aml-line" class="amlline"></p>
+    <p id="lang-note" class="notice row" hidden></p>
+    <p id="profile-note" class="notice info row" hidden></p>
+    <p id="genre-note" class="muted" hidden data-t="admin.genres.sample"></p>
+    <nav class="tabs" id="tabs"></nav>
+    <main id="panel"></main>
+  </div>
+</div>
+<div id="img-editor" class="imged" hidden></div>
+<div id="toast" hidden role="status"></div>
+
+<script src="/_app/strings.js?v=13"></script>
+<script src="/_app/admin.js?v=17"></script>
+</body>
+</html>

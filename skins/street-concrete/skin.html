@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#131313">
+<title>{{site_name}}</title>
+<style>
+:root {
+  --aml-bg:#131313; --aml-panel:#1E1E1E; --aml-panel-2:#292929;
+  --aml-text:#F2F2F2; --aml-muted:#A8A8A8; --aml-line:#2E2E2E;
+  --aml-glass:rgb(19 19 19 / .98);
+  --aml-accent:#E6FF3D; --aml-accent-fill:#E6FF3D; --aml-accent-ink:#131313;
+  --aml-font:-apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard,
+    "Apple SD Gothic Neo", "Hiragino Sans", system-ui, "Segoe UI", Roboto,
+    "Noto Sans Thai", "Leelawadee UI", "Noto Sans Devanagari", "Nirmala UI", sans-serif;
+  --aml-hero-a:0%; --aml-art-shadow:none; --aml-viz-color:#E6FF3D;
+  --aml-viz-opacity:.15; --aml-viz-gap:3px; --aml-max:1100px;
+  --aml-player-left:0; --aml-modal-bg:#1E1E1E; --aml-modal-text:#F2F2F2;
+  --aml-card-bg:#1E1E1E; --aml-footer-color:#A8A8A8; --aml-social-color:#E6FF3D;
+  --aml-ext-color:#A8A8A8; --aml-rank-up:#E6FF3D; --aml-rank-down:#A8A8A8;
+  color-scheme:dark;
+}
+/* Concrete blocks with a single warning-yellow accent. */
+.aml-kit { font-size:15px; line-height:1.5; letter-spacing:.005em; }
+.aml-kit .aml-hero {
+  padding:22px 28px 18px; background:var(--aml-bg);
+  border-bottom:2px solid var(--aml-line);
+}
+.aml-kit .aml-hero-in { grid-template-columns:88px minmax(0,1fr); column-gap:20px; }
+.aml-kit .aml-hero .aml-profile {
+  width:88px; height:88px; border-radius:6px; object-fit:cover;
+  border:1px solid var(--aml-line);
+}
+.aml-kit .aml-hero-name {
+  font-size:40px; font-weight:900; line-height:1.08;
+  letter-spacing:.02em; text-transform:uppercase; overflow-wrap:anywhere;
+}
+.aml-kit .aml-hero-name::after {
+  content:""; display:block; width:78px; height:2px;
+  background:var(--aml-accent); margin-top:9px;
+}
+.aml-kit .aml-hero-desc { line-height:1.45; }
+.aml-kit .aml-hero-more {
+  background:linear-gradient(90deg, transparent, var(--aml-bg) 1.6em);
+}
+.aml-kit .aml-hero-actions .aml-btn,
+.aml-kit .aml-lang-select { border-radius:4px; }
+.aml-kit .aml-bar {
+  background:var(--aml-bg); border-bottom:1px solid var(--aml-line);
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+}
+.aml-kit .aml-menu { gap:6px; }
+.aml-kit .aml-menu-item {
+  border:1px solid transparent; border-radius:4px; background:var(--aml-panel);
+  color:var(--aml-text); font-size:13px; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase;
+}
+.aml-kit .aml-menu-item:hover { background:var(--aml-panel-2); }
+.aml-kit .aml-menu-item.is-active {
+  background:var(--aml-accent); color:var(--aml-accent-ink);
+  border-color:var(--aml-accent);
+}
+.aml-kit .aml-section-title {
+  font-size:20px; font-weight:800; letter-spacing:.02em; text-transform:uppercase;
+}
+.aml-kit .aml-list { gap:6px; }
+.aml-kit .aml-track {
+  height:64px; min-height:64px; border:0;
+  border-inline-start:4px solid transparent; border-radius:3px;
+  background:var(--aml-panel); box-shadow:none;
+}
+.aml-kit .aml-track.is-playing {
+  background:var(--aml-panel); border-inline-start-color:var(--aml-accent);
+}
+.aml-kit .aml-track.is-playing .aml-track-title { color:var(--aml-accent); }
+.aml-kit .aml-track-title {
+  font-size:16px; font-weight:700; line-height:1.25; overflow-wrap:anywhere;
+}
+.aml-kit .aml-track-artist, .aml-kit .aml-genres,
+.aml-kit .aml-track-time { font-size:13px; color:var(--aml-muted); }
+.aml-kit .aml-play, .aml-kit .aml-thumb { border-radius:3px; }
+.aml-kit .aml-albums {
+  grid-template-columns:repeat(4,minmax(0,1fr)); gap:22px 14px;
+}
+.aml-kit .aml-album-cover, .aml-kit .aml-album-head .aml-album-cover {
+  border-radius:4px; box-shadow:none;
+}
+.aml-kit .aml-album-title { font-weight:700; }
+.aml-kit .aml-gb-form, .aml-kit .aml-gb-post,
+.aml-kit .aml-view-links .aml-social {
+  border:1px solid var(--aml-line); border-radius:4px; box-shadow:none;
+}
+/* Only style loading controls: never hide the lazy-loading sentinel. */
+.aml-kit .aml-load-more {
+  color:var(--aml-text); background:var(--aml-panel);
+  border:1px solid var(--aml-line); border-radius:4px;
+}
+@media (max-width:733px) {
+  .aml-kit .aml-hero { padding:12px 16px 10px; }
+  .aml-kit .aml-hero-in { grid-template-columns:64px minmax(0,1fr); column-gap:12px; }
+  .aml-kit .aml-hero .aml-profile { width:64px; height:64px; }
+  .aml-kit .aml-hero-name { font-size:26px; line-height:1.1; }
+  .aml-kit .aml-hero-name::after { width:54px; margin-top:5px; }
+  .aml-kit .aml-hero-desc { margin-top:3px; }
+  .aml-kit .aml-hero-actions { margin-top:5px; }
+  .aml-kit .aml-section-title { font-size:17px; }
+  .aml-kit .aml-list { gap:4px; }
+  .aml-kit .aml-albums {
+    grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 12px;
+  }
+}
+</style>
+</head>
+<body class="aml-kit">
+{{banner}}
+{{hero}}
+<div class="aml-bar">{{menu}}{{lang_select}}</div>
+{{ad_top}}
+{{content}}
+{{footer}}
+{{player}}
+</body>
+</html>

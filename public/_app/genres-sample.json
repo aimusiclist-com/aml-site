@@ -1,0 +1,550 @@
+{
+ "schema": "1.0",
+ "generated_at": "2026-10-27T00:00:00Z",
+ "rules": {
+  "max_genres": 3,
+  "first_must_be_main": true
+ },
+ "genres": [
+  {
+   "key": "pop",
+   "names": {
+    "en": "Pop",
+    "ko": "팝",
+    "ja": "ポップ"
+   },
+   "subs": [
+    {
+     "key": "kpop",
+     "names": {
+      "en": "K-pop",
+      "ko": "K팝",
+      "ja": "K-POP"
+     }
+    },
+    {
+     "key": "jpop",
+     "names": {
+      "en": "J-pop",
+      "ko": "J팝",
+      "ja": "J-POP"
+     }
+    },
+    {
+     "key": "indie_pop",
+     "names": {
+      "en": "Indie Pop",
+      "ko": "인디 팝",
+      "ja": "インディーポップ"
+     }
+    },
+    {
+     "key": "synth_pop",
+     "names": {
+      "en": "Synth-pop",
+      "ko": "신스팝",
+      "ja": "シンセポップ"
+     }
+    },
+    {
+     "key": "city_pop",
+     "names": {
+      "en": "City Pop",
+      "ko": "시티팝",
+      "ja": "シティポップ"
+     }
+    }
+   ]
+  },
+  {
+   "key": "rnb",
+   "names": {
+    "en": "R&B",
+    "ko": "R&B",
+    "ja": "R&B"
+   },
+   "subs": [
+    {
+     "key": "contemporary_rnb",
+     "names": {
+      "en": "Contemporary R&B",
+      "ko": "컨템퍼러리 R&B",
+      "ja": "コンテンポラリーR&B"
+     }
+    },
+    {
+     "key": "neo_soul",
+     "names": {
+      "en": "Neo Soul",
+      "ko": "네오 소울",
+      "ja": "ネオソウル"
+     }
+    },
+    {
+     "key": "soul",
+     "names": {
+      "en": "Soul",
+      "ko": "소울",
+      "ja": "ソウル"
+     }
+    },
+    {
+     "key": "funk",
+     "names": {
+      "en": "Funk",
+      "ko": "펑크(Funk)",
+      "ja": "ファンク"
+     }
+    }
+   ]
+  },
+  {
+   "key": "hiphop",
+   "names": {
+    "en": "Hip-hop",
+    "ko": "힙합",
+    "ja": "ヒップホップ"
+   },
+   "subs": [
+    {
+     "key": "rap",
+     "names": {
+      "en": "Rap",
+      "ko": "랩",
+      "ja": "ラップ"
+     }
+    },
+    {
+     "key": "trap",
+     "names": {
+      "en": "Trap",
+      "ko": "트랩",
+      "ja": "トラップ"
+     }
+    },
+    {
+     "key": "boom_bap",
+     "names": {
+      "en": "Boom Bap",
+      "ko": "붐뱁",
+      "ja": "ブーンバップ"
+     }
+    },
+    {
+     "key": "lofi_hiphop",
+     "names": {
+      "en": "Lo-fi Hip-hop",
+      "ko": "로파이 힙합",
+      "ja": "ローファイ・ヒップホップ"
+     }
+    }
+   ]
+  },
+  {
+   "key": "rock",
+   "names": {
+    "en": "Rock",
+    "ko": "록",
+    "ja": "ロック"
+   },
+   "subs": [
+    {
+     "key": "alternative",
+     "names": {
+      "en": "Alternative",
+      "ko": "얼터너티브",
+      "ja": "オルタナティブ"
+     }
+    },
+    {
+     "key": "indie_rock",
+     "names": {
+      "en": "Indie Rock",
+      "ko": "인디 록",
+      "ja": "インディーロック"
+     }
+    },
+    {
+     "key": "hard_rock",
+     "names": {
+      "en": "Hard Rock",
+      "ko": "하드 록",
+      "ja": "ハードロック"
+     }
+    },
+    {
+     "key": "metal",
+     "names": {
+      "en": "Metal",
+      "ko": "메탈",
+      "ja": "メタル"
+     }
+    },
+    {
+     "key": "punk",
+     "names": {
+      "en": "Punk",
+      "ko": "펑크(Punk)",
+      "ja": "パンク"
+     }
+    }
+   ]
+  },
+  {
+   "key": "electronic",
+   "names": {
+    "en": "Electronic",
+    "ko": "일렉트로닉",
+    "ja": "エレクトロニック"
+   },
+   "subs": [
+    {
+     "key": "house",
+     "names": {
+      "en": "House",
+      "ko": "하우스",
+      "ja": "ハウス"
+     }
+    },
+    {
+     "key": "techno",
+     "names": {
+      "en": "Techno",
+      "ko": "테크노",
+      "ja": "テクノ"
+     }
+    },
+    {
+     "key": "edm",
+     "names": {
+      "en": "EDM",
+      "ko": "EDM",
+      "ja": "EDM"
+     }
+    },
+    {
+     "key": "drum_and_bass",
+     "names": {
+      "en": "Drum & Bass",
+      "ko": "드럼 앤 베이스",
+      "ja": "ドラムンベース"
+     }
+    },
+    {
+     "key": "synthwave",
+     "names": {
+      "en": "Synthwave",
+      "ko": "신스웨이브",
+      "ja": "シンセウェイヴ"
+     }
+    }
+   ]
+  },
+  {
+   "key": "dance",
+   "names": {
+    "en": "Dance",
+    "ko": "댄스",
+    "ja": "ダンス"
+   },
+   "subs": [
+    {
+     "key": "dance_pop",
+     "names": {
+      "en": "Dance Pop",
+      "ko": "댄스 팝",
+      "ja": "ダンスポップ"
+     }
+    },
+    {
+     "key": "disco",
+     "names": {
+      "en": "Disco",
+      "ko": "디스코",
+      "ja": "ディスコ"
+     }
+    },
+    {
+     "key": "eurobeat",
+     "names": {
+      "en": "Eurobeat",
+      "ko": "유로비트",
+      "ja": "ユーロビート"
+     }
+    }
+   ]
+  },
+  {
+   "key": "ballad",
+   "names": {
+    "en": "Ballad",
+    "ko": "발라드",
+    "ja": "バラード"
+   },
+   "subs": [
+    {
+     "key": "piano_ballad",
+     "names": {
+      "en": "Piano Ballad",
+      "ko": "피아노 발라드",
+      "ja": "ピアノバラード"
+     }
+    },
+    {
+     "key": "power_ballad",
+     "names": {
+      "en": "Power Ballad",
+      "ko": "파워 발라드",
+      "ja": "パワーバラード"
+     }
+    }
+   ]
+  },
+  {
+   "key": "jazz",
+   "names": {
+    "en": "Jazz",
+    "ko": "재즈",
+    "ja": "ジャズ"
+   },
+   "subs": [
+    {
+     "key": "smooth_jazz",
+     "names": {
+      "en": "Smooth Jazz",
+      "ko": "스무스 재즈",
+      "ja": "スムースジャズ"
+     }
+    },
+    {
+     "key": "swing",
+     "names": {
+      "en": "Swing",
+      "ko": "스윙",
+      "ja": "スウィング"
+     }
+    },
+    {
+     "key": "bossa_nova",
+     "names": {
+      "en": "Bossa Nova",
+      "ko": "보사노바",
+      "ja": "ボサノバ"
+     }
+    }
+   ]
+  },
+  {
+   "key": "classical",
+   "names": {
+    "en": "Classical",
+    "ko": "클래식",
+    "ja": "クラシック"
+   },
+   "subs": [
+    {
+     "key": "orchestral",
+     "names": {
+      "en": "Orchestral",
+      "ko": "오케스트라",
+      "ja": "オーケストラ"
+     }
+    },
+    {
+     "key": "solo_piano",
+     "names": {
+      "en": "Solo Piano",
+      "ko": "피아노 독주",
+      "ja": "ピアノソロ"
+     }
+    },
+    {
+     "key": "chamber",
+     "names": {
+      "en": "Chamber",
+      "ko": "실내악",
+      "ja": "室内楽"
+     }
+    }
+   ]
+  },
+  {
+   "key": "folk",
+   "names": {
+    "en": "Folk & Acoustic",
+    "ko": "포크·어쿠스틱",
+    "ja": "フォーク&アコースティック"
+   },
+   "subs": [
+    {
+     "key": "acoustic",
+     "names": {
+      "en": "Acoustic",
+      "ko": "어쿠스틱",
+      "ja": "アコースティック"
+     }
+    },
+    {
+     "key": "singer_songwriter",
+     "names": {
+      "en": "Singer-songwriter",
+      "ko": "싱어송라이터",
+      "ja": "シンガーソングライター"
+     }
+    },
+    {
+     "key": "country",
+     "names": {
+      "en": "Country",
+      "ko": "컨트리",
+      "ja": "カントリー"
+     }
+    }
+   ]
+  },
+  {
+   "key": "latin",
+   "names": {
+    "en": "Latin",
+    "ko": "라틴",
+    "ja": "ラテン"
+   },
+   "subs": [
+    {
+     "key": "reggaeton",
+     "names": {
+      "en": "Reggaeton",
+      "ko": "레게톤",
+      "ja": "レゲトン"
+     }
+    },
+    {
+     "key": "latin_pop",
+     "names": {
+      "en": "Latin Pop",
+      "ko": "라틴 팝",
+      "ja": "ラテンポップ"
+     }
+    },
+    {
+     "key": "salsa",
+     "names": {
+      "en": "Salsa",
+      "ko": "살사",
+      "ja": "サルサ"
+     }
+    }
+   ]
+  },
+  {
+   "key": "soundtrack",
+   "names": {
+    "en": "Soundtrack",
+    "ko": "OST",
+    "ja": "サウンドトラック"
+   },
+   "subs": [
+    {
+     "key": "film_score",
+     "names": {
+      "en": "Film Score",
+      "ko": "영화 음악",
+      "ja": "映画音楽"
+     }
+    },
+    {
+     "key": "game_music",
+     "names": {
+      "en": "Game Music",
+      "ko": "게임 음악",
+      "ja": "ゲーム音楽"
+     }
+    },
+    {
+     "key": "anime",
+     "names": {
+      "en": "Anime",
+      "ko": "애니메이션",
+      "ja": "アニメ"
+     }
+    }
+   ]
+  },
+  {
+   "key": "ambient",
+   "names": {
+    "en": "Ambient & Chill",
+    "ko": "앰비언트·칠",
+    "ja": "アンビエント&チル"
+   },
+   "subs": [
+    {
+     "key": "chill",
+     "names": {
+      "en": "Chill",
+      "ko": "칠",
+      "ja": "チル"
+     }
+    },
+    {
+     "key": "new_age",
+     "names": {
+      "en": "New Age",
+      "ko": "뉴에이지",
+      "ja": "ニューエイジ"
+     }
+    },
+    {
+     "key": "meditation",
+     "names": {
+      "en": "Meditation",
+      "ko": "명상",
+      "ja": "瞑想"
+     }
+    }
+   ]
+  },
+  {
+   "key": "world",
+   "names": {
+    "en": "World",
+    "ko": "월드",
+    "ja": "ワールド"
+   },
+   "subs": [
+    {
+     "key": "trot",
+     "names": {
+      "en": "Trot",
+      "ko": "트로트",
+      "ja": "トロット"
+     }
+    },
+    {
+     "key": "enka",
+     "names": {
+      "en": "Enka",
+      "ko": "엔카",
+      "ja": "演歌"
+     }
+    },
+    {
+     "key": "reggae",
+     "names": {
+      "en": "Reggae",
+      "ko": "레게",
+      "ja": "レゲエ"
+     }
+    },
+    {
+     "key": "afrobeats",
+     "names": {
+      "en": "Afrobeats",
+      "ko": "아프로비츠",
+      "ja": "アフロビーツ"
+     }
+    }
+   ]
+  }
+ ]
+}

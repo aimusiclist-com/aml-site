@@ -1,0 +1,20 @@
+{
+  "schema": "skin-1",
+  "id": "mono-gallery",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Mono Gallery",
+    "ko": "모노 갤러리",
+    "ja": "モノ・ギャラリー"
+  },
+  "description": {
+    "en": "Monochrome typography leaves the spotlight to cover art.",
+    "ko": "흑백 타이포그래피를 절제해 앨범 아트를 주인공으로.",
+    "ja": "モノクロームの文字が控えめに寄り添い、アルバムアートを主役にするスキン。"
+  },
+  "mode": "light",
+  "tags": ["monochrome", "gallery", "minimal"],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

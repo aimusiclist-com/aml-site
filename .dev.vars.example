@@ -1,0 +1,10 @@
+# Nothing to fill in. After installing, open your site address and create your admin account there.
+# 입력할 값이 없습니다. 설치한 뒤 내 사이트 주소로 들어가 "관리자 만들기" 화면에서 계정을 만듭니다.
+# (Deploy 버튼 설치 화면은 이 파일의 # 없는 줄만 입력받습니다. 그래서 이제 아무것도 묻지 않습니다.)
+
+# --- Only for developers testing on their own computer / 개발자 로컬 시험용 (보통은 쓰지 않음) ---
+# AML_API_BASE=http://localhost:9000/api/v1          # 가짜 aimusiclist 서버
+# AML_CF_API_BASE=http://localhost:9000/cf/client/v4  # 가짜 Cloudflare API (사용량 화면 시험)
+
+# --- Old install (stage 1) only. New installs do not need these. / 1단계 방식 설치만 해당 ---
+# AML_SITE_ID, AML_SITE_SECRET, AML_ADMIN_TOKEN 이 Cloudflare 설정에 이미 있으면 그대로 계속 쓴다(호환).

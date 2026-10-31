@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#F4F1FA">
+<title>{{site_name}}</title>
+<style>
+:root {
+  --aml-bg:#F4F1FA; --aml-panel:#FFFFFF; --aml-panel-2:#EDE8F5;
+  --aml-text:#2B2640; --aml-muted:#5E5875; --aml-line:#E3DDF0;
+  --aml-glass:rgb(244 241 250 / .98);
+  /* Darkened mint from the concept color so small text stays readable. */
+  --aml-accent:#286F61; --aml-accent-fill:#286F61; --aml-accent-ink:#FFFFFF;
+  --aml-font:-apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard,
+    "Apple SD Gothic Neo", "Hiragino Sans", system-ui, "Segoe UI", Roboto,
+    "Noto Sans Thai", "Leelawadee UI", "Noto Sans Devanagari", "Nirmala UI", sans-serif;
+  --aml-hero-a:0%; --aml-art-shadow:none;
+  --aml-viz-color:#286F61; --aml-viz-opacity:.12; --aml-viz-gap:3px;
+  --aml-max:1100px; --aml-player-left:0; --aml-modal-bg:#FFFFFF;
+  --aml-modal-text:#2B2640; --aml-card-bg:#FFFFFF; --aml-footer-color:#5E5875;
+  --aml-social-color:#286F61; --aml-ext-color:#5E5875;
+  --aml-rank-up:#286F61; --aml-rank-down:#5E5875;
+  color-scheme:light;
+}
+/* Lofi Cloud: quiet lavender air and soft mint, all without shadows. */
+.aml-kit { font-size:15px; line-height:1.5; letter-spacing:normal; }
+.aml-kit .aml-hero {
+  max-width:1100px; margin:12px auto 0; padding:18px 26px 16px;
+  background:var(--aml-panel); border:1px solid var(--aml-line);
+  border-radius:20px; box-shadow:none;
+}
+.aml-kit .aml-hero-in {
+  grid-template-columns:88px minmax(0,1fr); column-gap:20px;
+}
+.aml-kit .aml-hero .aml-profile {
+  width:88px; height:88px; border-radius:50%; object-fit:cover;
+}
+.aml-kit .aml-hero-name {
+  font-size:36px; line-height:1.12; font-weight:700;
+  letter-spacing:-.02em; overflow-wrap:anywhere;
+}
+.aml-kit .aml-hero-meta { font-size:13px; }
+.aml-kit .aml-hero-desc { line-height:1.5; margin-top:4px; }
+.aml-kit .aml-hero-more {
+  background:linear-gradient(90deg, transparent, var(--aml-panel) 1.6em);
+}
+.aml-kit .aml-btn, .aml-kit .aml-lang-select { border-radius:999px; }
+.aml-kit .aml-bar {
+  background:var(--aml-bg); border-bottom:1px solid var(--aml-line);
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+}
+.aml-kit .aml-menu { gap:8px; }
+.aml-kit .aml-menu-item {
+  border-radius:999px; border:1px solid var(--aml-line);
+  background:var(--aml-panel); color:var(--aml-text);
+  font-weight:600;
+}
+.aml-kit .aml-menu-item:hover {
+  background:#E8F2EF; color:var(--aml-accent);
+}
+.aml-kit .aml-menu-item.is-active {
+  background:var(--aml-accent-fill); color:var(--aml-accent-ink);
+  border-color:var(--aml-accent);
+}
+.aml-kit .aml-section-title {
+  font-size:21px; font-weight:700; letter-spacing:-.01em;
+}
+.aml-kit .aml-list { gap:7px; }
+.aml-kit .aml-track {
+  height:64px; min-height:64px; border-radius:16px;
+  border:1px solid var(--aml-line);
+  background:var(--aml-panel); box-shadow:none;
+}
+.aml-kit .aml-track.is-playing {
+  background:#DDF3EC; border-color:#DDF3EC;
+}
+.aml-kit .aml-track.is-playing .aml-track-title { color:var(--aml-accent); }
+.aml-kit .aml-track-title {
+  font-size:15px; font-weight:600; line-height:1.3; overflow-wrap:anywhere;
+}
+.aml-kit .aml-track-artist, .aml-kit .aml-genres,
+.aml-kit .aml-track-time { font-size:13px; color:var(--aml-muted); }
+.aml-kit .aml-play, .aml-kit .aml-thumb { border-radius:12px; }
+.aml-kit .aml-albums {
+  grid-template-columns:repeat(4,minmax(0,1fr)); gap:26px 18px;
+}
+.aml-kit .aml-album-cover, .aml-kit .aml-album-head .aml-album-cover {
+  border-radius:14px; box-shadow:none;
+}
+.aml-kit .aml-gb-form, .aml-kit .aml-gb-post,
+.aml-kit .aml-view-links .aml-social {
+  background:var(--aml-panel); border:1px solid var(--aml-line);
+  border-radius:20px; box-shadow:none;
+}
+/* Keep the built-in load-more fallback usable. */
+.aml-kit .aml-load-more {
+  color:var(--aml-accent); background:var(--aml-panel);
+  border:1px solid var(--aml-line); border-radius:999px;
+}
+@media (max-width:733px) {
+  .aml-kit .aml-hero {
+    margin:8px 12px 0; padding:10px 13px; border-radius:20px;
+  }
+  .aml-kit .aml-hero-in {
+    grid-template-columns:64px minmax(0,1fr); column-gap:12px;
+  }
+  .aml-kit .aml-hero .aml-profile { width:64px; height:64px; }
+  .aml-kit .aml-hero-name { font-size:25px; }
+  .aml-kit .aml-hero-desc { margin-top:3px; line-height:1.45; }
+  .aml-kit .aml-hero-actions { margin-top:5px; }
+  .aml-kit .aml-section-title { font-size:18px; }
+  .aml-kit .aml-list { gap:5px; }
+  .aml-kit .aml-albums {
+    grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 12px;
+  }
+}
+</style>
+</head>
+<body class="aml-kit">
+{{banner}}
+{{hero}}
+<div class="aml-bar">{{menu}}{{lang_select}}</div>
+{{ad_top}}
+{{content}}
+{{footer}}
+{{player}}
+</body>
+</html>

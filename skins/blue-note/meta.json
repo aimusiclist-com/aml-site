@@ -1,0 +1,24 @@
+{
+  "schema": "skin-1",
+  "id": "blue-note",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Blue Note",
+    "ko": "블루 노트",
+    "ja": "ブルー・ノート"
+  },
+  "description": {
+    "en": "An intimate navy-and-brass late-night jazz lounge for soul and R&B.",
+    "ko": "깊은 남색과 따뜻한 황동색이 어우러진 재즈·소울·R&B 라운지.",
+    "ja": "深いネイビーと真鍮の色が響く、ジャズ・ソウル・R&Bの夜のラウンジ。"
+  },
+  "mode": "dark",
+  "tags": [
+    "jazz",
+    "soul",
+    "lounge"
+  ],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

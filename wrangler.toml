@@ -1,0 +1,42 @@
+# aimusiclist 개인사이트 Worker 설정 (Deploy to Cloudflare 버튼 겸용)
+# 이 파일에는 비밀값을 절대 쓰지 않는다. 비밀번호·비밀키는 설치 뒤 사이트 화면과 R2에 자동으로 만들어진다.
+name = "aml-site"                 # Worker 이름. 설치 화면에서 바꿀 수 있다 → 주소가 https://<이름>.<내계정>.workers.dev
+main = "src/index.js"
+compatibility_date = "2025-10-01"
+workers_dev = true
+preview_urls = false              # 버전 미리보기 주소를 쓰지 않는다 (배포 때 경고 제거, 3-5)
+
+# 대시보드에서 추가한 변수(옛 방식 AML_SITE_ID·AML_SITE_SECRET·AML_ADMIN_TOKEN, 내 도메인 SITE_URL 등)를
+# 다시 배포할 때 지우지 않는다. (2단계부터 새로 설치하는 사이트는 이 값들이 필요 없다)
+keep_vars = true
+
+# R2 버킷 연결. 버튼 설치 때 이 이름으로 버킷이 자동으로 만들어진다(설치 화면에서 이름 변경 가능).
+# 버킷은 비공개로 둔다 (r2.dev 공개 주소를 켜지 말 것).
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "aml-music"
+
+# ── Stats (통계, 선택) ──────────────────────────────────────────────────────────
+# 3-12 통계: 재생·방문을 Cloudflare Analytics Engine 에 1줄씩 남긴다(무료 요금제 하루 10만 줄, 3개월 보관).
+# 3.14 부터 기본은 꺼짐: 계정에서 Analytics Engine 을 한 번도 켜지 않았으면 이 바인딩 때문에 배포가
+#   "You need to enable Analytics Engine [code: 10089]" 로 실패한다(설치·업데이트가 멈춤). 꺼져 있어도 사이트는 그대로, 통계·인기순만 없다.
+# 켜기: ① Cloudflare 대시보드 → Storage & databases → Analytics Engine → Create Dataset → 이름 aml_site_stats
+#       ② 아래 세 줄 맨 앞의 "# " 를 지우고 Commit (1~3분 뒤 다시 배포). "업데이트 받기"가 켠 상태를 지켜 준다.
+# [[analytics_engine_datasets]]
+# binding = "AML_STATS"
+# dataset = "aml_site_stats"
+
+[vars]
+# 우리사이트 API 주소. 바꾸지 않는다.
+AML_API_BASE = "https://aimusiclist.com/api/v1"
+# 3-10 스킨 둘러보기 목록 (meshmelo.com 정적 파일, 관리 화면 브라우저가 직접 읽는다). 바꾸지 않는다.
+SKIN_INDEX_URL = "https://meshmelo.com/skins/index.json"
+
+# 1분마다: ping 재시도 · aimusiclist 자동 등록 재시도(10분 간격) · 빠진 반영 처리. 무료 플랜 계정당 5개 중 1개.
+[triggers]
+crons = ["* * * * *"]
+
+# 정적 파일(관리 화면·방문자 JS·언어팩·기본 스킨). 배포할 때 자동으로 함께 올라간다.
+[assets]
+directory = "./public"
+binding = "ASSETS"

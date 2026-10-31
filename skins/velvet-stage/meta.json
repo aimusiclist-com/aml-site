@@ -1,0 +1,20 @@
+{
+  "schema": "skin-1",
+  "id": "velvet-stage",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Velvet Stage",
+    "ko": "벨벳 스테이지",
+    "ja": "ベルベット・ステージ"
+  },
+  "description": {
+    "en": "Intimate plum-and-rose ambience for voices under a single light.",
+    "ko": "한 줄기 조명 아래 목소리가 돋보이는 작은 무대.",
+    "ja": "一筋の光に照らされる歌声が主役の、小さく落ち着いたステージ。"
+  },
+  "mode": "dark",
+  "tags": ["dark", "plum", "vocal", "minimal"],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

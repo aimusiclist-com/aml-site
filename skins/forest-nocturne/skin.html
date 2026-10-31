@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#101C1A">
+<title>{{site_name}}</title>
+<style>
+  /* Forest Nocturne: evergreen calm, spare lines, and no moving decoration. */
+  :root {
+    --aml-bg: #101C1A;
+    --aml-panel: #1C2B27;
+    --aml-panel-2: #2A3D34;
+    --aml-text: #F0F7F3;
+    --aml-muted: #ADC7B9;
+    --aml-line: rgb(141 213 182 / .18);
+    --aml-glass: rgb(28 43 39 / .97);
+    --aml-accent: #8DD5B6;
+    --aml-accent-fill: #8DD5B6;
+    --aml-accent-ink: #101C1A;
+    --aml-font: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      "Pretendard Variable", Pretendard, "Apple SD Gothic Neo",
+      "Hiragino Sans", system-ui, "Segoe UI", Roboto,
+      "Noto Sans Thai", "Leelawadee UI", "Noto Sans Devanagari",
+      "Nirmala UI", sans-serif;
+    --aml-hero-a: 10%;
+    --aml-art-shadow: none;
+    --aml-viz-color: #8DD5B6;
+    --aml-viz-opacity: .2;
+    --aml-viz-gap: 3px;
+    --aml-max: 1100px;
+    --aml-player-left: 0;
+    --aml-modal-bg: #1C2B27;
+    --aml-modal-text: #F0F7F3;
+    --aml-card-bg: #1C2B27;
+    --aml-footer-color: #ADC7B9;
+    --aml-social-color: #8DD5B6;
+    --aml-ext-color: #ADC7B9;
+    color-scheme: dark;
+  }
+
+  .aml-kit { font-size: 16px; line-height: 1.65; letter-spacing: normal; }
+  .fn-wrap { display: flex; flex-direction: column; min-height: 100vh; }
+  .fn-side, .fn-main { display: contents; }
+
+  /* In narrow layouts the banner precedes the profile, navigation, and songs. */
+  .fn-wrap .aml-banner { order: 1; }
+  .fn-side .aml-hero { order: 2; }
+  .fn-nav { order: 3; }
+  .fn-wrap .aml-ad-top { order: 4; }
+  .fn-wrap .aml-content { order: 5; width: 100%; }
+  .fn-wrap .aml-footer { order: 6; }
+  .fn-wrap .aml-ad-left { order: 7; }
+
+  .fn-side .aml-hero { background: var(--aml-bg); }
+  .fn-side .aml-hero-more {
+    background: linear-gradient(90deg, transparent, var(--aml-bg) 1.6em);
+  }
+  .aml-kit .aml-hero-name {
+    font-size: 32px;
+    font-weight: 650;
+    letter-spacing: normal;
+  }
+  .aml-kit .aml-hero-meta { font-size: 13px; font-weight: 450; }
+  .aml-kit .aml-hero-desc { line-height: 1.55; }
+
+  .fn-nav {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--aml-line);
+    background: var(--aml-panel);
+  }
+  .aml-kit .aml-menu-item {
+    border: 1px solid transparent;
+    border-radius: 10px;
+    letter-spacing: normal;
+  }
+  .aml-kit .aml-menu-item:hover { background: var(--aml-panel-2); }
+  .aml-kit .aml-menu-item.is-active {
+    border-color: var(--aml-line);
+    background: var(--aml-panel-2);
+    color: var(--aml-accent);
+  }
+  .aml-kit .aml-lang-select { border-radius: 10px; }
+  .aml-kit .aml-section-title {
+    font-size: 20px;
+    font-weight: 650;
+    letter-spacing: normal;
+  }
+  .aml-kit .aml-list { gap: 10px; }
+  .aml-kit .aml-track {
+    height: 74px;
+    border: 1px solid var(--aml-line);
+    border-radius: 18px;
+    box-shadow: none;
+  }
+  .aml-kit .aml-track-title {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: normal;
+  }
+  .aml-kit .aml-track-artist { font-size: 13px; }
+  .aml-kit .aml-albums {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px 18px;
+  }
+  .aml-kit .aml-album-cover,
+  .aml-kit .aml-album-head .aml-album-cover {
+    border-radius: 12px;
+    box-shadow: none;
+  }
+  .aml-kit .aml-gb-form,
+  .aml-kit .aml-gb-post,
+  .aml-kit .aml-view-links .aml-social {
+    border: 1px solid var(--aml-line);
+    border-radius: 18px;
+    box-shadow: none;
+  }
+
+  @media (min-width: 1068px) {
+    body.aml-kit { --aml-player-left: 200px; }
+    .fn-wrap {
+      display: grid;
+      grid-template-columns: 200px minmax(0, 1fr);
+    }
+    .fn-side {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px 12px;
+      border-right: 1px solid var(--aml-line);
+      background: var(--aml-panel);
+    }
+    .fn-main { display: block; min-width: 0; }
+    .fn-side .aml-hero {
+      padding: 4px 2px 0;
+      background: var(--aml-panel);
+    }
+    .fn-side .aml-hero-in {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      max-width: 100%;
+      margin: 0;
+    }
+    .fn-side .aml-hero .aml-profile { width: 96px; height: 96px; }
+    .fn-side .aml-hero-name {
+      font-size: 32px;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+    .fn-side .aml-hero-meta { align-self: stretch; }
+    .fn-side .aml-hero-desc { max-width: 100%; margin: 0; }
+    .fn-side .aml-hero-more {
+      background: linear-gradient(90deg, transparent, var(--aml-panel) 1.6em);
+    }
+    .fn-side .aml-hero .aml-socials { width: 100%; margin-top: 4px; }
+    .fn-side .aml-hero-actions { flex-wrap: wrap; margin-top: 4px; }
+    .fn-nav {
+      position: static;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+    .fn-nav .aml-menu { flex-direction: column; gap: 4px; overflow: visible; }
+    .fn-nav .aml-menu-item {
+      height: 36px;
+      padding: 0 12px;
+      background: transparent;
+    }
+    .fn-nav .aml-menu-item:hover { background: var(--aml-panel-2); }
+    .fn-nav .aml-menu-item.is-active {
+      border-color: var(--aml-line);
+      background: var(--aml-panel-2);
+      color: var(--aml-accent);
+    }
+    .fn-main .aml-content { padding: 22px 32px 40px; }
+  }
+
+  @media (max-width: 733px) {
+    .fn-side .aml-hero { padding: 10px 16px; }
+    .aml-kit .aml-hero-name { font-size: 22px; }
+    .aml-kit .aml-section-title { font-size: 18px; }
+    .aml-kit .aml-list { gap: 5px; }
+    .aml-kit .aml-track { height: 64px; border-radius: 14px; }
+    .aml-kit .aml-albums {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px 12px;
+    }
+  }
+</style>
+</head>
+<body class="aml-kit">
+<div class="fn-wrap">
+  <aside class="fn-side">
+    {{hero}}
+    <div class="fn-nav">{{menu}}{{lang_select}}</div>
+    {{ad_left}}
+  </aside>
+  <div class="fn-main">
+    {{banner}}
+    {{ad_top}}
+    {{content}}
+    {{footer}}
+  </div>
+</div>
+{{player}}
+</body>
+</html>

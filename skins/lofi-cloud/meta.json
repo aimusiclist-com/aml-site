@@ -1,0 +1,24 @@
+{
+  "schema": "skin-1",
+  "id": "lofi-cloud",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Lo-fi Cloud",
+    "ko": "로파이 클라우드",
+    "ja": "ローファイ・クラウド"
+  },
+  "description": {
+    "en": "A calm lavender-and-mint pastel room for lo-fi, chill and ambient music.",
+    "ko": "라벤더 안개와 차분한 민트가 어우러진 로파이·칠·앰비언트 스킨.",
+    "ja": "ラベンダーとミントの淡い色に包まれる、ローファイとチルの静かな空間。"
+  },
+  "mode": "light",
+  "tags": [
+    "lofi",
+    "chill",
+    "pastel"
+  ],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

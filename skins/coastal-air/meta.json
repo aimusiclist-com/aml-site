@@ -1,0 +1,20 @@
+{
+  "schema": "skin-1",
+  "id": "coastal-air",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Coastal Air",
+    "ko": "코스털 에어",
+    "ja": "コースタル・エア"
+  },
+  "description": {
+    "en": "Open, breezy space for songs that feel like the sea at noon.",
+    "ko": "정오의 바다처럼 가볍고 시원하게 열리는 음악 공간.",
+    "ja": "真昼の海のように軽やかで爽やかな音楽の空間。"
+  },
+  "mode": "light",
+  "tags": ["coastal", "airy", "minimal"],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

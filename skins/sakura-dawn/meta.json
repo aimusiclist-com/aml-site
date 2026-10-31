@@ -1,0 +1,20 @@
+{
+  "schema": "skin-1",
+  "id": "sakura-dawn",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Sakura Dawn",
+    "ko": "사쿠라 던",
+    "ja": "サクラ・ドーン"
+  },
+  "description": {
+    "en": "Soft blush tones frame intimate melodies without decoration overload.",
+    "ko": "장식은 덜고 섬세한 멜로디만 돋보이게 하는 연분홍 새벽.",
+    "ja": "淡い桜色の余白が、繊細なメロディーを静かに引き立てるスキン。"
+  },
+  "mode": "light",
+  "tags": ["blush", "minimal", "dream-pop"],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

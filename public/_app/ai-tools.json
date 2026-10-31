@@ -1,0 +1,18 @@
+{"schema":"ai-tools-1","tools":[
+{"id":"suno","name":"Suno","kind":"web"},
+{"id":"udio","name":"Udio","kind":"web"},
+{"id":"stable-audio","name":"Stable Audio","kind":"web"},
+{"id":"elevenlabs","name":"ElevenLabs Music","kind":"web"},
+{"id":"producer-ai","name":"Producer.ai","kind":"web"},
+{"id":"mureka","name":"Mureka","kind":"web"},
+{"id":"lyria","name":"Google Lyria","kind":"web"},
+{"id":"aiva","name":"AIVA","kind":"web"},
+{"id":"soundraw","name":"Soundraw","kind":"web"},
+{"id":"boomy","name":"Boomy","kind":"web"},
+{"id":"mubert","name":"Mubert","kind":"web"},
+{"id":"beatoven","name":"Beatoven.ai","kind":"web"},
+{"id":"loudly","name":"Loudly","kind":"web"},
+{"id":"comfyui","name":"ComfyUI","kind":"local"},
+{"id":"ace-step","name":"ACE-Step","kind":"local"},
+{"id":"other","name":"Other","kind":"other"}
+]}

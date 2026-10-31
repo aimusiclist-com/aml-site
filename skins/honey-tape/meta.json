@@ -1,0 +1,20 @@
+{
+  "schema": "skin-1",
+  "id": "honey-tape",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "Honey Tape",
+    "ko": "허니 테이프",
+    "ja": "ハニー・テープ"
+  },
+  "description": {
+    "en": "A tactile analog mood with the clarity of a modern music app.",
+    "ko": "따뜻한 아날로그 촉감과 현대적인 가독성을 함께 담은 스킨.",
+    "ja": "アナログの温かみと現代的な見やすさを両立したスキン。"
+  },
+  "mode": "light",
+  "tags": ["light", "retro", "warm", "analog", "city-pop"],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0D1022">
+<title>{{site_name}}</title>
+<style>
+  /* Electric Pulse: one violet signal over a quiet midnight canvas. */
+  :root {
+    --aml-bg: #0D1022;
+    --aml-panel: #1A1F3B;
+    --aml-panel-2: #292F50;
+    --aml-text: #F3F4FF;
+    --aml-muted: #B5BEDD;
+    --aml-line: rgb(181 190 221 / .16);
+    --aml-glass: rgb(26 31 59 / .97);
+    --aml-accent: #A99AFF;
+    --aml-accent-fill: #A99AFF;
+    --aml-accent-ink: #0D1022;
+    --aml-font: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      "Pretendard Variable", Pretendard, "Apple SD Gothic Neo",
+      "Hiragino Sans", system-ui, "Segoe UI", Roboto,
+      "Noto Sans Thai", "Leelawadee UI", "Noto Sans Devanagari",
+      "Nirmala UI", sans-serif;
+    --aml-hero-a: 8%;
+    --aml-art-shadow: none;
+    --aml-viz-color: #A99AFF;
+    --aml-viz-opacity: .22;
+    --aml-viz-gap: 3px;
+    --aml-max: 1100px;
+    --aml-player-left: 0;
+    --aml-modal-bg: #1A1F3B;
+    --aml-modal-text: #F3F4FF;
+    --aml-card-bg: #1A1F3B;
+    --aml-footer-color: #B5BEDD;
+    --aml-social-color: #A99AFF;
+    --aml-ext-color: #B5BEDD;
+    color-scheme: dark;
+  }
+
+  .aml-kit { font-size: 15px; line-height: 1.45; }
+  .aml-kit .aml-hero {
+    padding: 20px 32px 18px;
+    background: var(--aml-bg);
+    border-bottom: 1px solid var(--aml-line);
+  }
+  .aml-kit .aml-hero-in {
+    grid-template-columns: 84px minmax(0, 1fr);
+    column-gap: 18px;
+  }
+  .aml-kit .aml-hero .aml-profile { width: 84px; height: 84px; }
+  .aml-kit .aml-hero-name {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: normal;
+  }
+  .aml-kit .aml-hero-meta { font-size: 13px; font-weight: 500; }
+  .aml-kit .aml-hero-desc { margin-top: 4px; }
+  .aml-kit .aml-hero .aml-socials { margin-top: 4px; }
+  .aml-kit .aml-hero-actions { margin-top: 8px; }
+  /* The description fade ends on the same surface as the hero, never panel. */
+  .aml-kit .aml-hero-more {
+    background: linear-gradient(90deg, transparent, var(--aml-bg) 1.6em);
+  }
+
+  /* Opaque horizontal navigation; only the active tab gets a 2px rule. */
+  .aml-kit .aml-bar {
+    background: var(--aml-panel);
+    border-bottom: 1px solid var(--aml-line);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .aml-kit .aml-menu-item {
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    letter-spacing: .05em;
+  }
+  .aml-kit .aml-menu-item:hover { background: var(--aml-panel-2); }
+  .aml-kit .aml-menu-item.is-active {
+    border-bottom-color: var(--aml-accent);
+    background: transparent;
+    color: var(--aml-text);
+    box-shadow: none;
+  }
+  .aml-kit .aml-lang-select { border-radius: 6px; }
+  .aml-kit .aml-btn,
+  .aml-kit .aml-play-all,
+  .aml-kit .aml-gb-submit { border-radius: 6px; }
+
+  .aml-kit .aml-section-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: normal;
+  }
+  .aml-kit .aml-list { gap: 6px; }
+  .aml-kit .aml-track {
+    height: 60px;
+    border: 0;
+    border-inline-start: 2px solid transparent;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+  .aml-kit .aml-track.is-playing {
+    border-inline-start-color: var(--aml-accent);
+  }
+  .aml-kit .aml-play { border-radius: 6px; }
+  .aml-kit .aml-track-title {
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: normal;
+  }
+  .aml-kit .aml-track-artist { font-size: 13px; }
+  .aml-kit .aml-albums {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 22px 16px;
+  }
+  .aml-kit .aml-album-cover,
+  .aml-kit .aml-album-head .aml-album-cover {
+    border-radius: 10px;
+    box-shadow: none;
+  }
+  .aml-kit .aml-gb-form,
+  .aml-kit .aml-gb-post,
+  .aml-kit .aml-view-links .aml-social {
+    border-radius: 10px;
+    box-shadow: none;
+  }
+
+  @media (max-width: 733px) {
+    .aml-kit .aml-hero { padding: 12px 16px; }
+    .aml-kit .aml-hero-in { grid-template-columns: 72px minmax(0, 1fr); }
+    .aml-kit .aml-hero .aml-profile { width: 72px; height: 72px; }
+    .aml-kit .aml-hero-name { font-size: 22px; }
+    .aml-kit .aml-section-title { font-size: 18px; }
+    .aml-kit .aml-track { height: 60px; }
+    .aml-kit .aml-albums {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px 12px;
+    }
+  }
+</style>
+</head>
+<body class="aml-kit">
+{{banner}}
+{{hero}}
+<div class="aml-bar">{{menu}}{{lang_select}}</div>
+{{ad_top}}
+{{content}}
+{{footer}}
+{{player}}
+</body>
+</html>

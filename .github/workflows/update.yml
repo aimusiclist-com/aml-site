@@ -1,0 +1,57 @@
+# 업데이트 받기 — GitHub 화면에서 버튼 한 번으로 새 버전을 가져온다 (채팅 3-8, 자세히: docs/업데이트.md)
+# Update from template — one button on GitHub gets the new version of this site program.
+#
+# 누르는 곳: 내 저장소 → Actions 탭 → 왼쪽 "Update from template (업데이트 받기)" → Run workflow → 초록 Run workflow
+# 하는 일:  우리 공개 템플릿 저장소(.github/aml-update.json 의 template)의 최신 태그를 받아,
+#           wrangler.toml 의 Worker 이름·R2 버킷 이름·내 [vars], .github/aml-keep.txt 에 적은 파일은 그대로 두고 나머지를 바꿔 커밋한다.
+#           → Cloudflare(Workers Builds)가 그 커밋을 보고 1~3분 안에 자동으로 다시 배포한다. 곡·설정(R2)은 그대로.
+# 멈출 때:  충돌(내가 직접 고친 프로그램 파일)·검사 실패면 아무것도 바꾸지 않고 이유를 보여 준다(Summary).
+# 보안:    Cloudflare 토큰을 쓰지 않는다. 이 저장소에 쓰는 권한(GITHUB_TOKEN, contents: write)만 쓴다.
+#          GitHub 규칙상 이 버튼은 .github/workflows/ 안의 파일을 바꿀 수 없다(바뀐 것이 있으면 안내만 한다).
+name: Update from template (업데이트 받기)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag, e.g. v3.9.0 (empty = latest) / 버전 태그 (비우면 최신)'
+        required: false
+        default: ''
+      force:
+        description: 'Overwrite program files I changed myself / 내가 고친 프로그램 파일도 새 것으로 덮기'
+        type: boolean
+        required: false
+        default: false
+      template:
+        description: 'Template repository owner/name (empty = .github/aml-update.json) / 템플릿 저장소 (비우면 설정 파일)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aml-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Get my repository / 내 저장소 받기
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # 실제 일은 모두 tools/update-from-template.js 가 한다 (받기·충돌 확인·검사·보존·커밋·push).
+      # 이 파일은 거의 바뀌지 않게 이 한 줄만 둔다.
+      - name: Update / 업데이트
+        env:
+          AML_VERSION: ${{ inputs.version }}
+          AML_FORCE: ${{ inputs.force }}
+          AML_TEMPLATE: ${{ inputs.template }}
+        run: node tools/update-from-template.js --repo . --commit --out "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,24 @@
+{
+  "schema": "skin-1",
+  "id": "city-pop",
+  "version": "1.0.0",
+  "spec": "1.5",
+  "name": {
+    "en": "City Pop",
+    "ko": "시티 팝",
+    "ja": "シティポップ"
+  },
+  "description": {
+    "en": "Retro sunset coral and teal on a cream city-pop canvas, with a single neon skyline stripe.",
+    "ko": "크림색 바탕과 노을 코랄·청록 포인트, 6px 레트로 노을 띠가 있는 시티 팝 스킨.",
+    "ja": "クリーム色に夕焼けコーラルと青緑を合わせた、80年代風シティポップのスキン。"
+  },
+  "mode": "light",
+  "tags": [
+    "citypop",
+    "retro",
+    "synth"
+  ],
+  "author": "aimusiclist",
+  "license": "CC0-1.0"
+}
