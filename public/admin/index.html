@@ -58,6 +58,9 @@
   .skin { border: 0; background: var(--bg); border-radius: var(--radius); padding: 14px; }
   .skin.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .msg { margin: 8px 0 0; font-size: 14px; } .msg.err { color: var(--err); } .msg.ok { color: var(--ok); }
+  .msg.warn { color: var(--warn); }   /* 3-22 */
+  .upguide { position: relative; border: 2px solid var(--accent); padding-right: 44px; margin: 0 0 12px; } .upguide-x { position: absolute; top: 8px; right: 8px; } .queue .tagline { font-size: 12px; color: var(--text); }   /* 3-23 */
+  .aipaste { margin: 16px 0 8px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: var(--radius); } .aipaste label a { font-weight: 400; margin-left: 6px; }
   #toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 14px; max-width: 90vw; z-index: 20; }
   #toast.err { background: var(--err); color: #fff; }
   .langbar { display: flex; justify-content: flex-end; margin-bottom: 8px; }
@@ -163,10 +166,10 @@
   .sw input:checked + .sw-ui { background: var(--ok); box-shadow: none; }
   .sw input:checked + .sw-ui::after { transform: translateX(16px); }
   .sw input:focus-visible + .sw-ui { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 40%, transparent); }
-  .sw-tx { color: var(--muted); } .sw input:checked ~ .sw-tx { color: var(--text); font-weight: 600; }
+  .pub-th small { display: block; font-size: 11px; font-weight: 400; color: var(--muted); white-space: nowrap; }
   label.sw:has(input:disabled) { cursor: default; opacity: .55; }
   #pub-tip { margin: 0 0 8px; }
-  @media (max-width: 600px) { label.sw { flex-direction: column; gap: 3px; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; font-size: 10.5px; line-height: 1.2; text-align: center; width: 62px; } #t-table .trow > span { min-width: 0; overflow-wrap: anywhere; } }
+  @media (max-width: 600px) { .pub-th small { white-space: normal; } #t-table .trow > span { min-width: 0; overflow-wrap: anywhere; } }
   /* 3-7: 곡 언어 여러 곡 · SNS */
   #lang-note, #pubmin-note { margin: 0 0 12px; }
   .lang-tx { color: var(--text); }
@@ -280,7 +283,7 @@
 <div id="img-editor" class="imged" hidden></div>
 <div id="toast" hidden role="status"></div>
 
-<script src="/_app/strings.js?v=13"></script>
-<script src="/_app/admin.js?v=18"></script>
+<script src="/_app/strings.js?v=15"></script>
+<script src="/_app/admin.js?v=20"></script>
 </body>
 </html>

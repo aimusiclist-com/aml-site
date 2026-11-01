@@ -337,6 +337,257 @@
     if (two.disabled || two.value === e.target.value) two.value = '';
   });
 
+  // ── 3-22 AI 결과 붙여넣기: AI 가 지침서(aimusiclist /create-site/genre-guide)를 읽고 답 맨 끝에 쓰는 한 줄
+  //    "main | sub1, sub2 | lang | mood1, mood2" → 장르 3칸·곡 언어·분위기(확장 항목 mood, fields.json 을 받은 사이트만)를 채운다.
+  //    모양 원본: aimusiclist tools/build_genre_guide.php. 관대하게 읽기: 전각 ｜·대소문자·공백·굵게/따옴표, 앞뒤 설명 줄,
+  //    줄바꿈이 사라진 붙여넣기(한 줄 입력칸)까지 — 마지막 "|" 3개짜리 조각을 찾는다. 모르는 값은 그 값만 건너뛰고 알려 준다.
+  function aiSquash(s) { return String(s).toLowerCase().replace(/&/g, 'n').replace(/_and_/g, 'n').replace(/[^a-z0-9]/g, ''); }
+  function aiLine(text) {
+    var s = String(text || '').normalize ? String(text || '').normalize('NFKC') : String(text || '');
+    s = s.replace(/[│¦]/g, '|').replace(/[、，]/g, ',').replace(/[*`"“”'‘’]/g, ' ');
+    var lines = s.split(/\r?\n/), seg = null;
+    for (var i = lines.length - 1; i >= 0 && !seg; i--) {
+      var l = lines[i].trim().replace(/^\|+|\|+$/g, '');   // 표 모양 | a | b | c | d | 도
+      var p = l.split('|');
+      if (p.length >= 4) seg = p.slice(-4);   // 앞에 설명이 붙어 있으면 마지막 4조각
+    }
+    if (!seg) return null;
+    var words = function (part) {   // 쉼표로 나눈 조각들 (빈 조각 버림)
+      return part.split(/[,;\/]+/).map(function (x) { return x.trim(); }).filter(Boolean);
+    };
+    var main = seg[0].trim().split(/[\s:：=]+/).filter(Boolean).pop() || '';
+    return { main: main, subs: words(seg[1]), langs: words(seg[2]), moods: words(seg[3]) };
+  }
+  // ── 3-23 제목 괄호 읽기 — "곡 제목 (메인, 보조1, 보조2; 분위기1, 분위기2, 언어코드) [1].wav"
+  //    붙여넣기 칸과 업로드 파일 이름이 이 함수 하나(tagRead)를 쓴다. 목록은 인자 cx 로만 받는다(시험: dev/t23/unit.mjs).
+  //    cx = { g: {key: {names:{en,ko,..}, main, is_main}}, moods: [{key,label}] | null, moodMax, langs: ['en', ...] }
+  //    ";" 앞 = 장르(첫 장르 = 메인), 뒤 = 분위기 + 언어코드(맨 끝). ";" 가 없으면 하나로 보고 장르 → 분위기 → 언어 순으로 알아본다(Chill 은 장르).
+  //    이름 = 우리사이트 영어 표시 이름(R&B, Lo-fi Hip-hop, Folk & Acoustic …) · 키(rnb) · 다른 언어 이름. 대소문자·공백·하이픈 무시.
+  //    파일 이름에서 & 가 _ 로 바뀐 경우(R_B, Drum _ Bass), ";" 가 "_ " 나 "," 로 바뀐 경우도 읽는다. 끝의 [1] · (1) 과 (괄호가 읽히면) 맨 앞 트랙 번호 "0 " 는 지운다.
+  //    옛 3-22 모양 "main | subs | lang | moods" 도 그대로 읽는다(붙여넣기만).
+  function tagNorm(s) {
+    return String(s).normalize('NFKC').toLowerCase().replace(/(^|[\s_\-])and(?=[\s_\-]|$)/g, '$1&')
+      .replace(/&/g, 'n').replace(/[\s\-_.·・'’"`*()\[\]]+/g, '');
+  }
+  var TAG_ZXX = ['instrumental', 'inst', 'none', 'nolyrics', 'novocals', 'zxx'];
+  function tagLists(cx) {
+    var g = [], amp = [], add = function (arr, key, names) {
+      var n = [tagNorm(key)];
+      Object.keys(names || {}).forEach(function (l) { var v = names[l]; if (typeof v === 'string' && v) { n.push(tagNorm(v)); if (l === 'en' && v.indexOf('&') > 0) amp.push(v); } });
+      arr.push({ key: key, n: n });
+    };
+    Object.keys(cx.g || {}).forEach(function (k) { add(g, k, (cx.g[k] || {}).names); });
+    var m = [];
+    (cx.moods || []).forEach(function (o) { add(m, o.key, o.label); });
+    amp.sort(function (a, b) { return b.length - a.length; });   // Contemporary R&B 를 R&B 보다 먼저
+    return { g: g, m: m, amp: amp, langs: cx.langs || [] };
+  }
+  function tagFind(w, list) {
+    var q = tagNorm(w);
+    if (!q) return null;
+    for (var i = 0; i < list.length; i++) { if (list[i].n.indexOf(q) >= 0) return list[i].key; }
+    return null;
+  }
+  function tagLang(w, codes) {
+    if (TAG_ZXX.indexOf(tagNorm(w)) >= 0) return codes.indexOf('zxx') >= 0 ? 'zxx' : null;
+    var c = String(w).trim().toLowerCase().split(/[-_]/)[0];   // pt-BR → pt
+    return /^[a-z]{2,3}$/.test(c) && codes.indexOf(c) >= 0 ? c : null;
+  }
+  // "R_B" · "R and B" · "Drum _ Bass" → 표시 이름 그대로 (나누기 전에)
+  function tagFixAmp(s, amp) {
+    amp.forEach(function (n) {
+      var p = n.split('&').map(function (x) { return x.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[\s\-]+/g, '[\\s_\\-]*'); });
+      s = s.replace(new RegExp('(^|[^a-z0-9])' + p[0] + '\\s*(?:&|_+|and)\\s*' + p[1] + '(?![a-z0-9])', 'gi'), function (x, pre) { return pre + n; });
+    });
+    return s;
+  }
+  function tagWords(part) {
+    return String(part).split(/\s*[,，、]\s*|\s+_+\s*|_+\s+/).map(function (x) { return x.trim(); }).filter(Boolean);
+  }
+  // 낱말 목록 → 키. side: G 장르만 · M 분위기만 · L 언어만 · g 장르→분위기→언어 · m 언어→분위기→장르
+  function tagResolve(toks, cx, L) {
+    var r = { main: '', subs: [], langs: [], moods: [], bad: { genre: [], lang: [], mood: [] }, fixed: '', badMain: '', dropped: [], noMood: false, any: false };
+    var max = cx.moodMax || 2, gseen = false;
+    var one = function (w, side) {
+      var order = { G: 'g', M: 'm', L: 'l', g: 'gml', m: 'lmg' }[side], k = null, kind = '';
+      for (var i = 0; i < order.length && !k; i++) {
+        kind = order.charAt(i);
+        k = kind === 'g' ? tagFind(w, L.g) : kind === 'm' ? tagFind(w, L.m) : tagLang(w, L.langs);
+      }
+      if (!k && w.indexOf('_') > 0 && side !== 'G' && side !== 'M' && side !== 'L') {   // "Soul_Sad" 처럼 붙은 경우
+        var ps = w.split('_').filter(Boolean);
+        if (ps.length > 1 && ps.every(function (p) { return tagFind(p, L.g) || tagFind(p, L.m) || tagLang(p, L.langs); })) { ps.forEach(function (p) { one(p, side); }); return; }
+      }
+      if (!k) {
+        if (side === 'g' && !gseen && !r.main && !r.moods.length && !r.langs.length) { r.badMain = w; gseen = true; return; }
+        if (side === 'G' && !gseen) { r.badMain = w; gseen = true; return; }
+        var bk = side === 'L' || ((side === 'm' || side === 'g') && /^[a-z]{2,3}(-[a-zA-Z0-9]+)?$/.test(w)) ? 'lang' : side === 'M' || side === 'm' ? 'mood' : 'genre';
+        if (bk === 'mood' && !cx.moods) { r.noMood = true; return; }
+        r.bad[bk].push(w); return;
+      }
+      r.any = true;
+      if (kind === 'g') {
+        if (!gseen) {
+          gseen = true;
+          var e = cx.g[k] || {};
+          if (e.is_main) r.main = k;
+          else if (e.main) { r.main = e.main; r.fixed = k; r.subs.push(k); }
+          return;
+        }
+        if (!r.main || k === r.main || r.subs.indexOf(k) >= 0) return;
+        if (r.subs.length < 2) r.subs.push(k); else r.dropped.push(k);
+      } else if (kind === 'm') {
+        if (r.moods.indexOf(k) >= 0) return;
+        if (r.moods.length < max) r.moods.push(k); else r.dropped.push(k);
+      } else if (r.langs.indexOf(k) < 0) r.langs.push(k);
+    };
+    toks.forEach(function (x) { one(x[0], x[1]); });
+    if (r.langs.indexOf('zxx') >= 0) r.langs = ['zxx'];
+    if (r.langs.length > 2) { r.dropped = r.dropped.concat(r.langs.slice(2)); r.langs = r.langs.slice(0, 2); }
+    if (r.badMain) { r.main = ''; r.subs = []; r.fixed = ''; }   // 메인을 못 읽으면 장르는 그대로 (3-22 와 같음)
+    return r;
+  }
+  // 괄호 안 글자 → 낱말·자리
+  function tagToks(tag, L) {
+    var s = tagFixAmp(String(tag), L.amp), at = s.search(/[;；]/), toks = [];
+    if (at < 0) { tagWords(s).forEach(function (w) { toks.push([w, 'g']); }); return toks; }
+    tagWords(s.slice(0, at)).forEach(function (w) { toks.push([w, 'g']); });
+    tagWords(s.slice(at + 1).replace(/[;；]/g, ',')).forEach(function (w) { toks.push([w, 'm']); });
+    return toks;
+  }
+  // 제목 끝의 "[1]" · " (1)" 를 지우고 마지막 "( … )" 를 떼어 낸다
+  function tagSplitTitle(s) {
+    s = String(s).replace(/（/g, '(').replace(/）/g, ')').replace(/［/g, '[').replace(/］/g, ']').trim();
+    for (;;) { var x = s.replace(/\s*(\[\s*\d+\s*\]|\(\s*\d+\s*\))\s*$/, ''); if (x === s) break; s = x; }
+    var m = s.match(/^([\s\S]*?)\s*\(([^()]*)\)$/);
+    return m ? { title: m[1].trim(), tag: m[2], rest: s } : { title: s, tag: null, rest: s };
+  }
+  function tagOk(r, tag) {   // 괄호가 정말 태그인지 ("(Live)"·"(feat. X)" 는 제목 그대로)
+    if (!r.any || r.badMain) return !!(r.any && /[;；]/.test(tag));
+    if (r.main) return /[;；,，_]/.test(tag) || !r.fixed;
+    return /[;；]/.test(tag);
+  }
+  // mode 'file': 파일 이름 (확장자·[1]·(1) 를 떼고 괄호만) / 'paste': 붙여넣기 (옛 | 줄 → 괄호 줄 → 줄 전체)
+  function tagRead(text, cx, mode) {
+    var L = tagLists(cx), r, sp;
+    if (mode === 'file') {
+      sp = tagSplitTitle(String(text || '').replace(/\.[A-Za-z0-9]{2,5}$/, ''));
+      if (sp.tag == null) return { title: sp.title, tag: false };
+      r = tagResolve(tagToks(sp.tag, L), cx, L);
+      if (!tagOk(r, sp.tag)) return { title: sp.rest, tag: false };
+      // 맨 앞 트랙 번호(Suno Multitrack zip 의 "0 곡 제목.wav", "01 ", "1. ", "1 - ")도 지운다 — 괄호 제목이 읽힌 파일만 ("7 Rings.wav" 같은 괄호 없는 제목은 그대로)
+      var tt = (sp.title || sp.rest).replace(/^\d{1,3}(?:\s*[.\-–—]\s*|\s+)(?=\S)/, '');
+      r.title = tt || sp.title || sp.rest; r.tag = true; r.fmt = 'paren';
+      return r;
+    }
+    var bar = aiLine(text);
+    if (bar) {
+      var toks = [[bar.main, 'G']];
+      bar.subs.forEach(function (w) { toks.push([w, 'G']); });
+      bar.langs.forEach(function (w) { toks.push([w, 'L']); });
+      bar.moods.forEach(function (w) { toks.push([w, 'M']); });
+      r = tagResolve(toks, cx, L); r.fmt = 'bar'; r.tag = true;
+      return r;
+    }
+    var lines = String(text || '').replace(/[*`"“”]/g, ' ').split(/\r?\n/).map(function (x) { return x.trim(); }).filter(Boolean);
+    // 끝에서부터 괄호 묶음을 찾는다 — 한 줄 칸에 붙여 넣으면 줄바꿈이 사라져 괄호 뒤에 사용법 글이 이어질 수 있다
+    for (var i = lines.length - 1; i >= 0; i--) {
+      var line = lines[i].replace(/（/g, '(').replace(/）/g, ')'), groups = [], re = /\(([^()]*)\)/g, g;
+      while ((g = re.exec(line))) groups.push(g);
+      for (var j = groups.length - 1; j >= 0; j--) {
+        r = tagResolve(tagToks(groups[j][1], L), cx, L);
+        if (tagOk(r, groups[j][1])) {
+          r.title = line.slice(0, groups[j].index).replace(/^.*[.!?。！？:：]\s*/, '').trim();
+          r.fmt = 'paren'; r.tag = true; return r;
+        }
+      }
+    }
+    if (!lines.length) return null;
+    r = tagResolve(tagToks(lines[lines.length - 1], L), cx, L); r.fmt = 'plain'; r.tag = r.any;
+    return r.any ? r : null;   // 아무것도 못 읽으면 "결과 줄을 찾지 못했어요"
+  }
+  // 글자 하나 → 목록 키 (그대로 · 소문자 · 기호를 뺀 모양 · 조각 안 낱말 중 하나)
+  function aiKey(word, keys) {
+    var w = word.toLowerCase().replace(/[.)(\]\[]+$|^[.)(\]\[]+/g, '').trim();
+    if (keys.indexOf(w) >= 0) return w;
+    var q = aiSquash(w), hit = keys.filter(function (k) { return aiSquash(k) === q; })[0];
+    if (hit) return hit;
+    var parts = w.split(/\s+/);
+    for (var i = 0; i < parts.length; i++) { if (keys.indexOf(parts[i]) >= 0) return parts[i]; }
+    return null;
+  }
+  var AI_ZXX = ['instrumental', 'inst', 'none', 'nolyrics', 'novocals'];
+  function aiLangPick(word) {
+    var codes = S.songLangs.map(function (l) { return l.code; });
+    var w = word.toLowerCase().trim();
+    if (AI_ZXX.indexOf(aiSquash(w)) >= 0) return codes.indexOf('zxx') >= 0 ? 'zxx' : null;
+    return aiKey(w.split('-')[0], codes) || aiKey(w, codes);   // pt-BR → pt
+  }
+  // prefix: 'up' (업로드: 장르 ug·언어 ul·추가 정보 up) · 'te' (곡 수정: g·tl·te)
+  var AI_P = { up: ['ug', 'ul', 'up'], te: ['g', 'tl', 'te'] };
+  function amlBase() {   // 우리사이트 주소 (api_base 에서 /api/v1 을 뗀 것)
+    var base = String((S.ui && S.ui.api_base) || '').replace(/\/api\/v\d+$/, '');
+    return /^https?:\/\//.test(base) ? base : 'https://aimusiclist.com';
+  }
+  function guidePage() { return amlBase() + (AML.lang && AML.lang !== 'en' ? '/' + AML.lang : '') + '/create-site/genre-guide'; }   // 화면 언어 접두어
+  function guideFile() { return amlBase() + '/dl/genre-guide.txt'; }   // 파일은 언어와 상관없이 한 주소
+  function aiPasteBox(prefix) {
+    var guide = guidePage();
+    return '<div class="aipaste"><label for="' + prefix + '-aip">' + esc(t('aipaste.label')) +
+      ' <a class="muted" href="' + esc(guide) + '" target="_blank" rel="noopener">' + esc(t('aipaste.guide')) + ' ↗</a></label>' +
+      '<div class="row" style="margin:0"><input id="' + prefix + '-aip" type="text" class="grow" autocomplete="off" spellcheck="false" placeholder="' + esc(t('aipaste.placeholder')) + '">' +
+      '<button type="button" data-act="ai-paste" data-p="' + prefix + '">' + esc(t('aipaste.apply')) + '</button></div>' +
+      '<p class="muted" style="margin:4px 0 0">' + esc(t('aipaste.help')) + '</p>' +
+      '<p id="' + prefix + '-aip-msg" class="msg" role="status" style="margin:4px 0 0"></p></div>';
+  }
+  function setSel(id, v) { var el = $(id); if (el) el.value = v; return !!el; }
+  // 3-23 장르·분위기·언어 목록 (tagRead 에 넘기는 값). 분위기는 우리사이트 fields.json(mood) 을 받은 사이트만
+  function moodField() { return extFields('track').filter(function (x) { return x.key === 'mood' && x.known && x.type === 'multiselect'; })[0] || null; }
+  function tagCx() {
+    var f = moodField();
+    return { g: S.gIdx || {}, moods: f ? f.options : null, moodMax: f ? (f.max_select || 5) : 2, langs: (S.songLangs || []).map(function (l) { return l.code; }) };
+  }
+  function aiPaste(prefix) {
+    var ids = AI_P[prefix], msg = $(prefix + '-aip-msg'), raw = $(prefix + '-aip').value;
+    var say = function (cls, lines) { msg.className = 'msg ' + cls; msg.innerHTML = lines.map(esc).join('<br>'); };
+    if (!raw.trim()) return say('err', [t('aipaste.empty')]);
+    var r = tagRead(raw, tagCx(), 'paste');   // 3-23: 괄호 모양 + 옛 | 모양 (같은 함수)
+    if (!r || (!r.any && !r.badMain)) return say('err', [t('aipaste.notfound')]);
+    var done = [], warn = [];
+    if (r.fixed) warn.push(t('aipaste.fixed_main', { v: r.fixed, main: gName(r.main) }));   // 세부 장르를 메인에 썼으면 → 그 위 메인 + 추가 첫 칸
+    if (r.badMain) warn.push(t('aipaste.bad_main', { v: r.badMain }));
+    else if (r.main) {   // 장르: 메인이 맞아야 세 칸을 바꾼다 (틀리면 장르는 그대로)
+      setSel(ids[0] + '0', r.main); setSel(ids[0] + '1', r.subs[0] || ''); setSel(ids[0] + '2', r.subs[1] || '');
+      done.push(t('aipaste.w.genre'));
+    }
+    if (r.bad.genre.length) warn.push(t('aipaste.bad_genre', { v: r.bad.genre.join(', ') }));
+    // 곡 언어: 비어 있으면 그대로. zxx(연주곡)는 혼자만, 최대 2개
+    if (r.langs.length) {
+      var a = $(ids[1] + '0'), b = $(ids[1] + '1');
+      if (a) {
+        a.value = r.langs[0];
+        if (b) { b.disabled = r.langs[0] === 'zxx'; b.value = r.langs[1] || ''; }
+        done.push(t('aipaste.w.lang'));
+      }
+    } else if (!r.bad.lang.length) warn.push(t('aipaste.no_lang'));
+    if (r.bad.lang.length) warn.push(t('aipaste.bad_lang', { v: r.bad.lang.join(', ') }));
+    // 분위기: 확장 항목 mood 가 있는 사이트만 (우리사이트 fields.json 을 받은 경우)
+    var f = moodField(), box = f && $(xid(ids[2], 'mood') + '-o');
+    if (r.noMood || (r.moods.length && !box)) warn.push(t('aipaste.no_mood_field'));
+    else if (r.moods.length) {
+      var max = f.max_select || 5;
+      Array.prototype.forEach.call(box.querySelectorAll('input[type=checkbox]'), function (c) {
+        c.checked = r.moods.indexOf(c.value) >= 0; c.disabled = !c.checked && r.moods.length >= max;
+      });
+      done.push(t('aipaste.w.mood'));
+    }
+    if (r.bad.mood.length) warn.push(t('aipaste.bad_mood', { v: r.bad.mood.join(', ') }));
+    if (r.dropped.length) warn.push(t('aipaste.dropped', { v: r.dropped.join(', ') }));
+    if (!done.length) return say('err', warn.length ? warn : [t('aipaste.notfound')]);
+    say(warn.length ? 'warn' : 'ok', [t('aipaste.done', { what: done.join(' · ') })].concat(warn));
+  }
+  AML.aiLine = aiLine; AML.tagRead = tagRead;   // 시험용 (dev/t22 · dev/t23)
+
   // ── 3-8 확장 항목 "추가 정보" (fields.json 정상본 → 입력 칸) ─────────────────────────
   // 서버(src/fields.js)가 이미 정리한 모양: { key, scope, type, status, known, label:{}, help:{}, options:[{key,label}], max_length, min, max, max_select, display }
   function normFields(f) {
@@ -1053,7 +1304,7 @@
       var forced = inAmlAlbum(x.id);
       return '<tr data-title="' + esc(x.title.toLowerCase()) + '" data-id="' + esc(x.id) + '"' + (x.langs ? '' : ' data-nolang="1"') + '>' +
         '<td><input type="checkbox" class="sel" data-act="sel-track" data-id="' + esc(x.id) + '"' + (S.sel[x.id] ? ' checked' : '') + ' aria-label="' + esc(t('track.col.select')) + '"></td>' +
-        '<td>' + pubSw('aml-track', x.id, x.aml || forced, forced, forced ? t('track.in_album') : '') + '</td>' +
+        '<td>' + pubSw('aml-track', x.id, x.aml || forced, forced, forced ? t('track.in_album') : '', x.title, forced ? 'pub.locked_album' : '') + '</td>' +
         '<td><span class="trow">' + (trackImgUrl(x) ? '<img class="tthumb" src="' + esc(trackImgUrl(x)) + '" alt="" loading="lazy" width="40" height="40">' : '<span class="tthumb"></span>') +
           '<span><b>' + esc(x.title) + '</b><br><span class="muted">' + esc(artistName(x)) +
           (x.langs ? ' · <span class="lang-tx">' + esc(langsText(x.langs)) + '</span>' : '') +
@@ -1079,7 +1330,7 @@
         '<p class="row" style="margin:6px 0 0"><button type="button" class="primary small" data-act="bulk-apply">' + esc(t('bulk.apply')) + '</button><span id="bulk-msg" class="msg"></span></p>' +
         bulkAiBox() + bulkExtBox() + '<div id="bulk-plays">' + bulkPlaysBox() + '</div></div></div>' + aiFillBox() +   // 3-20
         '<p class="muted" style="margin:0 0 6px">' + esc(t('pub.help')) + '</p>' + pubTipHtml() +
-        '<table id="t-table"><thead><tr><th><input type="checkbox" data-act="sel-all" aria-label="' + esc(t('bulk.select_all')) + '" title="' + esc(t('bulk.select_all')) + '"></th><th>' + esc(t('pub.col')) + '</th><th>' + esc(t('track.col.title')) + '</th><th class="hide-sm">' +
+        '<table id="t-table"><thead><tr><th><input type="checkbox" data-act="sel-all" aria-label="' + esc(t('bulk.select_all')) + '" title="' + esc(t('bulk.select_all')) + '"></th><th class="pub-th">' + esc(t('pub.col')) + '<small id="pub-rule">' + esc(pubColRule()) + '</small></th><th>' + esc(t('track.col.title')) + '</th><th class="hide-sm">' +
         esc(t('track.col.genres')) + '</th><th class="hide-sm">' + esc(t('track.col.length')) + '</th>' +
         '<th class="num pl-col hide-sm" title="' + esc(t('plays.col_help')) + '"' + (plOn() ? '' : ' hidden') + '>' + esc(t('plays.col')) + ' <span class="muted">ⓘ</span></th><th></th></tr></thead><tbody>' + rows + '</tbody></table>' +
         '<p id="t-nomatch" class="muted" hidden>' + esc(t('track.search_empty')) + '</p>'
@@ -1283,13 +1534,17 @@
   function renderUpload() {
     var running = S.up.running;
     return '<section class="card"><h2>' + esc(t('track.upload.title')) + '</h2>' +
+      upGuideHtml() +   // 3-23 장르·분위기 자동 입력 안내 (파일 고르기 칸 바로 위)
       '<div class="drop" id="drop"><p style="margin:0 0 8px">' + esc(t('upload.drop', { max: MAX_FILES })) + '</p>' +
       '<label class="btn" for="up-files" style="margin:0;display:inline-block;color:var(--text)">' + esc(t('upload.choose')) + '</label>' +
       '<input id="up-files" type="file" accept="' + ACC + '" multiple>' +
       '<p class="muted" style="margin:8px 0 0">' + esc(t('track.upload.files')) + '</p><p class="muted" style="margin:2px 0 0">' + esc(t('wav.note')) + '</p>' +
-      '<p class="muted" style="margin:2px 0 0">' + esc(t('upload.title_note')) + '</p></div>' +
+      '<p class="muted" style="margin:2px 0 0">' + esc(t('upload.title_note')) + '</p>' +
+      '<label class="check" style="margin:8px 0 0"><input type="checkbox" id="up-tags"' + (upTagsOn() ? ' checked' : '') + '> ' + esc(t('upload.tags')) + '</label></div>' +   // 3-23
       '<div id="queue" class="queue"></div>' +
+      aiPasteBox('up') +   // 3-22
       '<h3>' + esc(t('upload.common')) + '</h3>' +
+      (upTagsOn() ? '<p class="muted" style="margin:0 0 6px">' + esc(t('upload.tags_first')) + '</p>' : '') +   // 3-23
       genreFields(S.up.genres, 'ug') +
       langFields(S.up.langs || [S.state.config.default_song_lang || 'en'], 'ul', false, true) +
       aiField('up-ai', S.up.ai || aiPick(), false, ['ai_tool.upload_help', 'ai_tool.missing']) +   // 3-20 이번에 올리는 모든 곡
@@ -1307,6 +1562,7 @@
       '<div class="grid3"><div><label for="t-title">' + esc(t('track.field.title')) + '</label>' +
         '<input id="t-title" type="text" maxlength="100" required value="' + esc(ed.title) + '"></div>' +
       '<div><label for="t-artist">' + esc(t('track.field.artist')) + '</label>' + artistSelect('t-artist', ed.artist || '') + '</div><div></div></div>' +
+      aiPasteBox('te') +   // 3-22
       genreFields(ed.genres, 'g') +
       langFields(ed.langs, 'tl', true, true) +
       aiField('t-ai', ed.ai_tool, true, ['ai_tool.missing']) +   // 3-20
@@ -1399,6 +1655,47 @@
     });
   }
   function titleOf(name) { return (name.replace(/\.[^.]+$/, '').trim() || name).slice(0, 100); }
+  // ── 3-23 파일 이름의 ( ) 에서 그 곡만의 장르·분위기·언어 읽기 (곡마다 따로). 끄면 예전과 똑같이(제목 = 파일 이름)
+  function upTagsOn() {
+    if (S.up.tags == null) { try { S.up.tags = localStorage.getItem('aml_up_tags') !== '0'; } catch (e) { S.up.tags = true; } }
+    return S.up.tags;
+  }
+  function upTag(it) {   // 목록(장르·분위기)이 늦게 와도 맞게: 그릴 때마다 다시 읽는다 (곡 20개 이하)
+    if (!upTagsOn() || !S.gIdx) return null;
+    var r = tagRead(it.file.name, tagCx(), 'file');
+    return r && r.tag ? r : null;
+  }
+  function upTitle(it) { var r = upTag(it); return r && r.title ? r.title.slice(0, 100) : it.title; }
+  function upTagText(r) {   // 예: "R&B · Neo Soul · Hip-hop / Sad · Romantic / English"
+    var f = moodField(), parts = [];
+    if (r.main) parts.push([r.main].concat(r.subs).map(gName).join(' · '));
+    if (r.moods.length && f) parts.push(r.moods.map(function (k) { var o = f.options.filter(function (x) { return x.key === k; })[0]; return fLabel(o && o.label, k); }).join(' · '));
+    if (r.langs.length) parts.push(langsText(r.langs));
+    var bad = [].concat(r.badMain ? [r.badMain] : [], r.bad.genre, r.bad.mood, r.bad.lang);
+    return '<br><span class="tagline">' + esc(parts.join(' / ')) + '</span>' +
+      (bad.length ? '<br><span class="muted">' + esc(t('upload.tag.bad', { v: bad.join(', ') })) + '</span>' : '') +
+      (r.noMood || (r.moods.length && !f) ? '<br><span class="muted">' + esc(t('aipaste.no_mood_field')) + '</span>' : '');
+  }
+  // 업로드 맨 위 안내 상자: 접기(✕) → 한 줄 버튼으로 다시 펼침 (브라우저 기억)
+  var UP_GUIDE_EX = 'Midnight Rain (R&B, Neo Soul; Romantic, en)';
+  function upGuideHtml() {
+    var shut = false; try { shut = localStorage.getItem('aml_up_guide') === '0'; } catch (e) { /* 늘 펼침 */ }
+    if (shut) return '<p id="up-guide" style="margin:0 0 10px"><button type="button" class="small" data-act="upguide-open">' + esc(t('upguide.open')) + '</button></p>';
+    return '<div id="up-guide" class="notice info upguide">' +
+      '<button type="button" class="small upguide-x" data-act="upguide-close" aria-label="' + esc(t('gal.close')) + '" title="' + esc(t('gal.close')) + '">✕</button>' +
+      '<p style="margin:0 0 6px"><b>' + esc(t('upguide.title')) + '</b></p>' +
+      '<p style="margin:0 0 6px">' + esc(t('upguide.body')) + '</p>' +
+      '<ol style="margin:0 0 6px;padding-left:20px"><li>' + esc(t('upguide.s1')) + '</li><li>' + esc(t('upguide.s2')) + '<br><span class="muted" style="font-size:12px">' + esc(t('upguide.s2_zip')) + '</span></li><li>' + esc(t('upguide.s3')) + '</li></ol>' +
+      '<p style="margin:0 0 6px"><b>' + esc(t('upguide.multi')) + '</b></p>' +
+      '<p class="muted" style="margin:0 0 6px;font-size:12px">' + esc(t('upguide.ex', { v: UP_GUIDE_EX })) + ' ' + esc(t('upguide.ex_note')) + '</p>' +
+      '<p style="margin:0 0 8px">' + esc(t('upguide.not_music')) + '</p>' +
+      '<p class="row" style="margin:0"><a class="btn small primary" href="' + esc(guideFile()) + '" target="_blank" rel="noopener" download>' + esc(t('upguide.dl')) + ' ↓</a>' +
+      '<a class="muted" href="' + esc(guidePage()) + '" target="_blank" rel="noopener">' + esc(t('upguide.more')) + ' ↗</a></p></div>';
+  }
+  function upGuide(open) {
+    try { localStorage.setItem('aml_up_guide', open ? '1' : '0'); } catch (e) { /* 이번만 */ }
+    var el = $('up-guide'); if (el) el.outerHTML = upGuideHtml();
+  }
 
   // 업로드 대기열 ─────────────────────────────────────────────────────────────
   function addFiles(list) {
@@ -1417,7 +1714,9 @@
     var q = $('queue'); if (!q) return;
     var items = S.up.items;
     q.innerHTML = items.length ? '<table><tbody>' + items.map(function (it, i) {
-      return '<tr><td class="num">' + (i + 1) + '</td><td><b>' + esc(it.title) + '</b><br><span class="muted">' + esc(it.file.name) + ' · ' + esc(fmtBytes(it.file.size)) + '</span>' +
+      var tg = upTag(it);   // 3-23
+      return '<tr><td class="num">' + (i + 1) + '</td><td><b>' + esc(upTitle(it)) + '</b><br><span class="muted">' + esc(it.file.name) + ' · ' + esc(fmtBytes(it.file.size)) + '</span>' +
+        (tg ? upTagText(tg) : '') +
         (it.err ? '<br><span class="st-fail">' + esc(it.err) + '</span>' : '') + '</td>' +
         '<td class="st-' + it.status + ' upst" id="up-st-' + i + '">' + stCell(it) + '</td>' +
         '<td>' + (!S.up.running && it.status !== 'done' ? '<button type="button" class="small" data-act="up-remove" data-i="' + i + '">' + esc(t('album.remove')) + '</button>' : '') + '</td></tr>';
@@ -1466,8 +1765,11 @@
   function runUpload(retryOnly) {
     var msg = $('up-msg');
     keepUploadInputs();
+    var todo0 = S.up.items.filter(function (x) { return retryOnly ? (x.status === 'fail' && okType(x.file)) : x.status === 'wait'; });
+    // 3-23 곡마다 파일 이름에서 읽은 값이 공통 값보다 먼저. 모든 곡이 자기 장르를 가졌으면 공통 장르는 비어 있어도 된다
+    todo0.forEach(function (x) { x.tg = x.id ? null : upTag(x); x.title = x.tg && x.tg.title ? x.tg.title.slice(0, 100) : titleOf(x.file.name); });
     var genres = readGenres('ug');
-    if (!genres) { msg.className = 'msg err'; msg.textContent = t('err.track.genre_invalid'); return; }
+    if (!genres && todo0.some(function (x) { return !x.id && !(x.tg && x.tg.main); })) { msg.className = 'msg err'; msg.textContent = t('err.track.genre_invalid'); return; }
     var artist = S.up.artist || null, aml = S.up.aml, langs = S.up.langs, ai = S.up.ai || null;
     if (ai) { try { localStorage.setItem(AI_KEY, ai); } catch (e) { /* 이번만 */ } }   // 3-20 다음 업로드의 처음 값
     var xr = readExt('track', 'up');   // 3-8 추가 정보
@@ -1489,9 +1791,11 @@
           if (c.err) { it.status = 'fail'; it.err = c.err; return; }
           if (c.blob) it.mp3 = c;
           it.status = 'up'; it.loaded = 0; it.total = (c.blob || it.file).size; renderQueue();
-          var created = it.id ? Promise.resolve() : api('POST', '/api/admin/tracks?defer=1', hasExt(ext)
-            ? { title: it.title, artist: artist, genres: genres, duration: c.duration, aml: aml, langs: langs, ai_tool: ai, ext: ext }
-            : { title: it.title, artist: artist, genres: genres, duration: c.duration, aml: aml, langs: langs, ai_tool: ai })
+          var tg = it.tg, g2 = tg && tg.main ? [tg.main].concat(tg.subs) : genres, l2 = tg && tg.langs.length ? tg.langs : langs, x2 = ext;
+          if (tg && tg.moods.length && moodField()) { x2 = Object.assign({}, ext); x2.mood = tg.moods; }   // 3-23 그 곡의 분위기
+          var created = it.id ? Promise.resolve() : api('POST', '/api/admin/tracks?defer=1', hasExt(x2)
+            ? { title: it.title, artist: artist, genres: g2, duration: c.duration, aml: aml, langs: l2, ai_tool: ai, ext: x2 }
+            : { title: it.title, artist: artist, genres: g2, duration: c.duration, aml: aml, langs: l2, ai_tool: ai })
             .then(function (res) { it.id = res.track.id; });
           return created
             .then(function () { return putAudio(it.id, c.blob || it.file, c.type, true, function (l) { it.loaded = l; upProg(it); }); })
@@ -1596,11 +1900,17 @@
       .then(function () { if ($('t-submit')) $('t-submit').disabled = false; });
   }
 
-  // 3-11 공개 스위치(+글자). 저장 동작은 그대로
-  function pubSw(act, id, on, dis, why) {
-    return '<label class="sw"' + (why ? ' title="' + esc(why) + '"' : '') + '><input type="checkbox" role="switch" data-act="' + act + '" data-id="' + esc(id) + '"' +
-      (on ? ' checked' : '') + (dis ? ' disabled' : '') + '><span class="sw-ui" aria-hidden="true"></span><span class="sw-tx">' + esc(t(on ? 'pub.on' : 'pub.off')) + '</span></label>';
+  // 3-11 공개 스위치. 저장 동작은 그대로
+  // 3-23: 줄마다 붙던 "aimusiclist 공개 중/비공개" 글자는 뺐다(열 제목이 있으므로). 화면 읽기 프로그램은 aria-label(곡 제목 + 상태)로 안다.
+  //       lock = 흐린 스위치를 눌렀을 때 띄울 안내 키(휴대폰은 마우스 올림 title 이 안 보이므로)
+  function pubSw(act, id, on, dis, why, name, lock) {
+    return '<label class="sw"' + (why ? ' title="' + esc(why) + '"' : '') + (lock ? ' data-lock="' + esc(lock) + '"' : '') + '><input type="checkbox" role="switch" data-act="' + act + '" data-id="' + esc(id) + '"' +
+      ' data-name="' + esc(name || '') + '" aria-label="' + esc(pubLabel(name, on)) + '"' +
+      (on ? ' checked' : '') + (dis ? ' disabled' : '') + '><span class="sw-ui" aria-hidden="true"></span></label>';
   }
+  function pubLabel(name, on) { return (name ? name + ' — ' : '') + t(on ? 'pub.on' : 'pub.off'); }
+  // 곡 목록 열 제목 아래 한 줄: 음원 있는 곡 10곡 이상 = "최소 10곡은 꼭 공개", 그보다 적으면 "모든 곡 공개" (셈은 pubState 와 같음)
+  function pubColRule() { var c = pubState(); return c.total ? t(c.total >= MIN_PUBLIC ? 'pub.col.min' : 'pub.col.all') : ''; }
   // ── 3-21 "10곡은 꼭 공개": 공개 곡 수 ≥ min(10, 전체 곡 수). 서버(src/db.js pubCount)와 같은 셈 ──
   // 공개 = 음원 있음 + (곡 공개 켜짐 또는 공개 앨범에 들어 있음) / 전체 = 음원이 있는 곡
   var MIN_PUBLIC = 10;
@@ -1620,7 +1930,7 @@
     else if (c.pub < c.need) html += '<div class="notice" style="margin:0 0 10px"><b>' + esc(t('pubmin.fix', { need: c.need })) + '</b>' + pubMinHints() + '</div>';
     return html;
   }
-  function renderPubMin() { var el = $('pub-min'); if (el) el.innerHTML = pubMinHtml(); renderPubNote(); }
+  function renderPubMin() { var el = $('pub-min'); if (el) el.innerHTML = pubMinHtml(); var r = $('pub-rule'); if (r) r.textContent = pubColRule(); renderPubNote(); }
   // 관리 화면 맨 위: 공개 곡이 모자란 사이트(3-21 이전에 비공개로 둔 곳·곡을 지운 곳) 안내 한 줄. 강제로 바꾸지 않는다.
   function renderPubNote() {
     var el = $('pubmin-note'); if (!el || !S.state) return;
@@ -1639,7 +1949,7 @@
     if (e && e.code === 'err.track.min_public') { S.pubMinErr = AML.errText(e); renderPubMin(); var el = $('pub-min'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest' }); }
     fail(e);
   }
-  function pubTx(el) { var s = el.parentNode.querySelector('.sw-tx'); if (s) s.textContent = t(el.checked ? 'pub.on' : 'pub.off'); }
+  function pubTx(el) { el.setAttribute('aria-label', pubLabel(el.getAttribute('data-name'), el.checked)); }
   // 처음 한 번 안내 (다시 보지 않기 = localStorage)
   function pubTipHtml() {
     var b = function (a, k) { return '<button type="button" class="small" data-act="' + a + '">' + esc(t(k)) + '</button>'; };
@@ -1708,7 +2018,7 @@
     }
     var rows = S.state.albums.map(function (a) {
       var ok = albumOk(a);
-      return '<tr><td>' + pubSw('aml-album', a.id, a.aml, !(ok || a.aml), ok ? '' : t('album.public_rule')) + '</td>' +
+      return '<tr><td>' + pubSw('aml-album', a.id, a.aml, !(ok || a.aml), ok ? '' : t('album.public_rule'), a.title) + '</td>' +
         '<td><b>' + esc(a.title) + '</b><br><span class="muted">' + esc(artistName(a)) + '</span>' +
           (ok ? '' : ' <span class="tag warn">' + esc(t('album.public_rule')) + '</span>') + '</td>' +
         '<td class="num">' + esc(AML.tn('album.track_count', a.track_ids.length)) + '</td>' +
@@ -1803,7 +2113,7 @@
 
   // ── 3-10 스킨 둘러보기 ─────────────────────────────────────────────────────
   var G = { items: null, err: false, busy: '', f: 'all', upd: {}, pv: null };
-  var GV = '9';   // 관리 화면이 따로 부르는 파일(lang-admin·분석·통계·WAV 변환) 주소 뒤 버전. 그 파일들을 고치면 올린다
+  var GV = '10';   // 관리 화면이 따로 부르는 파일(lang-admin·분석·통계·WAV 변환) 주소 뒤 버전. 그 파일들을 고치면 올린다
   var ID_RE = /^[a-z0-9-]{1,32}$/, VER_RE = /^\d{1,6}(\.\d{1,6}){0,3}$/;
   function cmpVer(a, b) {
     var x = String(a).split('.'), y = String(b).split('.');
@@ -2346,6 +2656,9 @@
 
   // ── 이벤트 (한 곳에서 처리) ──────────────────────────────────────────────────
   document.addEventListener('click', function (e) {
+    // 3-23 흐린(막힌) 공개 스위치를 누르면 이유를 알려 준다 (휴대폰 포함)
+    var lk = e.target.closest('label.sw[data-lock]');
+    if (lk && lk.querySelector('input:disabled')) { e.preventDefault(); toast(t(lk.getAttribute('data-lock'))); return; }
     var el = e.target.closest('[data-act]');
     if (!el) return;
     var act = el.getAttribute('data-act'), id = el.getAttribute('data-id');
@@ -2359,6 +2672,8 @@
       case 'php-update': phpUpdate(el); break;   // P-1
       case 'mm-export': mmExport(el); break;     // M-2
       case 'aml-retry': amlRetry(el); break;
+      case 'upguide-close': upGuide(false); break;   // 3-23
+      case 'upguide-open': upGuide(true); break;
       case 'aml-track': toggleTrackAml(el, id); break;
       case 'plays-pub': togglePlaysPub(el); break;   // 3-14
       case 'likes-toggle': toggleLikes(el); break;   // 3-18
@@ -2376,6 +2691,7 @@
         }
         break;
       }
+      case 'ai-paste': aiPaste(el.getAttribute('data-p')); break;   // 3-22
       case 'up-start': runUpload(false); break;
       case 'up-retry': runUpload(true); break;
       case 'up-clear': S.up.items = []; $('up-msg').textContent = ''; renderQueue(); break;
@@ -2551,6 +2867,11 @@
       }
     }
     if (e.target.id === 'up-files') { addFiles(e.target.files); e.target.value = ''; }
+    if (e.target.id === 'up-tags') {   // 3-23
+      S.up.tags = e.target.checked;
+      try { localStorage.setItem('aml_up_tags', S.up.tags ? '1' : '0'); } catch (x) { /* 이번만 */ }
+      keepUploadInputs(); render();
+    }
     if (e.target.id === 't-lyrics' && e.target.files[0]) { uploadLyrics(e.target.files[0]); e.target.value = ''; }
   });
   // 드래그 앤 드롭 (#drop 칸에 파일을 끌어다 놓기)

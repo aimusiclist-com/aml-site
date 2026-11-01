@@ -22,7 +22,7 @@
   // ★ 언어 목록: { 코드: '그 언어로 쓴 이름' }. 새 언어는 여기에 한 줄 추가 + lang/{코드}.js 파일.
   AML.LANGS = { en: 'English', ko: '한국어', ja: '日本語', de: 'Deutsch', fr: 'Français', es: 'Español', it: 'Italiano', 'pt-br': 'Português (Brasil)', ru: 'Русский', tr: 'Türkçe', vi: 'Tiếng Việt', id: 'Bahasa Indonesia', th: 'ไทย', hi: 'हिन्दी', 'zh-tw': '繁體中文' };
 
-  AML.V = '13';               // 언어팩 파일 주소 뒤에 붙이는 버전 (?v=5). 언어팩을 고쳐 배포하면 올린다.
+  AML.V = '15';               // (3-22) 언어팩 파일 주소 뒤에 붙이는 버전 (?v=5). 언어팩을 고쳐 배포하면 올린다.
   AML.STORE_KEY = 'aml_lang'; // 방문자가 고른 언어를 기억하는 브라우저 저장소 이름
   AML.strings = AML.strings || {};
 
@@ -557,6 +557,25 @@
     "ai_tool.bulk": "AI tool of the selected songs",
     "ai_tool.done": "AI tool set to {name} for {n} song(s).",
     "ai_tool.cleared": "AI tool cleared for {n} song(s).",
+    "aipaste.label": "Paste AI result",
+    "aipaste.guide": "Get the guide",
+    "aipaste.placeholder": "e.g. Midnight Rain (R&B, Neo Soul; Romantic, en)",
+    "aipaste.apply": "Apply",
+    "aipaste.help": "Not sure which genre? Give our guide file to an AI (ChatGPT, Claude, Gemini — free plans work) with your song's Suno prompt or lyrics, then paste the song title it gives you, with the part in ( ), here.",
+    "aipaste.empty": "Paste the AI's answer first.",
+    "aipaste.notfound": "We couldn't find the result line. Paste the very last line of the AI's answer, like: rnb | neo_soul | en | chill",
+    "aipaste.done": "Filled in: {what}. Please check them below.",
+    "aipaste.w.genre": "genres",
+    "aipaste.w.lang": "song language",
+    "aipaste.w.mood": "mood",
+    "aipaste.bad_main": "\"{v}\" is not a main genre in the list, so the genres were left as they were. Choose them yourself or ask the AI again.",
+    "aipaste.fixed_main": "\"{v}\" is a subgenre, so its main genre {main} was used.",
+    "aipaste.bad_genre": "Not in the genre list, so left out: {v}",
+    "aipaste.bad_lang": "Not a song language we know, so left out: {v}",
+    "aipaste.no_lang": "The song language was empty, so it was left as it was.",
+    "aipaste.bad_mood": "Not in the mood list, so left out: {v}",
+    "aipaste.no_mood_field": "This site doesn't have the mood field yet, so the mood was not filled in.",
+    "aipaste.dropped": "Too many, so these were left out: {v}",
     "fields.title": "Additional fields (from aimusiclist.com)",
     "fields.help": "aimusiclist.com tells your site which extra fields exist (for example Mood). Your site checks once a day by itself. New fields appear under \"Additional info\" without updating the program.",
     "fields.version": "Field list version {v} · {n} field(s) · checked {time}",
