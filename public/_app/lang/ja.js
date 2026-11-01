@@ -479,7 +479,7 @@ AML.addLang('ja', {
   "aipaste.guide": "ガイドを入手",
   "aipaste.placeholder": "例: Midnight Rain (R&B, Neo Soul; Romantic, en)",
   "aipaste.apply": "適用",
-  "aipaste.help": "Not sure which genre? Give our guide file to an AI (ChatGPT, Claude, Gemini — free plans work) with your song's Suno prompt or lyrics, then paste the song title it gives you, with the part in ( ), here.",
+  "aipaste.help": "ジャンルが分からない場合は、曲のSunoプロンプトや歌詞と一緒に案内ファイルをAI（ChatGPT、Claude、Gemini。無料プランでも使えます）に渡してください。AIが提案した曲名を ( ) の部分も含めてここに貼り付けます。",
   "aipaste.empty": "まずAIの答えを貼り付けてください。",
   "aipaste.notfound": "結果の行が見つかりませんでした。AIの答えのいちばん最後の行をそのまま貼り付けてください。例: rnb | neo_soul | en | chill",
   "aipaste.done": "入力しました: {what}。下で一度確認してください。",

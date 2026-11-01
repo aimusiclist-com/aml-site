@@ -503,7 +503,7 @@ AML.addLang('it', {
   "aipaste.guide": "Scarica la guida",
   "aipaste.placeholder": "es. Midnight Rain (R&B, Neo Soul; Romantic, en)",
   "aipaste.apply": "Applica",
-  "aipaste.help": "Not sure which genre? Give our guide file to an AI (ChatGPT, Claude, Gemini — free plans work) with your song's Suno prompt or lyrics, then paste the song title it gives you, with the part in ( ), here.",
+  "aipaste.help": "Non sai quale genere scegliere? Invia la nostra guida a un’IA (ChatGPT, Claude o Gemini: bastano i piani gratuiti), insieme al prompt Suno o al testo del brano. Poi incolla qui il titolo suggerito, compresa la parte tra ( ).",
   "aipaste.empty": "Prima incolla la risposta dell’IA.",
   "aipaste.notfound": "Riga del risultato non trovata. Incolla così com’è l’ultima riga della risposta dell’IA, es.: rnb | neo_soul | en | chill",
   "aipaste.done": "Compilato: {what}. Controlla qui sotto.",

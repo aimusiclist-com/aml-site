@@ -503,4 +503,12 @@ AML.addLang('en', {
   "pubmin.delete": "You can delete any song you don't want to share.",
   "pubmin.few": "If you have fewer than 10 songs, all of them are public.",
   "pubmin.go": "Choose songs",
+  // 2-F meshmelo 두 관리 화면 안내
+  "mm.help.q": "Two admin pages — what's the difference?",
+  "mm.help.title": "You have two places to manage",
+  "mm.help.lead": "Not sure where to go? This shows what each place is for.",
+  "mm.help.here.t": "This site's admin page",
+  "mm.help.here.d": "Upload songs and albums and make them public, menus, skins and profile, guestbook, stats — where you decorate and run this one site.",
+  "mm.help.acct.d": "Sign-in and password, your site, connecting or changing your song storage (R2), usage, your own domain, deleting the site — where you handle your account and your site as a whole.",
+  "mm.help.like": "Think of it this way: “My meshmelo account” is the office for your shops, and this admin page is the counter of one shop.",
 });

@@ -503,7 +503,7 @@ AML.addLang('vi', {
   "aipaste.guide": "Lấy hướng dẫn",
   "aipaste.placeholder": "vd: Midnight Rain (R&B, Neo Soul; Romantic, en)",
   "aipaste.apply": "Áp dụng",
-  "aipaste.help": "Not sure which genre? Give our guide file to an AI (ChatGPT, Claude, Gemini — free plans work) with your song's Suno prompt or lyrics, then paste the song title it gives you, with the part in ( ), here.",
+  "aipaste.help": "Chưa biết chọn thể loại nào? Hãy gửi tệp hướng dẫn của chúng tôi cho AI (ChatGPT, Claude, Gemini — bản miễn phí cũng dùng được), kèm prompt Suno hoặc lời bài hát. Sau đó dán vào đây tên bài hát AI gợi ý, gồm cả phần trong ( ).",
   "aipaste.empty": "Hãy dán câu trả lời của AI trước.",
   "aipaste.notfound": "Không tìm thấy dòng kết quả. Hãy dán nguyên dòng cuối cùng trong câu trả lời của AI, vd: rnb | neo_soul | en | chill",
   "aipaste.done": "Đã điền: {what}. Hãy kiểm tra lại bên dưới.",

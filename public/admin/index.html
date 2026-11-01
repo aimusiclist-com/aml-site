@@ -41,6 +41,13 @@
   button.danger { color: var(--err); }
   button:disabled { opacity: .5; cursor: default; }
   header.top { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  /* 2-F meshmelo: 맨 위 "내 meshmelo 계정 ↗" · ? · 두 관리 화면 안내 */
+  .mm-acct { font-weight: 600; white-space: nowrap; }
+  .mm-q { width: 30px; height: 30px; padding: 0; border-radius: 50%; font-weight: 700; }
+  .mm-help .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 10px 0; }
+  .mm-help .two > div { border: 1px solid var(--line, #ddd); border-radius: 10px; padding: 10px 12px; }
+  .mm-help .two h3 { margin: 0 0 2px; font-size: 15px; }
+  .mm-help .addr { font-size: 13px; word-break: break-all; margin: 0 0 6px; }
   nav.tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
   nav.tabs a { text-decoration: none; color: var(--muted); padding: 6px 14px; border-radius: 999px; }
   nav.tabs a.on { background: var(--text); color: var(--bg); }
@@ -266,9 +273,12 @@
   <div id="app" hidden>
     <header class="top">
       <h1 id="site-name" class="grow"></h1>
+      <a id="mm-acct" class="mm-acct" href="#" target="_blank" rel="noopener" hidden></a><!-- 2-F meshmelo 만: 내 meshmelo 계정 ↗ -->
+      <button id="mm-help-btn" class="small mm-q" type="button" data-act="mm-help" aria-controls="mm-help" aria-expanded="false" hidden>?</button>
       <a href="/" target="_blank" rel="noopener" data-t="admin.view_site"></a>
       <button class="small" data-act="logout" data-t="admin.logout"></button>
     </header>
+    <section id="mm-help" class="card mm-help" hidden></section><!-- 2-F 두 관리 화면 안내 (meshmelo 만, ? 를 누르면) -->
     <section id="usage" class="card usage"></section>
     <p id="ver-note" class="notice row" hidden></p>
     <p id="aml-line" class="amlline"></p>
@@ -284,6 +294,6 @@
 <div id="toast" hidden role="status"></div>
 
 <script src="/_app/strings.js?v=15"></script>
-<script src="/_app/admin.js?v=20"></script>
+<script src="/_app/admin.js?v=21"></script>
 </body>
 </html>

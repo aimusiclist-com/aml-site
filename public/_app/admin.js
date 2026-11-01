@@ -1125,6 +1125,33 @@
     renderAmlLine();
     renderUsage();
     renderMmUse();   // M-6 (meshmelo 만)
+    renderMmTop();   // 2-F (meshmelo 만)
+  }
+
+  // ── 2-F meshmelo 만: 맨 위 "내 meshmelo 계정 ↗" 링크 + "?" → 두 관리 화면 안내 (새 요청 없음 — 받은 값·언어 파일만) ──
+  function renderMmTop() {
+    var a = $('mm-acct'), q = $('mm-help-btn'), box = $('mm-help');
+    if (!a || !q || !box) return;
+    var on = isMm(), m = mmInfo();
+    a.hidden = q.hidden = !on;
+    if (!on) { box.hidden = true; return; }
+    var portal = String(m.portal || '').replace(/\/+$/, '');
+    a.href = portal + '/';
+    a.textContent = t('mm.portal') + ' ↗';
+    q.title = t('mm.help.q');
+    q.setAttribute('aria-label', t('mm.help.q'));
+    var host = function (u) { return String(u || '').replace(/^https?:\/\//, ''); };
+    box.innerHTML = '<h2>' + esc(t('mm.help.title')) + '</h2><p class="muted">' + esc(t('mm.help.lead')) + '</p><div class="two">' +
+      '<div><h3>' + esc(t('mm.help.here.t')) + '</h3><p class="addr muted">' + esc(host(location.origin) + '/admin') + '</p><p>' + esc(t('mm.help.here.d')) + '</p></div>' +
+      '<div><h3>' + esc(t('mm.portal')) + '</h3><p class="addr muted">' + esc(host(portal)) + '</p><p>' + esc(t('mm.help.acct.d')) + '</p>' +
+      '<p><a class="btn small primary" href="' + esc(portal + '/') + '" target="_blank" rel="noopener">' + esc(t('mm.portal')) + ' ↗</a></p></div></div>' +
+      '<p>' + esc(t('mm.help.like')) + '</p>';
+  }
+  function mmHelp(btn) {
+    var box = $('mm-help'); if (!box) return;
+    box.hidden = !box.hidden;
+    btn.setAttribute('aria-expanded', box.hidden ? 'false' : 'true');
+    if (!box.hidden) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
   // 탭 줄. 3-10: 스킨 새 버전이 있으면 Skins 탭에 점 (사이트 업데이트 안내 — 위 ver-note — 와 따로)
@@ -2113,7 +2140,7 @@
 
   // ── 3-10 스킨 둘러보기 ─────────────────────────────────────────────────────
   var G = { items: null, err: false, busy: '', f: 'all', upd: {}, pv: null };
-  var GV = '10';   // 관리 화면이 따로 부르는 파일(lang-admin·분석·통계·WAV 변환) 주소 뒤 버전. 그 파일들을 고치면 올린다
+  var GV = '11';   // 관리 화면이 따로 부르는 파일(lang-admin·분석·통계·WAV 변환) 주소 뒤 버전. 그 파일들을 고치면 올린다
   var ID_RE = /^[a-z0-9-]{1,32}$/, VER_RE = /^\d{1,6}(\.\d{1,6}){0,3}$/;
   function cmpVer(a, b) {
     var x = String(a).split('.'), y = String(b).split('.');
@@ -2671,6 +2698,7 @@
       case 'tok-cancel': S.tokEdit = false; render(); goToken(); break;
       case 'php-update': phpUpdate(el); break;   // P-1
       case 'mm-export': mmExport(el); break;     // M-2
+      case 'mm-help': mmHelp(el); break;         // 2-F
       case 'aml-retry': amlRetry(el); break;
       case 'upguide-close': upGuide(false); break;   // 3-23
       case 'upguide-open': upGuide(true); break;

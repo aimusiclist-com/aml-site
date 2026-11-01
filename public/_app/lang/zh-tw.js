@@ -503,7 +503,7 @@ AML.addLang('zh-tw', {
   "aipaste.guide": "取得指南",
   "aipaste.placeholder": "例如：Midnight Rain (R&B, Neo Soul; Romantic, en)",
   "aipaste.apply": "套用",
-  "aipaste.help": "Not sure which genre? Give our guide file to an AI (ChatGPT, Claude, Gemini — free plans work) with your song's Suno prompt or lyrics, then paste the song title it gives you, with the part in ( ), here.",
+  "aipaste.help": "不知道該選哪種曲風嗎？把我們的指引檔連同歌曲的 Suno 提示詞或歌詞交給 AI（ChatGPT、Claude、Gemini，免費方案也能用），再把 AI 給你的歌名（包含 ( ) 中的內容）貼到這裡。",
   "aipaste.empty": "請先貼上 AI 的回答。",
   "aipaste.notfound": "找不到結果那一行。請原樣貼上 AI 回答的最後一行，例如：rnb | neo_soul | en | chill",
   "aipaste.done": "已填入：{what}。請在下方確認一次。",

@@ -503,7 +503,7 @@ AML.addLang('tr', {
   "aipaste.guide": "Kılavuzu al",
   "aipaste.placeholder": "örn. Midnight Rain (R&B, Neo Soul; Romantic, en)",
   "aipaste.apply": "Uygula",
-  "aipaste.help": "Not sure which genre? Give our guide file to an AI (ChatGPT, Claude, Gemini — free plans work) with your song's Suno prompt or lyrics, then paste the song title it gives you, with the part in ( ), here.",
+  "aipaste.help": "Hangi türü seçeceğinizden emin değil misiniz? Rehberimizi bir yapay zekâya (ChatGPT, Claude veya Gemini; ücretsiz sürümler de olur) Suno isteminiz ya da şarkı sözlerinizle birlikte verin. Ardından önerdiği şarkı adını ( ) bölümüyle birlikte buraya yapıştırın.",
   "aipaste.empty": "Önce yapay zekânın cevabını yapıştır.",
   "aipaste.notfound": "Sonuç satırı bulunamadı. Yapay zekânın cevabındaki en son satırı olduğu gibi yapıştır, örn.: rnb | neo_soul | en | chill",
   "aipaste.done": "Dolduruldu: {what}. Lütfen aşağıda kontrol et.",

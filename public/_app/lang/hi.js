@@ -503,7 +503,7 @@ AML.addLang('hi', {
   "aipaste.guide": "गाइड लें",
   "aipaste.placeholder": "जैसे: Midnight Rain (R&B, Neo Soul; Romantic, en)",
   "aipaste.apply": "लागू करें",
-  "aipaste.help": "Not sure which genre? Give our guide file to an AI (ChatGPT, Claude, Gemini — free plans work) with your song's Suno prompt or lyrics, then paste the song title it gives you, with the part in ( ), here.",
+  "aipaste.help": "समझ नहीं आ रहा कि कौन-सा जॉनर चुनें? हमारे गाइड की फ़ाइल AI (ChatGPT, Claude, Gemini — मुफ़्त प्लान भी काम करते हैं) को अपने गाने के Suno प्रॉम्प्ट या बोल के साथ दें। फिर AI से मिला गाने का शीर्षक, ( ) वाले हिस्से समेत, यहाँ पेस्ट करें।",
   "aipaste.empty": "पहले AI का जवाब चिपकाएँ।",
   "aipaste.notfound": "नतीजे वाली पंक्ति नहीं मिली। AI के जवाब की बिल्कुल आख़िरी पंक्ति जैसी है वैसी चिपकाएँ, जैसे: rnb | neo_soul | en | chill",
   "aipaste.done": "भर दिया: {what}। कृपया नीचे एक बार जाँच लें।",
