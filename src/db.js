@@ -52,9 +52,14 @@ export const artistOf = (x, site) => x.artist || site.name;
 // aimusiclist 가 신고 등으로 숨긴 곡은 엔진이 모른다 → catalog 에 그대로 있으므로 "공개"로 센다.
 // php/app/lib/catalog.php Change::pubCount 와 같은 규칙.
 export const MIN_PUBLIC = 10;
+// 3-24 예약 공개: 앨범 pub_at(UTC "YYYY-MM-DDTHH:MM:SSZ") 이 아직 오지 않았으면 공개 앨범이 아니다(catalog·방문자 화면에 없음).
+//   시각이 지나면 finish 가 pub_at 을 지우고(albumDue) 그때 공개된다. php Change::albumLive 와 같은 규칙.
+export const albumPending = (a, now) => !!(a && typeof a.pub_at === 'string' && a.pub_at > (now || nowIso()));
+export const albumLive = (a, now) => !!(a && a.aml) && !albumPending(a, now);
 export function pubCount(db) {
   const inAlbum = new Set();
-  for (const a of Object.values(db.albums || {})) if (a.aml) for (const id of a.track_ids || []) inAlbum.add(id);
+  const now = nowIso();
+  for (const a of Object.values(db.albums || {})) if (albumLive(a, now)) for (const id of a.track_ids || []) inAlbum.add(id);
   let pub = 0, total = 0;
   for (const t of Object.values(db.tracks || {})) {
     if (!t.has_audio) continue;

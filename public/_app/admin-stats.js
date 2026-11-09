@@ -146,7 +146,7 @@
     var root = $('stats-root'); if (!root) return;
     CW = Math.max(300, Math.min(760, (root.clientWidth || 680) - 40));
     var r = P.data, sum = r && r.sum, setup = (r && r.setup) || {};
-    var head = '<div class="row"><h2 class="grow" style="margin:0;white-space:nowrap">' + esc(t('stats.title')) + '</h2><span class="st-seg" role="group" aria-label="' + esc(t('stats.period')) + '">' +
+    var head = '<div class="row"><h2 class="grow" style="margin:0;white-space:nowrap" data-help="help.stats.title">' + esc(t('stats.title')) + '</h2><span class="st-seg" role="group" data-help="help.stats.period" data-help-name="' + esc(t('stats.period')) + '" aria-label="' + esc(t('stats.period')) + '">' +
       PERIODS.map(function (d) { return '<button type="button" class="small' + (d === P.days ? ' primary' : '') + '" data-st="days" data-v="' + d + '"' + (d === P.days ? ' aria-pressed="true"' : ' aria-pressed="false"') + '>' + esc(t('stats.days', { n: d })) + '</button>'; }).join('') +
       '</span>' + refreshBtn(setup) + '</div>';
     if (!r) {
@@ -156,21 +156,22 @@
     var slot = setup.slot != null ? ('0' + setup.slot).slice(-2) : '';
     var when = sum && sum.at ? t('stats.updated', { time: A.fmtClock(sum.at), mm: slot }) : t('stats.never', { mm: slot });
     var notes = [];
-    if (setup.mode === 'disk') notes.push(t('stats.setup.disk'));
-    else if (setup.mode === 'media_worker') notes.push(t('stats.setup.media_worker'));
-    else if (setup.mode === 'mm_off') notes.push(t('stats.setup.mm_off'));
-    else if (setup.dataset === false) notes.push(t('stats.setup.dataset'));
-    else if (setup.token === false) notes.push(t('stats.setup.token'));
-    if (setup.visits === false) notes.push(t('stats.setup.no_visits'));
-    if (sum && sum.error && setup.token !== false && setup.dataset !== false && setup.mode !== 'disk' && setup.mode !== 'media_worker' && setup.mode !== 'mm_off') notes.push(t('stats.err', { reason: AML.errText(sum.error) }) + (sum.stale ? ' ' + t('stats.stale') : ''));
+    // [글, ? 표시] — ? 키는 글자 그대로 써 둔다(검사기가 찾을 수 있게)
+    if (setup.mode === 'disk') notes.push([t('stats.setup.disk'), ' data-help="help.stats.note.off"']);
+    else if (setup.mode === 'media_worker') notes.push([t('stats.setup.media_worker'), ' data-help="help.stats.note.off"']);
+    else if (setup.mode === 'mm_off') notes.push([t('stats.setup.mm_off'), ' data-help="help.stats.note.off"']);
+    else if (setup.dataset === false) notes.push([t('stats.setup.dataset'), ' data-help="help.stats.note.dataset"']);
+    else if (setup.token === false) notes.push([t('stats.setup.token'), ' data-help="help.stats.note.token"']);
+    if (setup.visits === false) notes.push([t('stats.setup.no_visits'), ' data-help="help.stats.note.no_visits"']);
+    if (sum && sum.error && setup.token !== false && setup.dataset !== false && setup.mode !== 'disk' && setup.mode !== 'media_worker' && setup.mode !== 'mm_off') notes.push([t('stats.err', { reason: AML.errText(sum.error) }) + (sum.stale ? ' ' + t('stats.stale') : ''), ' data-help="help.stats.note.error"']);
     var todayAt = r.today && r.today_at ? ' ' + t('stats.today_at', { time: A.fmtClock(r.today_at) }) : '';
-    var html = '<section class="card st">' + head + '<p class="muted" style="margin:6px 0 0">' + esc(when + todayAt) + ' ' + esc(t('stats.approx_note')) + '</p>' +
+    var html = '<section class="card st">' + head + '<p class="muted" style="margin:6px 0 0" data-help="help.stats.updated">' + esc(when + todayAt) + ' ' + esc(t('stats.approx_note')) + '</p>' +
       (P.rmsg ? '<p class="msg' + (P.rmsg.err ? ' err' : ' ok') + '" id="st-rmsg" role="status" style="margin:6px 0 0">' + esc(P.rmsg.text) + '</p>' : '') +
-      notes.map(function (x) { return '<p class="notice row" style="margin:10px 0 0">' + esc(x) + '</p>'; }).join('') +
+      notes.map(function (x) { return '<p class="notice row" style="margin:10px 0 0"' + x[1] + '>' + esc(x[0]) + '</p>'; }).join('') +
       kpis(r, sum, setup) + trends(r, sum, setup) + '</section>' +
       tracksCard(r, sum) + albumsCard(r, sum) + audienceCard(sum, setup) + amlCard(r) + freeCard(r) +
-      '<section class="card"><div class="row"><button type="button" class="small" data-st="csv-days">' + esc(t('stats.csv.days')) + '</button>' +
-      '<button type="button" class="small" data-st="csv-tracks">' + esc(t('stats.csv.tracks')) + '</button><span class="muted">' + esc(t('stats.csv.note', { n: P.days })) + '</span></div></section>';
+      '<section class="card"><div class="row"><button type="button" class="small" data-st="csv-days" data-help="help.stats.csv.days">' + esc(t('stats.csv.days')) + '</button>' +
+      '<button type="button" class="small" data-st="csv-tracks" data-help="help.stats.csv.tracks">' + esc(t('stats.csv.tracks')) + '</button><span class="muted">' + esc(t('stats.csv.note', { n: P.days })) + '</span></div></section>';
     root.innerHTML = STYLE + html;
     tickWait();
   }
@@ -181,7 +182,7 @@
     var rf = refreshInfo(setup);
     if (!rf.on) return '';
     var wait = waitLeft(rf);
-    return '<button type="button" class="small primary" data-st="refresh" id="st-refresh" title="' + esc(rf.left <= 0 ? t('err.stats.too_many', { max: rf.max }) : t('stats.refresh_help')) + '"' + (wait > 0 || rf.left <= 0 ? ' disabled' : '') + '>' +
+    return '<button type="button" class="small primary" data-st="refresh" id="st-refresh" data-help="help.stats.refresh" data-help-name="' + esc(t('stats.refresh_now')) + '" title="' + esc(rf.left <= 0 ? t('err.stats.too_many', { max: rf.max }) : t('stats.refresh_help')) + '"' + (wait > 0 || rf.left <= 0 ? ' disabled' : '') + '>' +
       esc(wait > 0 ? t('stats.refresh_wait', { n: wait }) : t('stats.refresh_now')) + '</button>';
   }
   function waitLeft(rf) { return rf.wait > 0 ? Math.max(0, Math.ceil(rf.wait - (Date.now() - P.at) / 1000)) : 0; }
@@ -210,13 +211,13 @@
   function kpis(r, sum, setup) {
     var td = r.today || null;
     var items = [];
-    if (setup.visits !== false) items.push({ k: 'stats.k.visits', idx: 1, today: td && td.v, approx: true });
-    items.push({ k: 'stats.k.plays', idx: 2, today: td && td.p });
-    items.push({ k: 'stats.k.plays_aml', idx: 3, today: td && td.pa, help: 'stats.k.plays_aml_help' });
-    items.push({ k: 'stats.k.gb', idx: 4, today: td && td.g });
+    if (setup.visits !== false) items.push({ k: 'stats.k.visits', idx: 1, today: td && td.v, approx: true, h: ' data-help="help.stats.tile.visits"' });
+    items.push({ k: 'stats.k.plays', idx: 2, today: td && td.p, h: ' data-help="help.stats.tile.plays"' });
+    items.push({ k: 'stats.k.plays_aml', idx: 3, today: td && td.pa, help: 'stats.k.plays_aml_help', h: ' data-help="help.stats.tile.plays_aml"' });
+    items.push({ k: 'stats.k.gb', idx: 4, today: td && td.g, h: ' data-help="help.stats.tile.gb"' });
     return '<div class="st-kpis">' + items.map(function (it) {
       var cur = total(sum, P.days, it.idx, 0), prev = total(sum, P.days, it.idx, P.days);
-      return '<div class="st-kpi"><span class="st-kl">' + esc(t(it.k)) + (it.help ? ' <span class="muted" title="' + esc(t(it.help)) + '">ⓘ</span>' : '') + '</span>' +
+      return '<div class="st-kpi"><span class="st-kl"' + it.h + ' data-help-name="' + esc(t(it.k)) + '">' + esc(t(it.k)) + (it.help ? ' <span class="muted" title="' + esc(t(it.help)) + '">ⓘ</span>' : '') + '</span>' +
         '<b class="st-kv">' + esc(it.approx ? approx(cur.s) : n(cur.s)) + '</b>' +
         '<span class="muted">' + esc(t('stats.total', { n: P.days })) + '</span>' + delta(cur.s, prev) +
         '<span class="st-today">' + esc(t('stats.today')) + ' <b>' + (it.today == null ? '–' : esc(n(it.today))) + '</b></span></div>';
@@ -225,18 +226,18 @@
   function trends(r, sum, setup) {
     var end = lastDay(sum), out = '';
     var plays = series(sum, P.days, 2, end);
-    out += '<h3>' + esc(t('stats.trend.plays')) + '</h3>' + barChart(plays, C_PLAY, t('stats.trend.plays'));
+    out += '<h3 data-help="help.stats.trend">' + esc(t('stats.trend.plays')) + '</h3>' + barChart(plays, C_PLAY, t('stats.trend.plays'));
     if (setup.visits !== false) {
       var visits = series(sum, P.days, 1, end);
-      out += '<h3>' + esc(t('stats.trend.visits')) + '</h3>' + barChart(visits, C_VISIT, t('stats.trend.visits'));
+      out += '<h3 data-help="help.stats.trend">' + esc(t('stats.trend.visits')) + '</h3>' + barChart(visits, C_VISIT, t('stats.trend.visits'));
     }
     var m = dayRows(sum);
     var rows = series(sum, P.days, 2, end).slice().reverse().map(function (x) {
       var d = m[x[0]] || [x[0], 0, 0, 0, 0];
       return '<tr><td>' + esc(x[0]) + '</td>' + (setup.visits !== false ? '<td class="num">' + esc(n(d[1])) + '</td>' : '') + '<td class="num">' + esc(n(d[2])) + '</td><td class="num">' + esc(n(d[3])) + '</td><td class="num">' + esc(n(d[4])) + '</td></tr>';
     }).join('');
-    out += '<details class="guide" style="margin-top:8px"><summary>' + esc(t('stats.table_view')) + '</summary><div class="st-scroll"><table><thead><tr><th>' + esc(t('stats.col.date')) + '</th>' +
-      (setup.visits !== false ? '<th>' + esc(t('stats.k.visits')) + '</th>' : '') + '<th>' + esc(t('stats.k.plays')) + '</th><th>' + esc(t('stats.k.plays_aml')) + '</th><th>' + esc(t('stats.k.gb')) + '</th></tr></thead><tbody>' + rows + '</tbody></table></div></details>';
+    out += '<details class="guide" style="margin-top:8px"><summary data-help="help.stats.table_view">' + esc(t('stats.table_view')) + '</summary><div class="st-scroll"><table><thead><tr><th data-help="help.stats.col.date">' + esc(t('stats.col.date')) + '</th>' +
+      (setup.visits !== false ? '<th data-help="help.stats.tile.visits">' + esc(t('stats.k.visits')) + '</th>' : '') + '<th data-help="help.stats.tile.plays">' + esc(t('stats.k.plays')) + '</th><th data-help="help.stats.tile.plays_aml">' + esc(t('stats.k.plays_aml')) + '</th><th data-help="help.stats.tile.gb">' + esc(t('stats.k.gb')) + '</th></tr></thead><tbody>' + rows + '</tbody></table></div></details>';
     return out;
   }
 
@@ -268,10 +269,10 @@
     var hasAll = hasAml && r.aml.data.tracks.some(function (x) { return x.all_rank; });
     var hasLk = !!(r.likes && r.likes.cum && Object.keys(r.likes.cum).length);   // 3-18
     var basis = r.rank && r.rank.basis ? 'stats.rank_basis.' + r.rank.basis : 'stats.rank_basis.none';
-    var body = list.length ? '<div class="st-scroll"><table><thead><tr><th>' + esc(t('stats.col.rank')) + '</th><th>' + esc(t('stats.col.title')) + '</th><th>' + esc(t('stats.col.plays', { n: P.days })) + '</th><th>' + esc(t('stats.col.plays_aml')) + '</th>' +
-      (hasLk ? '<th title="' + esc(t('stats.likes.help')) + '">' + esc(t('stats.col.likes')) + '</th>' : '') +
-      (hasAml ? '<th>' + esc(t('stats.col.aml_plays7')) + '</th><th>' + esc(t('stats.col.aml_valid7')) + '</th><th>' + esc(t('stats.col.chart')) + '</th><th>' + esc(t('stats.col.genre_rank')) + '</th>' +
-        (hasAll ? '<th title="' + esc(t('stats.all_rank.help')) + '">' + esc(t('stats.col.all_rank')) + ' <span class="muted">ⓘ</span></th>' : '') : '') +
+    var body = list.length ? '<div class="st-scroll"><table><thead><tr><th data-help="help.stats.col.rank">' + esc(t('stats.col.rank')) + '</th><th>' + esc(t('stats.col.title')) + '</th><th data-help="help.stats.col.plays">' + esc(t('stats.col.plays', { n: P.days })) + '</th><th data-help="help.stats.col.plays_aml">' + esc(t('stats.col.plays_aml')) + '</th>' +
+      (hasLk ? '<th data-help="help.stats.col.likes" title="' + esc(t('stats.likes.help')) + '">' + esc(t('stats.col.likes')) + '</th>' : '') +
+      (hasAml ? '<th data-help="help.stats.col.aml_plays7">' + esc(t('stats.col.aml_plays7')) + '</th><th data-help="help.stats.col.aml_valid7">' + esc(t('stats.col.aml_valid7')) + '</th><th data-help="help.stats.col.chart">' + esc(t('stats.col.chart')) + '</th><th data-help="help.stats.col.genre_rank">' + esc(t('stats.col.genre_rank')) + '</th>' +
+        (hasAll ? '<th data-help="help.stats.col.all_rank" data-help-name="' + esc(t('stats.col.all_rank')) + '" title="' + esc(t('stats.all_rank.help')) + '">' + esc(t('stats.col.all_rank')) + ' <span class="muted">ⓘ</span></th>' : '') : '') +
       '</tr></thead><tbody>' + list.slice(0, 100).map(function (o) {
         var mv = o.rk ? mvText(o.rk[2]) : null;
         var a = o.aml, ch = '';
@@ -288,7 +289,7 @@
             (hasAll ? '<td class="st-all">' + allRank(a) + '</td>' : '') : '') +
           '</tr>';
       }).join('') + '</tbody></table></div>' : '<p class="muted">' + esc(t('stats.empty')) + '</p>';
-    return '<section class="card"><h2>' + esc(t('stats.tracks')) + '</h2><p class="muted" style="margin:-6px 0 8px">' + esc(t(basis)) + '</p>' +
+    return '<section class="card"><h2 data-help="help.stats.tracks">' + esc(t('stats.tracks')) + '</h2><p class="muted" style="margin:-6px 0 8px" data-help="help.stats.rank_basis">' + esc(t(basis)) + '</p>' +
       (hasAll ? '<p class="muted" style="margin:0 0 8px">' + esc(t('stats.all_rank.slogan')) + '</p>' : '') + body + '</section>';
   }
   function albumsCard(r, sum) {
@@ -301,7 +302,7 @@
       var s = 0, s2 = 0; (a.track_ids || []).forEach(function (id) { s += p[id] || 0; s2 += aml[id] || 0; });
       return { a: a, s: s, s2: s2 };
     }).sort(function (x, y) { return y.s - x.s || y.s2 - x.s2; });
-    return '<section class="card"><h2>' + esc(t('stats.albums')) + '</h2><div class="st-scroll"><table><thead><tr><th>' + esc(t('stats.col.album')) + '</th><th>' + esc(t('stats.col.songs')) + '</th><th>' + esc(t('stats.col.plays', { n: P.days })) + '</th><th>' + esc(t('stats.col.aml_plays7')) + '</th></tr></thead><tbody>' +
+    return '<section class="card"><h2 data-help="help.stats.albums">' + esc(t('stats.albums')) + '</h2><div class="st-scroll"><table><thead><tr><th>' + esc(t('stats.col.album')) + '</th><th>' + esc(t('stats.col.songs')) + '</th><th data-help="help.stats.album.plays">' + esc(t('stats.col.plays', { n: P.days })) + '</th><th data-help="help.stats.album.aml_plays7">' + esc(t('stats.col.aml_plays7')) + '</th></tr></thead><tbody>' +
       rows.map(function (o) { return '<tr><td><b>' + esc(o.a.title) + '</b></td><td class="num">' + (o.a.track_ids || []).length + '</td><td class="num">' + esc(n(o.s)) + '</td><td class="num">' + esc(n(o.s2)) + '</td></tr>'; }).join('') +
       '</tbody></table></div></section>';
   }
@@ -311,18 +312,18 @@
     if (setup.visits === false) {   // PHP판·meshmelo: 방문은 못 세고, 나라·기기·언어는 재생 기준
       var dims = sum && sum.dims && (sum.dims.cc || sum.dims.dev || sum.dims.lang);
       if (!hrs && !dims) return '';
-      return '<section class="card"><h2>' + esc(t('stats.listeners')) + '</h2>' + (dims ? '<div class="st-grid2">' +
-        '<div><h3>' + esc(t('stats.countries')) + '</h3>' + listBars(dimRows(sum, 'cc', 10), t('stats.countries'), regionName) + '</div>' +
-        '<div><h3>' + esc(t('stats.devices')) + '</h3>' + listBars(dimRows(sum, 'dev', 4), t('stats.devices'), devKey) + '</div>' +
-        '<div><h3>' + esc(t('stats.langs')) + '</h3>' + listBars(dimRows(sum, 'lang', 10), t('stats.langs'), langName) + '</div></div>' : '') + hrs + '</section>';
+      return '<section class="card"><h2 data-help="help.stats.listeners">' + esc(t('stats.listeners')) + '</h2>' + (dims ? '<div class="st-grid2">' +
+        '<div><h3 data-help="help.stats.countries">' + esc(t('stats.countries')) + '</h3>' + listBars(dimRows(sum, 'cc', 10), t('stats.countries'), regionName) + '</div>' +
+        '<div><h3 data-help="help.stats.devices">' + esc(t('stats.devices')) + '</h3>' + listBars(dimRows(sum, 'dev', 4), t('stats.devices'), devKey) + '</div>' +
+        '<div><h3 data-help="help.stats.langs">' + esc(t('stats.langs')) + '</h3>' + listBars(dimRows(sum, 'lang', 10), t('stats.langs'), langName) + '</div></div>' : '') + hrs + '</section>';
     }
     var refKey = function (k) { var s = t('stats.ref.' + k); return s === 'stats.ref.' + k ? k : s; };
-    return '<section class="card"><h2>' + esc(t('stats.audience')) + '</h2><div class="st-grid2">' +
-      '<div><h3>' + esc(t('stats.countries')) + '</h3>' + listBars(dimRows(sum, 'cc', 10), t('stats.countries'), regionName) + '</div>' +
-      '<div><h3>' + esc(t('stats.refs')) + '</h3>' + listBars(dimRows(sum, 'ref', 8), t('stats.refs'), refKey) + '</div>' +
-      '<div><h3>' + esc(t('stats.domains')) + '</h3>' + listBars(dimRows(sum, 'refd', 10), t('stats.domains')) + '</div>' +
-      '<div><h3>' + esc(t('stats.devices')) + '</h3>' + listBars(dimRows(sum, 'dev', 4), t('stats.devices'), devKey) + '</div>' +
-      '<div><h3>' + esc(t('stats.langs')) + '</h3>' + listBars(dimRows(sum, 'lang', 10), t('stats.langs'), langName) + '</div>' +
+    return '<section class="card"><h2 data-help="help.stats.audience">' + esc(t('stats.audience')) + '</h2><div class="st-grid2">' +
+      '<div><h3 data-help="help.stats.countries">' + esc(t('stats.countries')) + '</h3>' + listBars(dimRows(sum, 'cc', 10), t('stats.countries'), regionName) + '</div>' +
+      '<div><h3 data-help="help.stats.refs">' + esc(t('stats.refs')) + '</h3>' + listBars(dimRows(sum, 'ref', 8), t('stats.refs'), refKey) + '</div>' +
+      '<div><h3 data-help="help.stats.domains">' + esc(t('stats.domains')) + '</h3>' + listBars(dimRows(sum, 'refd', 10), t('stats.domains')) + '</div>' +
+      '<div><h3 data-help="help.stats.devices">' + esc(t('stats.devices')) + '</h3>' + listBars(dimRows(sum, 'dev', 4), t('stats.devices'), devKey) + '</div>' +
+      '<div><h3 data-help="help.stats.langs">' + esc(t('stats.langs')) + '</h3>' + listBars(dimRows(sum, 'lang', 10), t('stats.langs'), langName) + '</div>' +
       '</div>' + hrs + '</section>';
   }
   // 시간대: 저장은 UTC, 보여 줄 때 내 컴퓨터 시각으로 옮긴다(30분 단위 시간대는 UTC 그대로)
@@ -336,50 +337,50 @@
       return v.map(function (x, h) { return [String(h), x, (h < 10 ? '0' : '') + h + ':00']; });
     };
     var label = off ? t('stats.hours', { off: (off > 0 ? '+' : '') + off }) : t('stats.hours_utc');
-    var out = '<h3>' + esc(label) + ' · ' + esc(t('stats.k.plays')) + '</h3>' + barChart(mk(sum.hours.p), C_PLAY, label);
-    if (setup.visits !== false) out += '<h3>' + esc(label) + ' · ' + esc(t('stats.k.visits')) + '</h3>' + barChart(mk(sum.hours.v), C_VISIT, label);
+    var out = '<h3 data-help="help.stats.hours">' + esc(label) + ' · ' + esc(t('stats.k.plays')) + '</h3>' + barChart(mk(sum.hours.p), C_PLAY, label);
+    if (setup.visits !== false) out += '<h3 data-help="help.stats.hours">' + esc(label) + ' · ' + esc(t('stats.k.visits')) + '</h3>' + barChart(mk(sum.hours.v), C_VISIT, label);
     return out;
   }
   function amlCard(r) {
     var st = r.aml;
-    var h = '<section class="card"><h2>' + esc(t('stats.aml.title')) + '</h2>';
+    var h = '<section class="card"><h2 data-help="help.stats.aml.title">' + esc(t('stats.aml.title')) + '</h2>';
     if (!st || !st.data) {
       var why = st && st.error === 'err.aml.not_ready' ? t('stats.aml.wait') : t('stats.aml.none');
       return h + '<p class="muted">' + esc(why) + ' ' + esc(t('stats.aml.daily')) + '</p></section>';
     }
     var end = lastDay(r.sum);   // 내 사이트 숫자와 같은 날까지 (UTC 어제)
-    var keys = [['plays', 'stats.aml.plays'], ['valid', 'stats.aml.valid'], ['likes', 'stats.aml.likes'], ['adds', 'stats.aml.adds']];
+    var keys = [['plays', 'stats.aml.plays', ' data-help="help.stats.aml.plays"'], ['valid', 'stats.aml.valid', ' data-help="help.stats.aml.valid"'], ['likes', 'stats.aml.likes', ' data-help="help.stats.aml.likes"'], ['adds', 'stats.aml.adds', ' data-help="help.stats.aml.adds"']];
     var tiles = '<div class="st-kpis">' + keys.map(function (k) {
       var cur = amlTotal(r, k[0], P.days, 0, end), prev = amlTotal(r, k[0], P.days, P.days, end);
-      return '<div class="st-kpi"><span class="st-kl">' + esc(t(k[1])) + '</span><b class="st-kv">' + esc(n(cur.s)) + '</b><span class="muted">' + esc(t('stats.total', { n: P.days })) + '</span>' + delta(cur.s, prev) + '</div>';
+      return '<div class="st-kpi"><span class="st-kl"' + k[2] + '>' + esc(t(k[1])) + '</span><b class="st-kv">' + esc(n(cur.s)) + '</b><span class="muted">' + esc(t('stats.total', { n: P.days })) + '</span>' + delta(cur.s, prev) + '</div>';
     }).join('') + '</div>';
     var m = {}; amlDays(r).forEach(function (x) { m[x.d] = x; });
     var rows = []; for (var i = P.days - 1; i >= 0; i--) { var d = ymdAdd(end, -i); rows.push([d, m[d] ? +m[d].plays || 0 : 0]); }
     var cc = (st.data.countries || []).slice(0, 10).map(function (x) { return [x[0], x[1]]; });
     return h + '<p class="muted" style="margin:-6px 0 0">' + esc(t('stats.aml.updated', { time: A.fmtClock(st.ok_at || st.at) })) + ' ' + esc(t('stats.aml.daily')) + '</p>' + tiles +
-      '<h3>' + esc(t('stats.aml.plays')) + '</h3>' + barChart(rows, C_PLAY, t('stats.aml.plays')) +
-      (cc.length ? '<h3>' + esc(t('stats.countries')) + '</h3>' + listBars(cc, t('stats.countries'), regionName) : '') + '</section>';
+      '<h3 data-help="help.stats.aml.trend">' + esc(t('stats.aml.plays')) + '</h3>' + barChart(rows, C_PLAY, t('stats.aml.plays')) +
+      (cc.length ? '<h3 data-help="help.stats.aml.countries">' + esc(t('stats.countries')) + '</h3>' + listBars(cc, t('stats.countries'), regionName) : '') + '</section>';
   }
   // 무료 한도: 맨 위 사용량(GET /api/admin/usage)과 같은 숫자 + 통계 기록(Analytics Engine) 오늘 줄 수
   function freeCard(r) {
     var u = S.usage, items = u && (u.ok ? u.items : u.last && u.last.items);
-    var bar = function (label, used, limit, bytes) {
+    var bar = function (label, used, limit, bytes, hk) {   // hk = ' data-help="…"' (? 표시)
       var pct = limit ? Math.min(100, used / limit * 100) : 0;
       var cls = pct >= 90 ? ' danger' : pct >= 70 ? ' warn' : '';
-      return '<div class="ubar' + cls + '"><div class="lbl"><span>' + esc(label) + '</span><b>' + (pct < 0.1 && used ? '<0.1' : pct.toFixed(pct < 10 ? 1 : 0)) + '%</b></div>' +
+      return '<div class="ubar' + cls + '"><div class="lbl"><span' + (hk || '') + '>' + esc(label) + '</span><b>' + (pct < 0.1 && used ? '<0.1' : pct.toFixed(pct < 10 ? 1 : 0)) + '%</b></div>' +
         '<div class="track"><div class="fill" style="width:' + pct.toFixed(1) + '%"></div></div><span class="num">' + esc((bytes ? A.fmtBytes(used) + ' / ' + A.fmtBytes(limit) : n(used) + ' / ' + n(limit))) + '</span></div>';
     };
     var bars = '';
     if (items && items.r2_storage) {
-      bars += bar(t('usage.r2_storage'), items.r2_storage.used, items.r2_storage.limit, true);
-      if (items.workers_requests && !A.isMm()) bars += bar(t('usage.workers'), items.workers_requests.used, items.workers_requests.limit);
-      if (items.r2_class_a) bars += bar(t('usage.r2_class_a'), items.r2_class_a.used, items.r2_class_a.limit);
-      if (items.r2_class_b) bars += bar(t('usage.r2_class_b'), items.r2_class_b.used, items.r2_class_b.limit);
+      bars += bar(t('usage.r2_storage'), items.r2_storage.used, items.r2_storage.limit, true, ' data-help="help.stats.free.r2_storage"');
+      if (items.workers_requests && !A.isMm()) bars += bar(t('usage.workers'), items.workers_requests.used, items.workers_requests.limit, false, ' data-help="help.stats.free.workers"');
+      if (items.r2_class_a) bars += bar(t('usage.r2_class_a'), items.r2_class_a.used, items.r2_class_a.limit, false, ' data-help="help.stats.free.r2_class_a"');
+      if (items.r2_class_b) bars += bar(t('usage.r2_class_b'), items.r2_class_b.used, items.r2_class_b.limit, false, ' data-help="help.stats.free.r2_class_b"');
     }
     var td = r.today;
-    if (td && r.setup && r.setup.dataset && !A.isMm()) bars += bar(t('stats.free.ae'), (td.v || 0) + (td.p || 0) + (td.pa || 0) + (td.g || 0), 100000);
+    if (td && r.setup && r.setup.dataset && !A.isMm()) bars += bar(t('stats.free.ae'), (td.v || 0) + (td.p || 0) + (td.pa || 0) + (td.g || 0), 100000, false, ' data-help="help.stats.free.ae"');
     if (!bars) return '';
-    return '<section class="card"><h2>' + esc(t('stats.free.title')) + '</h2><div class="bars">' + bars + '</div><p class="muted" style="margin:10px 0 0">' + esc(t('stats.free.note')) + '</p></section>';
+    return '<section class="card"><h2 data-help="help.stats.free.title">' + esc(t('stats.free.title')) + '</h2><div class="bars">' + bars + '</div><p class="muted" style="margin:10px 0 0">' + esc(t('stats.free.note')) + ' <small>(' + esc(t('free.one')) + ')</small></p></section>';   // M-8
   }
 
   // ── CSV (이 브라우저에서 만든다, 엑셀용 BOM) ──

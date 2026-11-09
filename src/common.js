@@ -12,6 +12,7 @@ export const KEY = {
   ping: 'meta/ping_pending',      // ping 재시도 표시 (있을 때만)
   todoRegister: 'meta/todo_register', // 자동 등록 재시도 표시 (있을 때만)
   todoCommit: 'meta/todo_commit',     // 여러 곡 업로드 뒤 반영이 빠졌을 때 cron이 대신 반영
+  todoAlbumPub: 'meta/todo_albumpub', // 3-24 예약 공개 앨범이 있을 때만. customMetadata at = 가장 이른 공개 시각(UTC) — cron 이 HEAD 1번으로 본다
   loginFail: (ipHash) => `meta/login_fail/${ipHash}.json`,
   audio: (id) => `audio/${id}`,
   cover: (id) => `covers/${id}`,

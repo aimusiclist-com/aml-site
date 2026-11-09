@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------------------
 import SONG_LANGS_FILE from '../public/_app/song-langs.json';
 import SOCIALS_FILE from '../public/_app/socials.json';
+import COUNTRIES_FILE from '../public/_app/countries.json';   // 3-24 활동하는 나라 (ISO 3166-1 두 글자, 249개)
 import { fail } from './common.js';
 
 export const SONG_LANGS = SONG_LANGS_FILE.langs.map((x) => x.code);
@@ -16,6 +17,7 @@ const SOCIAL_BY_KEY = Object.fromEntries(SOCIALS.map((s) => [s.key, s]));
 export const BIG_SOCIALS = SOCIALS.filter((s) => s.big).map((s) => s.key);
 export const SOCIAL_MAX_MORE = SOCIALS_FILE.max_more || 5;
 export const SOCIAL_MAX_URL = SOCIALS_FILE.max_url || 200;
+export const COUNTRY_SET = new Set(COUNTRIES_FILE.codes);
 
 // 사이트 기본 언어(화면 언어) → 곡 언어 기본값: 앞 2글자(pt-br → pt). 목록에 없으면 en. (지시문 3-7)
 export function defaultSongLang(siteLang) {

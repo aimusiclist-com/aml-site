@@ -217,6 +217,7 @@ async function updateAccount(request, env) {
   const next = { ...data };
   if (b.email !== undefined && b.email !== '') next.email = vEmail(b.email);
   let relog = false;
+  if (b.new_password && b.new_password2 !== undefined && b.new_password2 !== b.new_password) fail(400, 'err.setup.password_mismatch');   // M-7 다시 입력
   if (b.new_password) { next.pw = await hashPassword(vPassword(b.new_password)); next.session_key = randomHex(32); relog = true; }
   if (b.cf_token) {
     const tk = await checkToken(env, b.cf_token, typeof b.account_id === 'string' ? b.account_id : '');

@@ -25,7 +25,8 @@
  * 3-8 (catalog 1.3): 확장 항목 tracks[].ext · site.ext (db 곡·사이트 ext, 모르는 key도 보관), 사이트 자체 칸 local(catalog로 안 보냄)
  *   항목 목록은 우리사이트 fields.json (src/fields.js — cron 하루 1번, 사이트마다 다른 분) · 새 버전 안내 versions.json
  */
-import { uiFetch } from './ui.js';
+import { uiFetch, writeSitemap } from './ui.js';
+import { seoRoute, cleanGsv } from './seo.js';   // 3-27
 import {
   KEY, ALLOWED_ORIGINS, ApiError, fail, json, errorResponse, nowIso, charLen, sha256Hex,
   readJson, apiBase, IMAGE_RULES, readWebp,
@@ -38,9 +39,10 @@ import {
 import { listPosts, addPost, deletePost } from './guestbook.js';
 import { normalizeDomain, reachCheck, requestUrlChange, visitorRedirect } from './domain.js';
 import { getUsage } from './usage.js';
-import { loadDb, saveDb, artistOf, pubCount, pubShort, checkMinPublic } from './db.js';
-import { vLangs, langsForCatalog, vSocials, cleanSocials, defaultSongLang } from './lists.js';
+import { loadDb, saveDb, artistOf, pubCount, pubShort, checkMinPublic, albumLive, albumPending } from './db.js';
+import { vLangs, langsForCatalog, vSocials, cleanSocials, defaultSongLang, COUNTRY_SET } from './lists.js';
 import { vAiTool, aiToolForCatalog } from './aitools.js';
+import { famous } from './reserved.js';   // M-7 유명 음악가 이름 사칭 막기
 import { loadFields, mergeExt, extForCatalog, fieldOf, vLocal, refreshFields, cronFields, fieldsState } from './fields.js';
 import { statsPlay, statsGuestbook, cronStats, adminStats, adminStatsRefresh, adminPlays, likePost } from './stats.js';
 import { cronFeed, adminInsights, feedState } from './insights.js';
@@ -51,7 +53,9 @@ const LIMITS = {
   lyricsMaxBytes: 100 * 1024, // 3-6 가사 .srt
   footerMax: 200,             // 3-6 하단 문구
   durationMin: 30, durationMax: 900,
-  albumMin: 10, albumMax: 30,
+  albumMin: 6, albumMax: 35,   // 3-24: 6~35곡 (전 10~30). 6곡 미만도 만들 수는 있고 공개만 안 됨
+  albumDescMax: 200,           // 3-24 앨범 소개글 (줄바꿈 허용, 글자만)
+  albumPubAheadDays: 366,      // 3-24 예약 공개는 1년 안
   maxPublicTracks: 1000, maxPublicAlbums: 100,
   catalogMaxBytes: 512 * 1024,
   jsonBodyMaxBytes: 64 * 1024,
@@ -82,7 +86,8 @@ export default {
         if (a) return a;
       }
       // 3-6: 내 도메인을 연결했으면 workers.dev 의 방문자 화면(/)만 새 주소로 301
-      if (path === '/' && (request.method === 'GET' || request.method === 'HEAD')) {
+      //   3-27: 곡·앨범 등 진짜 주소와 robots.txt·sitemap.xml 도 같은 주소로 (경로 그대로)
+      if ((request.method === 'GET' || request.method === 'HEAD') && (seoRoute(path) || path === '/robots.txt' || path === '/sitemap.xml')) {
         const r = await visitorRedirect(env, url); if (r) return r;
       }
       const ui = await uiFetch(request, env, ctx); if (ui) return ui; // 방문자 페이지·스킨·메뉴
@@ -119,6 +124,7 @@ export default {
       retryPendingPing(env).catch((e) => console.error(e)),
       cronRegister(env, ctx).catch((e) => console.error(e)),
       cronCommit(env, ctx).catch((e) => console.error(e)),
+      cronAlbumPub(env, ctx, event.scheduledTime).catch((e) => console.error(e)),   // 3-24 예약 공개 앨범 (시각이 되면 공개 + ping)
       cronFields(env, event.scheduledTime).catch((e) => console.error(e)),   // 3-8 fields.json·versions.json (하루 1번, 내 분)
       cronStats(env, ctx, event.scheduledTime).catch((e) => console.error(e)),   // 3-12 통계·인기 순위 (하루 1번, UTC 00:05~00:59 내 분)
       cronFeed(env, event.scheduledTime).catch((e) => console.error(e)),   // 3-15 aimusiclist 분석 자료·소식 (하루 1번, 내 분 — 관리 화면은 저장본만)
@@ -263,13 +269,33 @@ async function guestbookPublic(request, env, url, ctx) {
 // ===== 5. 데이터(db.json): src/db.js =====================================
 
 // ===== 6. catalog 1.3 만들기 (3-7: 1.1 + tracks[].langs + site.socials / 3-8: + tracks[].ext · site.ext) =====
-function amlAlbumsOf(db) { return Object.values(db.albums).filter((a) => a.aml); }
+// 3-24: 공개 앨범 = aml 켜짐 + 예약 시각이 지났음(또는 예약 없음). 예약 중인 앨범은 catalog·방문자 화면에 없다
+function amlAlbumsOf(db, now) { now = now || nowIso(); return Object.values(db.albums).filter((a) => albumLive(a, now)); }
+// aml 켜진 앨범 전부(예약 중 포함) — 곡 수·음원 검사, "공개 앨범의 곡은 비공개로 못 바꿈" 잠금에 쓴다(예약이 오면 그대로 공개되도록)
+function amlAlbumsAll(db) { return Object.values(db.albums).filter((a) => a.aml); }
+// 시각이 지난 예약은 지운다 → 그 앨범은 이제 보통 공개 앨범 (finish 가 부른다, 바뀐 것이 있으면 true)
+function albumDue(db, now) {
+  let n = 0;
+  for (const a of Object.values(db.albums)) if (typeof a.pub_at === 'string' && !albumPending(a, now)) { delete a.pub_at; n++; }
+  return n > 0;
+}
+// 가장 이른 예약 시각 (없으면 '')
+function albumNextPub(db, now) {
+  let at = '';
+  for (const a of Object.values(db.albums)) if (albumPending(a, now) && (!at || a.pub_at < at)) at = a.pub_at;
+  return at;
+}
 // catalog에 들어갈 곡 = (aml 켜짐 + 음원 있음) + aml 앨범의 곡 (연동규약 0-4)
 function liveTrackIds(db) {
   const ids = new Set();
   for (const t of Object.values(db.tracks)) if (t.aml && t.has_audio) ids.add(t.id);
   for (const a of amlAlbumsOf(db)) a.track_ids.forEach((id) => ids.add(id));
   return ids;
+}
+// 3-24 공개 조건을 채웠나 (만들 때 바로 공개할지)
+function albumReady(db, a) {
+  const n = a.track_ids.length;
+  return n >= LIMITS.albumMin && n <= LIMITS.albumMax && a.track_ids.every((id) => db.tracks[id] && db.tracks[id].has_audio);
 }
 function checkAlbumReady(db, a) {
   const n = a.track_ids.length;
@@ -281,19 +307,20 @@ const imgOrigin = (env) => { try { return new URL(apiBase(env)).origin; } catch 
 
 // fdoc: 확장 항목 정상본(meta/fields.json, 없으면 null) — ext 는 이 목록에 있는 맞는 값만 보낸다
 function buildCatalog(db, env, eff, origin, now, fdoc) {
-  const albums = amlAlbumsOf(db);
-  for (const a of albums) checkAlbumReady(db, a);
+  for (const a of amlAlbumsAll(db)) checkAlbumReady(db, a);   // 3-24 예약 중인 앨범도 지금 검사 (시각이 됐을 때 막히지 않게)
+  const albums = amlAlbumsOf(db, now);
   const ids = liveTrackIds(db);
   if (ids.size > LIMITS.maxPublicTracks) fail(413, 'err.catalog.too_large', { max_tracks: LIMITS.maxPublicTracks });
   if (albums.length > LIMITS.maxPublicAlbums) fail(413, 'err.catalog.too_large', { max_albums: LIMITS.maxPublicAlbums });
 
   // aimusiclist 공개 시각: 새로 들어가면 지금, 빠지면 지움
   for (const t of Object.values(db.tracks)) { if (ids.has(t.id)) t.published_at ||= now; else delete t.published_at; }
-  for (const a of Object.values(db.albums)) { if (a.aml) a.published_at ||= now; else delete a.published_at; }
+  for (const a of Object.values(db.albums)) { if (albumLive(a, now)) a.published_at ||= now; else delete a.published_at; }   // 3-24 예약 공개 = 그 시각이 첫 공개
 
   const s = db.site;
   const site = { site_id: eff.site_id || '', url: origin, name: s.name, artist_name: s.artist_name || s.name, default_lang: s.default_lang || 'en' };
   if (s.description) site.description = s.description;
+  if (typeof s.country === 'string' && COUNTRY_SET.has(s.country)) site.country = s.country;   // 3-24 활동하는 나라 (ISO 2글자 대문자, 선택 — aimusiclist Artists 나라별 순위)
   if (s.profile_v) site.profile_url = `${origin}/p?v=${s.profile_v}`;   // 3-6 (catalog 1.1)
   site.socials = cleanSocials(s.socials).map((x) => x.key);              // 3-7 (catalog 1.2): 키만. 주소는 넣지 않는다. 없으면 []
   const sext = extForCatalog(s.ext, fdoc, 'site');                       // 3-8 (catalog 1.3): 값 있는 것만, 2KB. local 은 보내지 않는다
@@ -304,11 +331,15 @@ function buildCatalog(db, env, eff, origin, now, fdoc) {
     schema: '1.3',
     generated_at: now,
     site,
-    albums: albums.map((a) => ({
-      id: a.id, title: a.title, artist: artistOf(a, s),
-      cover_url: a.has_cover ? `${origin}/c/${a.id}` : null,
-      track_ids: a.track_ids, published_at: a.published_at,
-    })),
+    albums: albums.map((a) => {
+      const o = {
+        id: a.id, title: a.title, artist: artistOf(a, s),
+        cover_url: a.has_cover ? `${origin}/c/${a.id}` : null,
+        track_ids: a.track_ids, published_at: a.published_at,
+      };
+      if (typeof a.desc === 'string' && a.desc) o.desc = a.desc;   // 3-24 앨범 소개글 (200자, 줄바꿈 허용·HTML 없음, 있을 때만)
+      return o;
+    }),
     tracks: [...ids].map((id) => db.tracks[id])
       .sort((x, y) => (y.published_at.localeCompare(x.published_at)) || x.id.localeCompare(y.id))
       .map((t) => {
@@ -337,6 +368,7 @@ function buildCatalog(db, env, eff, origin, now, fdoc) {
 // 규칙 위반이면 아무것도 저장하지 않고 오류.
 // 3-21: 공개 곡이 10곡(곡이 그보다 적으면 전부)보다 적어지는 변경은 거부. 곡 지우기만 예외(allowFewer).
 async function finish(env, ctx, db, etag, origin, defer, allowFewer) {
+  albumDue(db, nowIso());   // 3-24 시각이 지난 예약 공개 앨범 → 공개 (cron 이 commitNow 로 이 길을 지난다)
   if (!allowFewer) checkMinPublic(db);
   if (defer) {
     await saveDb(env, db, etag);
@@ -349,6 +381,9 @@ async function finish(env, ctx, db, etag, origin, defer, allowFewer) {
   const catalog = buildCatalog(db, env, eff, origin, nowIso(), await loadFields(env));
   await saveDb(env, db, etag);
   const result = await writeCatalog(env, ctx, catalog);
+  await syncAlbumPub(env, db);   // 3-24 예약 표시 (cron 이 볼 가장 이른 시각)
+  // 3-27 sitemap.xml: 곡·앨범이 바뀔 때만 다시 만든다(내용이 같으면 쓰지 않음, 응답을 늦추지 않게 뒤에서)
+  ctx.waitUntil(writeSitemap(env, db, env.SITE_URL || (aml && aml.origin) || origin).catch((e) => console.error(e)));
   // 첫 aimusiclist 공개곡이 생기면 자동 등록 (연동규약 2-1)
   if (catalog.tracks.length && needsRegister(env, aml)) ctx.waitUntil(registerAndCommit(env, ctx, origin).catch((e) => console.error(e)));
   return result;
@@ -413,6 +448,24 @@ async function cronRegister(env, ctx) {
   const { data } = await loadAml(env, true);
   if (!needsRegister(env, data)) { if (!data || data.status === 'ok' || data.status === 'stopped') await env.BUCKET.delete(KEY.todoRegister); return; }
   await registerAndCommit(env, ctx, null);
+}
+// 3-24 예약 공개: 표시(meta/todo_albumpub)의 시각이 지났으면 지금 db 로 다시 반영 → 앨범이 catalog·방문자 화면에 나오고 ping.
+// 예약이 없으면 표시도 없다(HEAD 1번 = 404). 방문자 화면은 db 가 바뀌어 다음 방문 때 다시 만들어진다(30초 안).
+async function syncAlbumPub(env, db) {
+  const at = albumNextPub(db, nowIso());
+  if (!at) { await env.BUCKET.delete(KEY.todoAlbumPub); return; }
+  const h = await env.BUCKET.head(KEY.todoAlbumPub);
+  if (h && h.customMetadata && h.customMetadata.at === at) return;
+  await env.BUCKET.put(KEY.todoAlbumPub, at, { customMetadata: { at } });
+}
+async function cronAlbumPub(env, ctx, now) {
+  const h = await env.BUCKET.head(KEY.todoAlbumPub);
+  const at = h && h.customMetadata && h.customMetadata.at;
+  if (!h) return;
+  if (at && at > new Date(now || Date.now()).toISOString().replace(/\.\d{3}Z$/, 'Z')) return;
+  const origin = await storedOrigin(env);
+  if (!origin) return;
+  await commitNow(env, ctx, origin);
 }
 async function cronCommit(env, ctx) {
   const h = await env.BUCKET.head(KEY.todoCommit);
@@ -487,6 +540,35 @@ function vTrackIds(v, db) {
   for (const id of v) if (!db.tracks[id]) fail(404, 'err.not_found', { track_id: id });
   return v;
 }
+// 3-24 앨범 소개글: 글자만(HTML 은 화면에서 항상 글자로), 줄바꿈 허용(\r\n → \n, 빈 줄은 2개까지), 그 밖 제어 문자 빼기, 200자(코드 포인트)
+function vDesc(v) {
+  if (v == null) return '';
+  if (typeof v !== 'string') fail(400, 'err.request.invalid', { field: 'desc' });
+  const s = v.replace(/\r\n?/g, '\n').replace(/[\u0000-\u0009\u000b-\u001f\u007f]+/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  if (charLen(s) > LIMITS.albumDescMax) fail(422, 'err.album.desc_long', { max: LIMITS.albumDescMax });
+  return s;
+}
+// 3-24 예약 공개 시각: null·'' = 지금 공개(예약 없음). "YYYY-MM-DDTHH:MM[:SS[.mmm]]Z" (UTC) → 분 단위 "…:00Z".
+// 지난 시각이면 예약 없음(지금 공개). 1년보다 먼 시각은 거부.
+function vPubAt(v, now) {
+  if (v == null || v === '') return null;
+  if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?Z$/.test(v) || isNaN(Date.parse(v))) fail(400, 'err.request.invalid', { field: 'pub_at' });
+  const at = v.slice(0, 16) + ':00Z';
+  if (isNaN(Date.parse(at)) || new Date(at).toISOString().replace(/\.\d{3}Z$/, 'Z') !== at) fail(400, 'err.request.invalid', { field: 'pub_at' });   // 2월 30일 같은 날짜
+  if (at <= now) return null;
+  if (Date.parse(at) - Date.parse(now) > LIMITS.albumPubAheadDays * 86400e3) fail(422, 'err.album.pub_at_far', { days: LIMITS.albumPubAheadDays });
+  return at;
+}
+// 3-24 활동하는 나라: ISO 3166-1 두 글자 대문자(목록 = public/_app/countries.json). null·'' = 지우기
+function vCountry(v) {
+  if (v == null || v === '') return null;
+  if (typeof v !== 'string' || !COUNTRY_SET.has(v)) fail(400, 'err.request.invalid', { field: 'country' });
+  return v;
+}
+// M-7: 새로 정한 이름 중 유명 음악가 이름이 있으면 422 err.name.famous (비교표는 이때만 읽는다)
+async function noFamous(values, field) {
+  if (await famous(values.filter((x) => typeof x === 'string' && x))) fail(422, 'err.name.famous', { field });
+}
 function vArtists(v, site) {
   if (!Array.isArray(v) || v.length > LIMITS.maxArtists) fail(422, 'err.artist.too_many', { max: LIMITS.maxArtists });
   const out = [];
@@ -498,7 +580,7 @@ function vArtists(v, site) {
 }
 const getTrack = (db, id) => db.tracks[id] || fail(404, 'err.not_found', { track_id: id });
 const getAlbum = (db, id) => db.albums[id] || fail(404, 'err.not_found', { album_id: id });
-const amlAlbumWith = (db, trackId) => amlAlbumsOf(db).find((a) => a.track_ids.includes(trackId));
+const amlAlbumWith = (db, trackId) => amlAlbumsAll(db).find((a) => a.track_ids.includes(trackId));   // 3-24 예약 중인 공개 앨범도 잠금
 
 async function handleAdmin(request, env, ctx, url) {
   const admin = await requireAdmin(request, env);
@@ -589,7 +671,7 @@ async function adminSite(request, env, ctx, origin) {
   const body = await readJson(request);
   const { db, etag } = await loadDb(env);
   const s = db.site;
-  const oldName = s.name;
+  const oldName = s.name, oldArtist = s.artist_name, oldArtists = [...(s.artists || [])];
   if (body.name !== undefined) s.name = vStr(body.name, 'name', 1, 40);
   if (body.artist_name !== undefined) s.artist_name = vStr(body.artist_name, 'artist_name', 1, 40);
   if (body.default_lang !== undefined) {
@@ -597,6 +679,7 @@ async function adminSite(request, env, ctx, origin) {
     s.default_lang = body.default_lang;
   }
   if (body.description !== undefined) s.description = vStr(body.description, 'description', 0, 200);
+  if (body.country !== undefined) setOrDelete(s, 'country', vCountry(body.country) || undefined);   // 3-24 활동하는 나라 (catalog site.country)
   if (body.artists !== undefined) s.artists = vArtists(body.artists, s);
   // 3-6: 하단 문구(글자만, 한 줄), 방명록 켜기/끄기, 애드센스
   if (body.footer !== undefined) s.footer = vStr(String(body.footer ?? '').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' '), 'footer', 0, LIMITS.footerMax);
@@ -608,8 +691,19 @@ async function adminSite(request, env, ctx, origin) {
   if (body.profile_color !== undefined) setOrDelete(s, 'profile_color', vColor(body.profile_color) || undefined);            // 3-9 프로필 평균 색 (방문자 머리 영역 바탕, catalog 제외)
   if (body.plays_pub !== undefined) setOrDelete(s, 'plays_pub', vBool(body.plays_pub, 'plays_pub') || undefined);         // 3-14 방문자에게 재생 횟수 보여 주기 (기본 끔, catalog 제외)
   if (body.likes !== undefined) setOrDelete(s, 'likes_off', vBool(body.likes, 'likes') ? undefined : true);                // 3-18 좋아요 버튼 보이기 (기본 켬 — 끌 때만 likes_off, catalog 제외)
+  if (body.add !== undefined) setOrDelete(s, 'add_off', vBool(body.add, 'add') ? undefined : true);                        // 3-25 + aimusiclist 담기 버튼 보이기 (기본 켬 — 끌 때만 add_off, catalog 제외)
+  if (body.search !== undefined) setOrDelete(s, 'search_off', vBool(body.search, 'search') ? undefined : true);            // 3-27 검색에 보이기 (기본 켬 — 끌 때만 search_off, catalog 제외)
+  if (body.gsv !== undefined) {                                                                                                // 3-27 Google Search Console 소유 확인 값 (catalog 제외)
+    const g = cleanGsv(body.gsv);
+    if (g === null) fail(400, 'err.site.gsv');
+    setOrDelete(s, 'gsv', g || undefined);
+  }
   // 사이트 이름을 바꿨는데 기본 아티스트 이름이 옛 사이트 이름 그대로면 함께 바꾼다
   if (s.name !== oldName && body.artist_name === undefined && s.artist_name === oldName) s.artist_name = s.name;
+  // M-7: 바꾼 이름만 검사 (이미 있던 이름 때문에 다른 저장이 막히지 않게)
+  if (s.name !== oldName) await noFamous([s.name], 'name');
+  if (s.artist_name !== oldArtist) await noFamous([s.artist_name], 'artist_name');
+  await noFamous((s.artists || []).filter((x) => !oldArtists.includes(x)), 'artists');
   const result = await finish(env, ctx, db, etag, origin, false);
   return json({ ok: true, site: s, ...result });
 }
@@ -650,6 +744,7 @@ async function trackCreate(request, env, ctx, origin, defer) {
   if (aiTool) t.ai_tool = aiTool;
   if (body.ext !== undefined) setOrDelete(t, 'ext', mergeExt(undefined, body.ext, await loadFields(env), 'track'));   // 3-8 업로드 화면 "추가 정보"
   if (body.local !== undefined) setOrDelete(t, 'local', vLocal(body.local));
+  if (t.artist) await noFamous([t.artist], 'artist');   // M-7
   db.tracks[t.id] = t;
   // 음원이 아직 없으므로 catalog는 바뀌지 않는다 → db만 저장
   await saveDb(env, db, etag);
@@ -663,7 +758,7 @@ async function trackUpdate(request, env, ctx, id, origin) {
   const { db, etag } = await loadDb(env);
   const t = getTrack(db, id);
   if (body.title !== undefined) t.title = vStr(body.title, 'title', 1, 100);
-  if (body.artist !== undefined) t.artist = vArtist(body.artist, db.site);
+  if (body.artist !== undefined) { const v = vArtist(body.artist, db.site); if (v && v !== t.artist) await noFamous([v], 'artist'); t.artist = v; }   // M-7
   if (body.genres !== undefined) t.genres = vGenres(body.genres);
   if (body.duration !== undefined) t.duration = vDuration(body.duration);
   if (body.langs !== undefined) { const l = vLangs(body.langs); if (l) t.langs = l; else delete t.langs; }   // 3-7
@@ -802,15 +897,23 @@ function setOrDelete(o, k, v) { if (v === undefined) delete o[k]; else o[k] = v;
 async function albumCreate(request, env, ctx, origin) {
   const body = await readJson(request);
   const { db, etag } = await loadDb(env);
+  const now = nowIso();
   const a = {
     id: newId('a', db.albums),
     title: vStr(body.title, 'title', 1, 100),
     artist: vArtist(body.artist, db.site),
     track_ids: vTrackIds(body.track_ids ?? [], db),
-    aml: body.aml === undefined ? false : vBool(body.aml, 'aml'),
+    aml: false,
     has_cover: false,
-    created_at: nowIso(),
+    created_at: now,
   };
+  // 3-24: 만들면 바로 공개(조건 = 6~35곡·모두 음원). 조건이 안 되면 비공개로 만들어지고 목록에 이유가 보인다. aml 을 보내면 그 값
+  a.aml = body.aml === undefined ? albumReady(db, a) : vBool(body.aml, 'aml');
+  const desc = vDesc(body.desc);
+  if (desc) a.desc = desc;
+  const pubAt = vPubAt(body.pub_at, now);
+  if (pubAt) a.pub_at = pubAt;
+  if (a.artist) await noFamous([a.artist], 'artist');   // M-7
   db.albums[a.id] = a;
   const result = await finish(env, ctx, db, etag, origin, false);
   return json({ ok: true, album: a, ...result }, 201);
@@ -822,10 +925,12 @@ async function albumUpdate(request, env, ctx, id, origin) {
   const { db, etag } = await loadDb(env);
   const a = getAlbum(db, id);
   if (body.title !== undefined) a.title = vStr(body.title, 'title', 1, 100);
-  if (body.artist !== undefined) a.artist = vArtist(body.artist, db.site);
+  if (body.artist !== undefined) { const v = vArtist(body.artist, db.site); if (v && v !== a.artist) await noFamous([v], 'artist'); a.artist = v; }   // M-7
   if (body.track_ids !== undefined) a.track_ids = vTrackIds(body.track_ids, db);
   if (body.aml !== undefined) a.aml = vBool(body.aml, 'aml');
-  const result = await finish(env, ctx, db, etag, origin, false); // aml 앨범이면 10~30곡·음원 검사
+  if (body.desc !== undefined) setOrDelete(a, 'desc', vDesc(body.desc) || undefined);                 // 3-24 소개글 ('' = 지우기)
+  if (body.pub_at !== undefined) setOrDelete(a, 'pub_at', vPubAt(body.pub_at, nowIso()) || undefined);  // 3-24 예약 (null = 지금 공개)
+  const result = await finish(env, ctx, db, etag, origin, false); // aml 앨범이면 6~35곡·음원 검사 (예약 중도)
   return json({ ok: true, album: a, ...result });
 }
 

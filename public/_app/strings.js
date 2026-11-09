@@ -22,7 +22,7 @@
   // ★ 언어 목록: { 코드: '그 언어로 쓴 이름' }. 새 언어는 여기에 한 줄 추가 + lang/{코드}.js 파일.
   AML.LANGS = { en: 'English', ko: '한국어', ja: '日本語', de: 'Deutsch', fr: 'Français', es: 'Español', it: 'Italiano', 'pt-br': 'Português (Brasil)', ru: 'Русский', tr: 'Türkçe', vi: 'Tiếng Việt', id: 'Bahasa Indonesia', th: 'ไทย', hi: 'हिन्दी', 'zh-tw': '繁體中文' };
 
-  AML.V = '15';               // (3-22) 언어팩 파일 주소 뒤에 붙이는 버전 (?v=5). 언어팩을 고쳐 배포하면 올린다.
+  AML.V = '16';               // (3-22) 언어팩 파일 주소 뒤에 붙이는 버전 (?v=5). 언어팩을 고쳐 배포하면 올린다.
   AML.STORE_KEY = 'aml_lang'; // 방문자가 고른 언어를 기억하는 브라우저 저장소 이름
   AML.strings = AML.strings || {};
 
@@ -39,6 +39,13 @@
     'album.track_count.other': '{n} tracks',
     'album.play_all': 'Play all',
     'album.not_found': 'Album not found.',
+    // 3-27 곡 화면(/song/{id}) · 없는 주소 · ⋯ 메뉴 "곡 페이지"
+    'song.not_found': 'Song not found.',
+    'song.album': 'Album',
+    'song.lyrics': 'Lyrics',
+    'song.more': 'More songs',
+    'page.not_found': 'This page does not exist.',
+    'track.page': 'Song page',
     'menu.not_found': 'This menu no longer exists.',
     'track.play': 'Play {title}',
     'player.play': 'Play',
@@ -69,6 +76,8 @@
     // 3-18 좋아요 ♥ (숨은 이름) · 재생 안내 한 줄(재생 바 위 알약) · 방명록 쪽 번호 묶음 이름
     'like.add': 'Like {title}',
     'like.remove': 'Remove like from {title}',
+    // 3-25 + aimusiclist 담기 버튼 (설명만. 이 곡이 aimusiclist에 공개됐고 담기 기능이 켜져 있을 때만 보인다)
+    'add.aml': 'Add {title} to your aimusiclist playlist — no sign-in needed',
     'notice.play_from': 'Playing this song and every song after it',
     'notice.play_next': 'Plays next',
     'gb.pages': 'Guestbook pages',
@@ -131,7 +140,7 @@
     'err.schema.unsupported': 'This list version is not supported.',
     'err.track.genre_invalid': 'Choose a main genre.',
     'err.track.unavailable': 'This track is private or cannot be played.',
-    'err.album.track_count': 'A public album needs 10 to 30 tracks.',
+    'err.album.track_count': 'A public album needs 6 to 35 tracks.',
     'err.rate_limited': 'Too many requests. Try again in {retry_after} seconds.',
 
     // ── 관리 화면 (B) ──
@@ -183,14 +192,14 @@
     'album.field.title': 'Album title',
     'album.field.cover': "Cover image (optional)",
     'album.field.pick': 'Choose tracks (in order)',
-    'album.field.selected': 'Selected: {n}/30. To make it public, choose 10–30 tracks.',
+    'album.field.selected': 'Selected: {n}/35. To make it public, choose 6–35 tracks.',
     'album.up': 'Up',
     'album.down': 'Down',
     'album.remove': 'Remove',
     'album.save': 'Save album',
     'album.list.title': 'My albums',
     'album.list.empty': 'No albums yet.',
-    'album.public_rule': 'Needs 10–30 tracks with audio',
+    'album.public_rule': 'Needs 6–35 tracks with audio',
     'album.delete.confirm': 'Delete album "{title}"? The tracks are kept.',
 
     'skin.current': 'In use',
@@ -345,7 +354,7 @@
     "track.col.aml_help": "All songs are shown on your site. Checked songs are also published on aimusiclist.com. Changes are saved right away.",
     "track.search": "Search song titles",
     "track.search_empty": "No songs match.",
-    "album.aml_help": "Albums are shown on your site. To publish an album on aimusiclist.com, check it (10–30 songs). Its songs are published too.",
+    "album.aml_help": "Albums are shown on your site. To publish an album on aimusiclist.com, check it (6–35 songs). Its songs are published too.",
     "artist.site_name": "{name} (site name)",
     "artist.title": "Other artists",
     "artist.help": "Songs use the site name \"{name}\" as artist by default. Add other artist names here to choose them when uploading.",

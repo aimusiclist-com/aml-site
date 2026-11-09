@@ -123,6 +123,7 @@ body.aml-lock{overflow:hidden}
 .aml-social{display:inline-flex;align-items:center;gap:10px;color:var(--aml-social-color,currentColor);text-decoration:none;line-height:1.2}
 .aml-social:hover,.aml-social:focus-visible{opacity:.75}
 .aml-social-icon{width:22px;height:22px;fill:currentColor;flex:none;display:block}
+.aml-social-icon .aml-yt-bg{fill:#FF0000!important}.aml-social-icon .aml-yt-fg{fill:#fff!important}
 .aml-socials .aml-social-name{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .aml-view-links .aml-socials{flex-direction:column;align-items:stretch;max-width:480px}
 .aml-view-links .aml-social{display:flex;color:inherit;padding:12px 14px;border:1px solid var(--aml-line,rgb(127 127 127/.35));border-radius:10px;background:var(--aml-card-bg,transparent)}
@@ -133,7 +134,7 @@ body.aml-lock{overflow:hidden}
 .aml-ext{display:inline-block;font-size:11px;line-height:1.4;padding:1px 7px;border-radius:999px;border:1px solid var(--aml-line,rgb(127 127 127/.35));color:var(--aml-ext-color,inherit);opacity:.8;white-space:nowrap;max-width:14em;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
 .aml-empty-ic{display:none}
 .aml-more-link{font-size:15px;font-weight:400;text-decoration:none;color:var(--_ac);white-space:nowrap}
-@media (max-width:600px){.aml-lyrics-btn,.aml-gb-btn{display:none!important}.aml-track.has-tools .aml-track-main{padding-right:var(--aml-tools-w,calc(var(--aml-tools-m,1)*38px + var(--aml-tools-x,0px)))}}
+@media (max-width:600px){.aml-lyrics-btn,.aml-gb-btn,.aml-add-btn{display:none!important}.aml-track.has-tools .aml-track-main{padding-right:var(--aml-tools-w,calc(var(--aml-tools-m,1)*38px + var(--aml-tools-x,0px)))}}
 .aml-section-title .aml-more-link{margin-inline-start:12px}
 @media (prefers-reduced-motion:reduce){#aml-fullplayer,#aml-player *{transition:none!important;animation:none!important}}
 /* 3-18 [최신순|인기순] (모든 곡 목록) */
@@ -175,3 +176,8 @@ body.aml-lock{overflow:hidden}
 .aml-gb-pager .aml-gb-arrow{font-size:20px}
 .aml-gb-pager .aml-gb-num.is-on{background:var(--_acf);color:var(--_aci);border-color:transparent;font-weight:700;cursor:default}
 @media (max-width:400px){#aml-gb-pager.aml-gb-pager{gap:4px}.aml-gb-pager .aml-gb-num,.aml-gb-pager .aml-gb-arrow{min-width:32px;height:32px;padding:0 6px}}
+
+/* 3-24 앨범 소개글 (앨범 화면 제목 아래, 글자만 — 스킨이 몰라도 보이게. 줄바꿈 그대로) */
+.aml-album-desc{margin:0;max-width:60ch;font-size:14px;line-height:1.55;white-space:pre-line;overflow-wrap:anywhere;opacity:.85}
+/* 3-27 곡 화면 */
+.aml-song-head{display:flex;gap:24px;align-items:flex-end;margin:12px 0 20px}.aml-song-art{width:220px;height:220px;flex:none;object-fit:cover;border-radius:12px}.aml-song-info>*{margin:0 0 6px}.aml-song-time:before{content:"\a0·\a0"}.aml-song-actions{display:flex;gap:10px;align-items:center}.aml-song-lyrics-text{white-space:pre-line}.aml-ssr-list{list-style:none;padding:0}.aml-ssr-row{display:flex;align-items:center;gap:12px;padding:6px 0}.aml-ssr-thumb{width:48px;height:48px;flex:none}.aml-ssr-sub{margin-left:auto;opacity:.7}@media(max-width:733px){.aml-song-head{flex-direction:column;align-items:center;text-align:center}.aml-song-art{width:70%;height:auto;aspect-ratio:1}.aml-song-actions{justify-content:center}.aml-ssr-sub{display:none}}

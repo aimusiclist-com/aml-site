@@ -23,7 +23,7 @@
 // -----------------------------------------------------------------------------
 
 import { KEY, apiBase, PAGE_GEN } from './common.js';
-import { loadDb, artistOf } from './db.js';
+import { loadDb, artistOf, albumPending } from './db.js';
 import { requireAdmin, loadAdmin, legacyToken } from './auth.js';
 import { cleanSocials, socialInfo } from './lists.js';
 import { loadFields, pageExt } from './fields.js';
@@ -31,6 +31,7 @@ import { adminSkinPreview, adminSkinInstall, skinIndexUrl, SKIN_SPEC } from './g
 import { statsVisit, loadPlayTotals, pubPlays, popOrder, loadLikes, pubLikes, aeOn } from './stats.js';
 import { loadAml, effective } from './aml.js';
 import { AI_TOOL_RE, loadAiTools, pickAiToolNames } from './aitools.js';
+import { seoRoute, seoPage, seoData, seoStrings, seoRobots, seoSitemap, srtText } from './seo.js';
 
 // visitor.js·스킨 처리 방식이 바뀌면 올린다 (페이지 재생성 + 브라우저 캐시 갱신)
 // 4 = 3-6: 썸네일·비주얼라이저·가사·방명록·배너·프로필·하단 문구·광고
@@ -39,18 +40,19 @@ import { AI_TOOL_RE, loadAiTools, pickAiToolNames } from './aitools.js';
 // 7 = 3-9: 기본 모양을 정적 파일 /_app/base.css(+ kit.css)로, 새 재생 바·{{hero}}·SVG 아이콘·프로필 평균 색
 //     (3-12 인기순·순위 표시는 데이터 칸 rk·mv 와 base.css 만 더해 판을 올리지 않는다 — 최신순 화면은 그대로)
 //     (3-14 재생 횟수도 데이터 칸 pl(방문자에게 보이기를 켠 곡만)과 base.css .aml-plays 만 — 판 그대로)
-export const RENDER_VERSION = '12';  // 3-20: 곡 줄 만든 AI 툴 배지 (3-19 = 11 Powered by, 3-18 = 10, 3-17: 앨범 표지 최대 200px)
+export const RENDER_VERSION = '15';  // 3-27: 진짜 주소(/song/ /album/ /m/ /songs /albums)·머리 태그·미리 그린 본문. 14 = 조율15: 3.27.0 = 3-24 앨범 소개글·예약 공개 + 3-25 + aimusiclist 담기 버튼 + M-7 (3-20 = 12 AI 툴 배지, 3-19 = 11 Powered by, 3-18 = 10)
 // SNS 아이콘 묶음 (정적 파일 1개, Simple Icons CC0). 아이콘을 바꾸면 v를 올린다.
-export const SOCIAL_SPRITE = '/_app/socials.svg?v=1';
+export const SOCIAL_SPRITE = '/_app/socials.svg?v=2';   // 3-25: youtube 아이콘 고정색
 // 3-9: 사이트 아이콘 묶음(재생·가사·⋯ 등). 아이콘을 바꾸면 v를 올린다.
 export const ICON_SPRITE = '/_app/icons.svg?v=2';   // 3-18: heart · heart-fill
-const PAGE_KEY = 'meta/page.html';        // 미리 만든 방문자 페이지
+const PAGE_KEY = 'meta/page.html';        // 미리 만든 방문자 페이지 (3-27: 주소마다 다른 머리·본문은 메모리에서 더한다 — 이 파일은 "바탕")
+const SITEMAP_KEY = 'meta/sitemap.xml';   // 3-27 곡·앨범·메뉴가 바뀔 때 다시 만든다 (방문 때 만들지 않음)
 const UI_KEY = 'meta/ui.json';            // { skin, menus, skins, skins_meta(3-10), prev_skin(3-10) } — 3-1의 db.json과 따로 둔다. 모르는 키는 보존
 const DB_KEY = KEY.db;                    // 내 사이트의 모든 곡·앨범 (3-5부터 방문자 화면의 원본)
 export const BUILTIN_SKINS = ['light', 'dark'];
 export const MAX_SKINS = 20;              // 올리거나 설치한 스킨 최대 개수 (기본 스킨 제외)
 const MEMO_MS = 30_000;                   // Worker 메모리 캐시 30초 (3-1의 catalog 캐시와 같은 기준)
-let memo = null;                          // { at, html, etag, ads }
+let memo = null;                          // { gen, at, html(바탕), seo, d(데이터, 처음 쓸 때 1번 꺼냄), pages(주소별 완성본), etag, ads }
 const NONCE = '__AML_NONCE__';            // 3-6: 광고를 켠 페이지는 요청마다 이 자리를 무작위 값(nonce)으로 바꾼다
 const ADS_SRC = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
 
@@ -59,19 +61,21 @@ export async function uiFetch(request, env, ctx) {
   const url = new URL(request.url);
   const m = request.method;
   const p = url.pathname;
-  if ((m === 'GET' || m === 'HEAD') && p === '/') {
+  const route = m === 'GET' || m === 'HEAD' ? seoRoute(p) : null;   // 3-27: / /song/{id} /album/{id} /m/{메뉴} /songs /albums
+  if (route) {
     // 관리자가 없으면 관리자 만들기 화면 (없음은 기억하지 않는다 → 만들자마자 바로 메인 화면)
     // 단, 1단계 방식으로 이미 운영 중인 사이트(AML_ADMIN_TOKEN 있음)는 방문자 화면을 계속 보여 주고 /admin/ 에서 만든다.
-    if (!legacyToken(env) && !(await loadAdmin(env)).data && !(await loadAdmin(env, true)).data) return setupPage(request, env);
-    return visitorPage(request, env, ctx);
+    if (route.k === 'home' && !legacyToken(env) && !(await loadAdmin(env)).data && !(await loadAdmin(env, true)).data) return setupPage(request, env);
+    return visitorPage(request, env, ctx, route);
   }
+  if ((m === 'GET' || m === 'HEAD') && (p === '/robots.txt' || p === '/sitemap.xml')) return seoFile(request, env, ctx, p);   // 3-27
   if (p === '/admin') return Response.redirect(url.origin + '/admin/', 301);
 
   // 관리 API: 이 파일이 맡는 주소만 골라낸다 (나머지 /api/admin/* 는 3-1이 처리)
   let r = null;
   if (p === '/api/admin/ui' && m === 'GET') r = () => adminGetUi(env);
   else if (p === '/api/admin/skin' && m === 'PUT') r = () => adminSelectSkin(request, env);
-  else if (p === '/api/admin/menus' && m === 'PUT') r = () => adminSaveMenus(request, env);
+  else if (p === '/api/admin/menus' && m === 'PUT') r = () => adminSaveMenus(request, env, ctx);
   else if (p === '/api/admin/skins/preview' && m === 'POST') r = () => adminSkinPreview(request, env);   // 3-10
   else if (p === '/api/admin/skins/install' && m === 'POST') r = () => adminSkinInstall(request, env);   // 3-10
   else if (p.startsWith('/api/admin/skins/') && (m === 'PUT' || m === 'DELETE')) {
@@ -87,39 +91,116 @@ export async function uiFetch(request, env, ctx) {
 }
 
 // ── 방문자 페이지 ──────────────────────────────────────────────────────────────
-async function visitorPage(request, env, ctx) {
+// 3-27: R2 의 page.html = "바탕"(스킨 + 데이터). 주소마다 seoPage() 로 머리 태그·미리 그린 본문을 더해 메모리에 보관한다.
+//   요청 1번 = Worker 1번 + (30초에 1번) R2 HEAD 2 + GET 1 — 3-26 과 같음. 가사가 있는 곡 페이지만 처음 1번 R2 읽기 +1.
+async function loadMemo(env, request, ctx) {
+  if (memo && Date.now() - memo.at <= MEMO_MS && memo.gen === PAGE_GEN.n) return memo;
+  // R2 확인: head 2회(Class B). 바뀐 게 없으면 저장된 page.html 1회 읽기
+  const [cat, ui, page] = await Promise.all([
+    env.BUCKET.head(DB_KEY), env.BUCKET.head(UI_KEY), env.BUCKET.get(PAGE_KEY),
+  ]);
+  const stamp = makeStamp(cat, ui);
+  let html, seo = null;
+  if (page && page.customMetadata && page.customMetadata.stamp === stamp) {
+    html = await page.text();
+    seo = safeJson(page.customMetadata.seo || '');
+  } else {
+    if (page) await page.body?.cancel?.();
+    const built = await buildPage(env, request);
+    html = built.html;
+    seo = built.seo;
+    // 저장은 응답을 늦추지 않도록 뒤에서 한다 (Class A 쓰기는 바뀌었을 때만 발생)
+    ctx.waitUntil(env.BUCKET.put(PAGE_KEY, html, {
+      httpMetadata: { contentType: 'text/html; charset=utf-8' },
+      customMetadata: { stamp: built.stamp, seo: JSON.stringify(built.seo) },
+    }));
+  }
+  if (!seo || typeof seo !== 'object') seo = { origin: new URL(request.url).origin, lang: 'en', gsv: '', off: false, img: '' };
+  memo = { gen: PAGE_GEN.n, at: Date.now(), html, seo, d: undefined, pages: new Map(), etag: '"p' + stamp.replace(/[^a-zA-Z0-9]/g, '').slice(0, 60) + '"', ads: html.includes(' nonce="' + NONCE + '"') };
+  return memo;
+}
+
+async function visitorPage(request, env, ctx, route) {
   statsVisit(request, env, ctx);   // 3-12: 방문 1줄 (Analytics Engine, 기다리지 않음 — Worker 요청·R2 쓰기 +0)
-  if (!memo || Date.now() - memo.at > MEMO_MS || memo.gen !== PAGE_GEN.n) {
-    // R2 확인: head 2회(Class B). 바뀐 게 없으면 저장된 page.html 1회 읽기
-    const [cat, ui, page] = await Promise.all([
-      env.BUCKET.head(DB_KEY), env.BUCKET.head(UI_KEY), env.BUCKET.get(PAGE_KEY),
-    ]);
-    const stamp = makeStamp(cat, ui);
-    let html;
-    if (page && page.customMetadata && page.customMetadata.stamp === stamp) {
-      html = await page.text();
-    } else {
-      if (page) await page.body?.cancel?.();
-      const built = await buildPage(env, request);
-      html = built.html;
-      // 저장은 응답을 늦추지 않도록 뒤에서 한다 (Class A 쓰기는 바뀌었을 때만 발생)
-      ctx.waitUntil(env.BUCKET.put(PAGE_KEY, html, {
-        httpMetadata: { contentType: 'text/html; charset=utf-8' },
-        customMetadata: { stamp: built.stamp },
-      }));
+  const mm = await loadMemo(env, request, ctx);
+  const key = route.k + '/' + route.id;
+  let pg = mm.pages.get(key);
+  if (!pg) {
+    if (mm.d === undefined) mm.d = seoData(mm.html);
+    if (!mm.d) pg = { status: route.k === 'home' ? 200 : 404, html: mm.html };   // 데이터를 못 읽으면(있을 수 없음) 예전 그대로
+    else {
+      let ly = '';
+      if (route.k === 'song') {
+        const t = mm.d.tracks.find((x) => x.id === route.id);
+        if (t && t.ly) { try { const o = await env.BUCKET.get('lyrics/' + t.id); if (o) ly = srtText(await o.text()); } catch (_) { /* 가사 없이 */ } }
+      }
+      pg = seoPage(mm.html, mm.d, route, mm.seo, await seoStringsFor(env, request, mm.seo.lang), ly);
     }
-    memo = { gen: PAGE_GEN.n, at: Date.now(), html, etag: '"p' + stamp.replace(/[^a-zA-Z0-9]/g, '').slice(0, 60) + '"', ads: html.includes(' nonce="' + NONCE + '"') };
+    pg.etag = mm.etag.slice(0, -1) + '-' + hash8(key) + '"';
+    mm.pages.set(key, pg);
+    if (mm.pages.size > 64) mm.pages.delete(mm.pages.keys().next().value);   // 메모리는 64쪽까지 (먼저 넣은 것부터 버림)
   }
   const imgOrigin = imageOrigin(env);
-  if (memo.ads) {
+  const noindex = !!mm.seo.off || pg.status !== 200;
+  if (mm.ads) {
     // 광고를 켠 페이지: 구글 애드센스 권장 방식(nonce + strict-dynamic). 요청마다 새 nonce → 304 없이 매번 보낸다.
     const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
-    const headers = pageHeaders(null, { ads: true, nonce, imgOrigin });
-    return new Response(request.method === 'HEAD' ? null : memo.html.split(NONCE).join(nonce), { status: 200, headers });
+    const headers = pageHeaders(null, { ads: true, nonce, imgOrigin, noindex });
+    return new Response(request.method === 'HEAD' ? null : pg.html.split(NONCE).join(nonce), { status: pg.status, headers });
   }
-  const headers = pageHeaders(memo.etag, { imgOrigin });
-  if (request.headers.get('If-None-Match') === memo.etag) return new Response(null, { status: 304, headers });
-  return new Response(request.method === 'HEAD' ? null : memo.html, { status: 200, headers });
+  const headers = pageHeaders(pg.status === 200 ? pg.etag : null, { imgOrigin, noindex });
+  if (pg.status === 200 && request.headers.get('If-None-Match') === pg.etag) return new Response(null, { status: 304, headers });
+  return new Response(request.method === 'HEAD' ? null : pg.html, { status: pg.status, headers });
+}
+
+// 3-27 SEO 문장 (사이트 기본 언어, 정적 파일 public/_app/lang-seo/{코드}.json). 배포 때만 바뀌므로 Worker 메모리에 계속 둔다.
+const seoS = new Map();
+async function seoStringsFor(env, request, lang) {
+  const l = /^[a-z]{2}(-[a-z]{2,4})?$/.test(lang || '') ? lang : 'en';
+  if (seoS.has(l)) return seoS.get(l);
+  const rd = async (x) => safeJson(await assetText(env, request, '/_app/lang-seo/' + x + '.json') || 'null');
+  const S = seoStrings(await rd('en'), l === 'en' ? null : await rd(l));
+  seoS.set(l, S);
+  return S;
+}
+function hash8(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(36); }
+
+// 3-27 robots.txt (메모리의 주소·"검색에 보이기"로 그때 만든다 — 글자 몇 줄) · sitemap.xml (곡이 바뀔 때 저장해 둔 R2 meta/sitemap.xml)
+async function seoFile(request, env, ctx, p) {
+  const mm = await loadMemo(env, request, ctx);
+  const h = { 'Cache-Control': 'public, max-age=600', 'X-Content-Type-Options': 'nosniff' };
+  if (p === '/robots.txt') {
+    return new Response(request.method === 'HEAD' ? null : seoRobots(mm.seo.origin, !!mm.seo.off), { status: 200, headers: { ...h, 'Content-Type': 'text/plain; charset=utf-8' } });
+  }
+  if (mm.seo.off) return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' } });
+  let obj = await env.BUCKET.get(SITEMAP_KEY);
+  let xml = obj ? await obj.text() : null;
+  if (!xml) xml = await writeSitemap(env, null, mm.seo.origin, ctx);   // 업데이트 직후 처음 한 번 (그 뒤로는 바뀔 때 저장한 것)
+  if (!xml) return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' } });
+  const etag = obj ? obj.httpEtag : null;
+  if (etag) h.ETag = etag;
+  if (etag && request.headers.get('If-None-Match') === etag) return new Response(null, { status: 304, headers: h });
+  return new Response(request.method === 'HEAD' ? null : xml, { status: 200, headers: { ...h, 'Content-Type': 'application/xml; charset=utf-8' } });
+}
+// 곡·앨범·메뉴·주소가 바뀐 뒤 sitemap.xml 다시 만들기 (index.js finish · 메뉴 저장 · 처음 요청). 내용이 같으면 쓰지 않는다(HEAD 1 + 바뀌었을 때만 PUT 1)
+// "검색에 보이기"를 끄면 지운다. db 를 안 주면 읽는다. 반환 = 만든 글자(끔이면 null)
+export async function writeSitemap(env, db, origin, ctx) {
+  if (!db) db = (await loadDb(env)).db;
+  if (db.site.search_off === true) { await env.BUCKET.delete(SITEMAP_KEY); return null; }
+  const { ui } = await readUi(env);
+  const c = normalizeCatalog(pageSource(db, '', null));
+  const xml = seoSitemap({ tracks: c.tracks, albums: c.albums, menus: ui.menus }, String(origin).replace(/\/+$/, ''));
+  const hash = await sha256Hex(xml);
+  const head = await env.BUCKET.head(SITEMAP_KEY);
+  if (!head || !head.customMetadata || head.customMetadata.hash !== hash) {
+    const put = env.BUCKET.put(SITEMAP_KEY, xml, { httpMetadata: { contentType: 'application/xml; charset=utf-8' }, customMetadata: { hash } });
+    if (ctx) ctx.waitUntil(put); else await put;
+  }
+  return xml;
+}
+async function sha256Hex(s) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join('');
 }
 
 // 연도는 하단 문구(© {year})에 들어가므로 해가 바뀌면 페이지를 다시 만든다
@@ -173,6 +254,7 @@ export function pageHeaders(etag, o) {
     'Referrer-Policy': 'strict-origin-when-cross-origin',
   };
   if (etag) h.ETag = etag;
+  if (o.noindex) h['X-Robots-Tag'] = 'noindex';   // 3-27: "검색에 보이기" 끔 · 없는 페이지(404)
   return h;
 }
 
@@ -184,6 +266,7 @@ export async function buildPage(env, request) {
   return {
     html: renderSkin(skin, pd.data, pd.cs),
     stamp: makeStamp(dbHead, uiObj),
+    seo: pd.seo,   // 3-27 { origin, lang, gsv, off, img } — page.html 의 customMetadata 로 함께 저장
   };
 }
 
@@ -205,10 +288,14 @@ export async function buildPageData(env, request, ui) {
 
   // 방문자 화면이 쓰는 데이터 (주소는 같은 사이트 상대경로 /a/·/c/ 로 만든다 → CSP·로컬 시험에 안전)
   const cs = catalog.site;
-  cs.powered = poweredUrl(imageOrigin(env), effective(env, amlr && amlr.data).site_id);   // 3-19: 등록 후 = 내 아티스트 페이지, 전 = 첫 화면
+  const eff = effective(env, amlr && amlr.data);
+  cs.powered = poweredUrl(imageOrigin(env), eff.site_id);   // 3-19: 등록 후 = 내 아티스트 페이지, 전 = 첫 화면
+  // 3-25 + aimusiclist 담기 버튼: 우리사이트에 등록됐고(site_id 있음) 아티스트가 끄지 않았을 때만(기본 켬, catalog 제외)
+  const addOn = !!eff.site_id && dbr.db.site.add_off !== true;
   const data = {
     v: RENDER_VERSION,
     site: { name: cs.name, artist_name: cs.artist_name, description: cs.description, default_lang: cs.default_lang, guestbook: cs.guestbook, likes: likeOn },
+    add: addOn ? imageOrigin(env) + '/add?site=' + encodeURIComponent(eff.site_id) : '',   // 3-25 "?site=…" 뒤에 "&track={곡 id}" 를 붙여 연다 (2-J·3-25 약속)
     lkd: likeOn && likes && /^\d{4}-\d{2}-\d{2}$/.test(likes.cum_d || '') ? likes.cum_d : '',   // 3-18 좋아요 수가 이 날 전날까지 센 것
     menus: ui.menus,
     // 3-7: 등록한 SNS (방문자 SNS 모음 화면 #/links 용). 주소는 내 사이트 화면에만 들어간다(catalog에는 키만).
@@ -216,6 +303,7 @@ export async function buildPageData(env, request, ui) {
     albums: catalog.albums.map(a => ({
       id: a.id, title: a.title, artist: a.artist, has_cover: !!a.cover_url, cover: a.cover_url || '',
       track_ids: a.track_ids, published_at: a.published_at,
+      ...(typeof a.desc === 'string' && a.desc ? { desc: a.desc } : {}),   // 3-24 앨범 소개글 (있을 때만 — 앨범 화면 제목 아래 .aml-album-desc)
     })),
     tracks: catalog.tracks.map(t => {
       const o = {
@@ -230,6 +318,7 @@ export async function buildPageData(env, request, ui) {
       if (pl[t.id]) o.pl = pl[t.id];   // 3-14 재생 횟수 (보이기를 켠 곡·1 이상만)
       if (lk[t.id]) o.lk = lk[t.id];   // 3-18 좋아요 수 (1 이상만)
       if (t.at) o.at = t.at;           // 3-20 만든 AI 툴 id (있을 때만) → 이름은 D.aitools
+      if (addOn && t.aml) o.add = 1;   // 3-25 이 곡에 + aimusiclist 담기 버튼 (담기 기능이 켜져 있고 이 곡이 aimusiclist 공개일 때만)
       return o;
     }),
     genres, // { 키: { en: 'R&B', ko: '알앤비', ... } } — 쓰인 키만
@@ -238,7 +327,14 @@ export async function buildPageData(env, request, ui) {
     fields: px.fields(),
   };
   if (atIds.length) data.aitools = pickAiToolNames(atIdx, atIds);   // 3-20 { id: 이름 } — 쓰인 것만 ('other' 는 화면이 언어팩 문장으로)
-  return { data, cs };
+  // 3-27 검색용: 공식 주소(SITE_URL → aimusiclist 에 등록한 주소·내 도메인 → 요청 주소) · 기본 언어 · 소유 확인 값 · "검색에 보이기" · 대표 그림(프로필)
+  const st = dbr.db.site;
+  const seo = {
+    origin: String(env.SITE_URL || (amlr && amlr.data && amlr.data.origin) || new URL(request.url).origin).replace(/\/+$/, ''),
+    lang: cs.default_lang || 'en', gsv: typeof st.gsv === 'string' ? st.gsv : '', off: st.search_off === true,
+    img: /^[0-9a-f]{8}$/.test(cs.profile_v || '') ? '/p?v=' + cs.profile_v : '',
+  };
+  return { data, cs, seo };
 }
 
 // db.json → 방문자 화면용 목록 (catalog와 같은 모양). 음원이 있는 곡은 aml과 상관없이 모두 보인다.
@@ -254,14 +350,21 @@ export function pageSource(db, imgBase, px) {
       if (t.img_v && typeof t.img_lg_v === 'string' && /^[0-9a-f]{8}$/.test(t.img_lg_v)) o.il = t.img_lg_v;   // 3-16 큰 그림 버전
       if (t.lyrics_v) o.ly = t.lyrics_v;
       if (typeof t.ai_tool === 'string' && AI_TOOL_RE.test(t.ai_tool)) o.at = t.ai_tool;   // 3-20
+      if (t.aml) o.aml = 1;   // 3-25: aimusiclist 공개 곡인가 (+ aimusiclist 담기 버튼 표시용. 값 있을 때만)
       const ext = px && px.extOf(t);
       if (ext) o.ext = ext;
       return o;
     });
   const ok = new Set(tracks.map(t => t.id));
+  const now = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
   const albums = Object.values(db.albums)
-    .map(a => ({ id: a.id, title: a.title, artist: artistOf(a, s), cover_url: a.has_cover ? '/c/' + a.id + (a.cover_v ? '?v=' + a.cover_v : '') : null,
-      track_ids: a.track_ids.filter(id => ok.has(id)), published_at: a.created_at || '' }))
+    .filter(a => !albumPending(a, now))   // 3-24 예약 공개 시각 전에는 내 사이트 화면에도 없다
+    .map(a => {
+      const o = { id: a.id, title: a.title, artist: artistOf(a, s), cover_url: a.has_cover ? '/c/' + a.id + (a.cover_v ? '?v=' + a.cover_v : '') : null,
+        track_ids: a.track_ids.filter(id => ok.has(id)), published_at: a.created_at || '' };
+      if (typeof a.desc === 'string' && a.desc) o.desc = a.desc;   // 3-24
+      return o;
+    })
     .filter(a => a.track_ids.length);
   return {
     site: {
@@ -708,7 +811,7 @@ async function adminDeleteSkin(env, name) {
 }
 
 // 메뉴 저장 (C). 장르 키가 우리사이트 목록에 있는지는 화면이 고르게 해서 보장한다(서버는 형식만 검사).
-async function adminSaveMenus(request, env) {
+async function adminSaveMenus(request, env, ctx) {
   const b = await readJsonBody(request);
   if (!b || !Array.isArray(b.menus)) return jerr('err.menu.invalid', 422);
   if (b.menus.length > 30) return jerr('err.menu.too_many', 422, { max: 30 });
@@ -722,6 +825,8 @@ async function adminSaveMenus(request, env) {
   }
   const r = await updateUi(env, typeof b.etag === 'string' ? b.etag : null, ui => normalizeUi({ ...ui, menus: b.menus }));
   if (r.conflict) return jerr('err.conflict', 409);
+  // 3-27 메뉴 주소(/m/{메뉴})가 바뀌었을 수 있다 → sitemap.xml 다시 (뒤에서)
+  if (ctx) ctx.waitUntil(loadAml(env).then(({ data }) => writeSitemap(env, null, env.SITE_URL || (data && data.origin) || new URL(request.url).origin)).catch((e) => console.error(e)));
   return uiResponse(env, r.ui, r.etag);
 }
 

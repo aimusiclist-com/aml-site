@@ -22,6 +22,13 @@
  *       숫자 D.tracks[].lk 는 하루 1번 집계(D.lkd = 그날 전까지 셈) — 누른 날이 아직 안 들어갔으면 화면에서만 +1.
  *       재생 안내 한 줄(재생 바 위 알약 .aml-player-notice.is-toast): 곡 줄로 목록 재생을 처음 시작할 때 1번 · "다음에 재생" 때마다.
  *       방명록 쪽 번호 ‹ 1 2 … 10 › (.aml-gb-num · .aml-gb-arrow).
+ * - 3-27 진짜 주소: / · /song/{id} · /album/{id} · /m/{메뉴} · /songs · /albums (인기순 = ?sort=top). 방명록·SNS 는 해시 그대로(/#/gb · /#/links).
+ *       서버가 그 주소의 내용을 <main> 에 미리 그려 보낸다(검색·자바스크립트 없이 보기) → 여기서 같은 자리를 다시 그린다.
+ *       화면 안 링크는 진짜 주소, 누르면 history.pushState 로 이동(페이지를 다시 받지 않음 = 음악 안 끊김), 뒤로 가기 = popstate.
+ *       옛 해시 주소(#/album/x · #/tracks · #/m/x · #/top …)로 오면 같은 화면을 진짜 주소로 바꿔 보여 준다.
+ *       미리보기 창(about:srcdoc)은 주소를 바꿀 수 없어 예전처럼 해시 주소를 쓴다.
+ *       PHP 판의 홈 밖 페이지는 데이터를 <script id="aml-data" data-src="/data.json"> 로 따로 받는다(곡 페이지마다 데이터를 넣지 않으려고).
+ *       곡 화면(.aml-view-song): 큰 그림 · 제목 · 아티스트 · 장르 · 길이 · 앨범 · [재생] · 가사 · 다른 곡. ⋯ 메뉴에 "곡 페이지".
  * - 3-20 만든 AI 툴 배지: 곡 줄 둘째 줄(.aml-genres) 맨 앞 <span class="aml-genre aml-ai">✦ Suno</span> (장르와 같은 글자·색, 구분점도 같은 규칙).
  *       page 데이터 D.tracks[].at = 툴 id, D.aitools = { id: 이름 } (쓰인 것만). 'other' 는 언어팩 문장. 서버 요청 +0.
  * -----------------------------------------------------------------------------
@@ -29,7 +36,14 @@
 (function () {
   'use strict';
   var AML = window.AML, t = AML.t;
-  var D = JSON.parse(document.getElementById('aml-data').textContent);
+  // 3-27: 데이터는 페이지 안 글자, 또는 data-src 의 같은 사이트 파일(PHP 판 홈 밖 페이지). 못 받으면 서버가 미리 그린 화면 그대로.
+  var dataEl = document.getElementById('aml-data'), dataSrc = dataEl ? dataEl.getAttribute('data-src') : '';
+  if (dataSrc && /^\/[a-z0-9_.-]{1,40}\.json$/.test(dataSrc)) {
+    fetch(dataSrc, { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (d && Array.isArray(d.tracks)) start(d); }).catch(function () { /* 미리 그린 화면만 */ });
+  } else if (dataEl) start(JSON.parse(dataEl.textContent));
+
+  function start(D) {
   AML.data = D;
 
   var trackById = {};
@@ -80,6 +94,64 @@
     for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), x = a[i]; a[i] = a[j]; a[j] = x; }
     return a;
   }
+
+  // ── 3-27 주소 ───────────────────────────────────────────────────────────────
+  // 화면 = { view: ''(홈)|'song'|'album'|'m'|'tracks'|'albums'|'gb'|'links'|'nf', id, top }
+  var REAL = /^https?:$/.test(location.protocol);   // 미리보기 창(about:srcdoc)이면 false → 해시 주소
+  var PATHS = { song: '/song/', album: '/album/', m: '/m/' };
+  function link(view, id, top) {
+    var q = top ? '?sort=top' : '';
+    if (view === 'gb' || view === 'links') return (REAL ? '/' : '') + '#/' + view + (id ? '/' + encodeURIComponent(id) : '');
+    if (!REAL) {   // 옛 해시 주소 그대로 (#/top · #/tracks/top · #/m/{메뉴}/top)
+      if (!view) return top ? '#/top' : '#/';
+      return '#/' + view + (id ? '/' + encodeURIComponent(id) : '') + (top && (view === 'tracks' || view === 'm') ? '/top' : '');
+    }
+    if (!view) return '/' + q;
+    if (view === 'tracks') return '/songs' + q;
+    if (view === 'albums') return '/albums';
+    return PATHS[view] + encodeURIComponent(id) + (view === 'm' ? q : '');
+  }
+  function fromHash(h) {
+    var p = h.replace(/^#\/?/, '').split('/'), view = p[0] || '', id = decodeURIComponent(p[1] || ''), top = false;
+    if (view === 'top') { view = ''; top = true; } else if (view === 'tracks') top = p[1] === 'top'; else if (view === 'm') top = p[2] === 'top';
+    if (view === 'tracks') id = '';
+    return { view: view, id: id, top: top };
+  }
+  function here() {
+    if (/^#\/./.test(location.hash) || !REAL) return fromHash(location.hash);
+    var p = location.pathname, top = /(^|[?&])sort=top(&|$)/.test(location.search.slice(1)), m;
+    if (p === '/') return { view: '', id: '', top: top };
+    if (p === '/songs') return { view: 'tracks', id: '', top: top };
+    if (p === '/albums') return { view: 'albums', id: '', top: false };
+    if ((m = /^\/(song|album|m)\/([a-z0-9_-]{1,64})$/.exec(p))) return { view: m[1], id: m[2], top: m[1] === 'm' && top };
+    return { view: 'nf', id: '', top: false };
+  }
+  // 옛 해시 주소로 왔으면 진짜 주소로 (방명록·SNS 는 해시 그대로)
+  (function upgrade() {
+    if (!REAL || !/^#\/./.test(location.hash)) return;
+    var h = fromHash(location.hash);
+    if (h.view === 'gb' || h.view === 'links' || ['', 'tracks', 'albums', 'album', 'm', 'song'].indexOf(h.view) < 0) return;
+    try { history.replaceState(history.state, '', link(h.view, h.id, h.top)); } catch (e) { /* 그대로 해시 */ }
+  })();
+  function go(href) {
+    if (!REAL) { location.hash = href.replace(/^\/?#?/, '#'); return; }
+    try { history.pushState(null, '', href); } catch (e) { location.href = href; return; }
+    keepDraft(); render();
+  }
+  // 같은 사이트의 진짜 주소 링크는 페이지를 다시 받지 않고 이동한다 (새 탭·수정 키·다른 창 대상은 그대로)
+  document.addEventListener('click', function (e) {
+    if (!REAL || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a || (a.target && a.target !== '_self') || a.hasAttribute('download')) return;
+    var u;
+    try { u = new URL(a.getAttribute('href'), location.href); } catch (x) { return; }
+    if (u.origin !== location.origin) return;
+    if (!/^\/(?:(?:song|album|m)\/[a-z0-9_-]{1,64}|songs|albums)?$/.test(u.pathname)) return;
+    e.preventDefault();
+    if (u.pathname + u.search + u.hash === location.pathname + location.search + location.hash) return;
+    go(u.pathname + u.search + u.hash);
+  });
+  window.addEventListener('popstate', function () { keepDraft(); render(); });
 
   // ── 곡 목록 ─────────────────────────────────────────────────────────────────
   // 그린 목록을 기억해 두었다가, 누르면 그 목록을 재생 대기열로 쓴다.
@@ -220,6 +292,28 @@
   }
   // 처음 상태: 이 기기에서 누른 곡은 서버도 on 으로 알고 있다고 본다(같은 것을 다시 보내지 않게)
   Object.keys(liked).forEach(function (k) { likeSent[k] = true; });
+
+  // ── 3-25 + aimusiclist 담기 (로그인 없이, 이 곡이 aimusiclist 공개일 때만) ───────────────
+  // D.add = "https://aimusiclist.com/add?site=…" (기능이 켜져 있을 때만, 비어 있으면 기능 꺼짐). 곡마다 tr.add = 1 이면 공개곡.
+  var ADD_ON = typeof D.add === 'string' && /^https:\/\/[^\s"'<>`\\]+\/add\?site=/.test(D.add);
+  // 조율15: 방문자가 보는 언어로 aimusiclist 담기 화면을 연다 (2-J: ?lang=ko → /ko/add, 모르는 언어·영어는 붙이지 않음)
+  function addUrl(tr) {
+    if (!(ADD_ON && tr && tr.add)) return '';
+    var lg = AML.lang && AML.lang !== 'en' && /^[a-z]{2}(-[a-z]{2})?$/.test(AML.lang) ? '&lang=' + AML.lang : '';
+    return D.add + '&track=' + encodeURIComponent(tr.id) + lg;
+  }
+  function addLabel(tr) { return t('add.aml', { title: tr.title }); }
+  function addBtn(tr) {
+    if (!ADD_ON || !tr.add) return '';
+    return '<button type="button" class="aml-tool aml-add-btn aml-add" data-add="' + esc(tr.id) + '" aria-label="' + esc(addLabel(tr)) + '" title="' + esc(addLabel(tr)) + '">' + ic('plus') + '</button>';
+  }
+  // PC는 작은 새 창(약 420×600), 휴대폰은 새 탭 (지시문 3-25)
+  function openAdd(id) {
+    var tr = trackById[id], u = addUrl(tr);
+    if (!u) return;
+    if (MOBILE.matches) window.open(u, '_blank');
+    else window.open(u, 'amlAdd', 'width=420,height=600,noopener,noreferrer');
+  }
   (function adminPlays() {
     var flag = null;
     try { flag = localStorage.getItem('aml_adm'); } catch (e) { /* 저장소 없음 = 일반 방문자 */ }
@@ -288,10 +382,11 @@
       var genres = aiBadge(tr) + tr.genres.map(function (k, gi) {
         return '<span class="aml-genre' + (gi === 0 ? ' is-main' : '') + '">' + esc(AML.genreName(k)) + '</span>';
       }).join('');
-      // 오른쪽 둥근 버튼: 가사(있을 때) · 방명록(켰을 때) · ♥(3-18, 켰을 때) · ⋯(다음에 재생 등). 휴대폰은 ♥ · ⋯ 만.
+      // 오른쪽 둥근 버튼: 가사(있을 때) · 방명록(켰을 때) · + aimusiclist(3-25, 이 곡이 공개일 때) · ♥(3-18, 켰을 때) · ⋯(다음에 재생 등). 휴대폰은 ♥ · ⋯ 만.
       var n = 1, m = 1, x = 0, tools = '';
       if (tr.ly) { n++; tools += '<button type="button" class="aml-tool aml-lyrics-btn" data-lyrics="' + esc(tr.id) + '" aria-label="' + esc(t('lyrics.open', { title: tr.title })) + '" title="SRT">' + ic('lyrics') + '</button>'; }
       if (GB_ON) { n++; tools += '<button type="button" class="aml-tool aml-gb-btn" data-gb="' + esc(tr.id) + '" aria-label="' + esc(t('gb.about_song', { title: tr.title })) + '">' + ic('chat') + '</button>'; }
+      if (ADD_ON && tr.add) { n++; tools += addBtn(tr); }
       if (LIKE_ON) { n++; m++; x = 14; tools += likeBtn(tr); }   // ♥ 칸은 50px (36 + 14)
       tools += '<button type="button" class="aml-tool aml-more-btn" data-more="' + esc(tr.id) + '" aria-haspopup="menu" aria-label="' + esc(t('track.more', { title: tr.title })) + '">' + ic('more') + '</button>';
       var plays = playsCell(tr);
@@ -318,7 +413,7 @@
   function albumCards(albums) {
     if (!albums.length) return empty(t('albums.empty'), 'album');
     return '<div class="aml-albums">' + albums.map(function (a) {
-      return '<a class="aml-album" href="#/album/' + encodeURIComponent(a.id) + '">' +
+      return '<a class="aml-album" href="' + esc(link('album', a.id)) + '">' +
         (a.has_cover
           ? '<img class="aml-album-cover" loading="lazy" decoding="async" alt="" width="200" height="200" src="/c/' + encodeURIComponent(a.id) + '">'
           : '<span class="aml-album-cover is-empty"></span>') +
@@ -326,6 +421,62 @@
         '<span class="aml-album-artist">' + esc(a.artist) + '</span>' +
       '</a>';
     }).join('') + '</div>';
+  }
+
+  // ── 3-27 곡 화면 /song/{id} ─────────────────────────────────────────────────────
+  // 서버가 미리 그린 것과 같은 뼈대(.aml-song-head·.aml-song-lyrics·.aml-song-more) + [재생]·♥·담기·방명록 버튼.
+  // 가사: 처음 연 곡이면 서버가 넣어 둔 글자를 그대로(요청 0), 화면 이동으로 온 곡은 /l/{id} 를 1번 받는다.
+  var ssrLy = (function () {   // 서버가 그린 가사 (처음 연 주소가 곡 페이지일 때만)
+    var el = document.querySelector('#aml-content .aml-song-lyrics-text'), at = REAL ? /^\/song\/([a-z0-9_-]{1,64})$/.exec(location.pathname) : null;
+    if (!el || !at) return null;
+    var out = '';
+    for (var n = el.firstChild; n; n = n.nextSibling) out += n.nodeName === 'BR' ? '\n' : n.textContent;   // <br> = 줄바꿈
+    return { id: at[1], text: out };
+  })();
+  function songMore(tr) {   // 다른 곡: 같은 앨범에서 이 곡 다음부터 → 최신순에서 이 곡 앞뒤로 (서버 src/seo.js moreSongs 와 같은 순서)
+    var pick = [], seen = {};
+    seen[tr.id] = 1;
+    function add(x) { if (x && !seen[x.id] && pick.length < 6) { seen[x.id] = 1; pick.push(x); } }
+    var al = albumOfTrack(tr.id);
+    if (al) {
+      var ids = al.track_ids.filter(function (i) { return trackById[i]; }), i0 = ids.indexOf(tr.id);
+      for (var k = 1; k < ids.length; k++) add(trackById[ids[(i0 + k) % ids.length]]);
+    }
+    var p = D.tracks.indexOf(tr);
+    for (var j = 1; j < D.tracks.length && pick.length < 6; j++) { add(D.tracks[p + j]); add(D.tracks[p - j]); }
+    return pick;
+  }
+  function albumOfTrack(id) { return D.albums.filter(function (a) { return a.track_ids.indexOf(id) >= 0; })[0] || null; }
+  function songView(tr) {
+    var al = albumOfTrack(tr.id), big = bigOf(tr), more = songMore(tr);
+    var genres = aiBadge(tr) + tr.genres.map(function (k, gi) { return '<span class="aml-genre' + (gi === 0 ? ' is-main' : '') + '">' + esc(AML.genreName(k)) + '</span>'; }).join('');
+    var tools = '';
+    if (GB_ON) tools += '<button type="button" class="aml-tool aml-gb-btn" data-gb="' + esc(tr.id) + '" aria-label="' + esc(t('gb.about_song', { title: tr.title })) + '">' + ic('chat') + '</button>';
+    if (ADD_ON && tr.add) tools += addBtn(tr);
+    if (LIKE_ON) tools += likeBtn(tr);
+    var ly = '';
+    if (tr.ly) {
+      var known = ssrLy && ssrLy.id === tr.id ? ssrLy.text : lyCache[tr.id + '?v=' + tr.ly];
+      ly = '<div class="aml-song-lyrics"><h2 class="aml-section-title">' + esc(t('song.lyrics')) + '</h2><p class="aml-song-lyrics-text" id="aml-song-ly" data-id="' + esc(tr.id) + '">' +
+        esc(known != null ? known : t('lyrics.loading')) + '</p></div>';
+      if (known == null) setTimeout(function () { songLyrics(tr); }, 0);
+    }
+    return '<section class="aml-section aml-view-song" data-id="' + esc(tr.id) + '"><div class="aml-song-head">' +
+      (big ? '<img class="aml-song-art" src="' + esc(big) + '" alt="' + esc(tr.title) + '" width="400" height="400">' : '<span class="aml-song-art is-empty"></span>') +
+      '<div class="aml-song-info"><h1 class="aml-song-title">' + esc(tr.title) + '</h1>' +
+      '<p class="aml-song-artist"><a href="' + esc(link('')) + '">' + esc(tr.artist) + '</a></p>' +
+      '<p class="aml-song-meta">' + genres + '<span class="aml-song-time">' + fmtTime(tr.duration) + '</span>' + playsCell(tr) + '</p>' +
+      (al ? '<p class="aml-song-album">' + esc(t('song.album')) + ': <a href="' + esc(link('album', al.id)) + '">' + esc(al.title) + '</a></p>' : '') +
+      '<div class="aml-song-actions"><button type="button" class="aml-play-all aml-song-play" data-song-play="' + esc(tr.id) + '">' + ic('play') + '<span>' + esc(t('player.play')) + '</span></button>' +
+      (tools ? '<span class="aml-song-tools">' + tools + '</span>' : '') + '</div></div></div>' + ly +
+      (more.length ? '<div class="aml-song-more">' + section(t('song.more'), trackList(more, true), 'aml-view-song-more') + '</div>' : '') + '</section>';
+  }
+  function songLyrics(tr) {
+    var key = tr.id + '?v=' + tr.ly;
+    fetch('/l/' + encodeURIComponent(tr.id) + '?v=' + encodeURIComponent(tr.ly))
+      .then(function (r) { if (!r.ok) throw 0; return r.text(); })
+      .then(function (txt) { lyCache[key] = srtText(txt) || t('lyrics.empty'); return lyCache[key]; }, function () { return t('lyrics.failed'); })
+      .then(function (text) { var el = document.getElementById('aml-song-ly'); if (el && el.getAttribute('data-id') === tr.id) el.textContent = text; });
   }
 
   // ── 3-7 SNS 모음 ────────────────────────────────────────────────────────────
@@ -343,7 +494,7 @@
   function linksView(key) {
     var head = '<section class="aml-section aml-view-links"><h2 class="aml-section-title">' + esc(t('links.title')) + '</h2>';
     if (!SOCIALS.length) {
-      return head + '<p class="aml-empty">' + ic('link', 'aml-empty-ic') + esc(t('links.empty')) + '<br><a class="aml-links-home" href="#/">' + esc(t('links.home')) + '</a></p></section>';
+      return head + '<p class="aml-empty">' + ic('link', 'aml-empty-ic') + esc(t('links.empty')) + '<br><a class="aml-links-home" href="' + esc(link('')) + '">' + esc(t('links.home')) + '</a></p></section>';
     }
     var hit = SOCIALS.filter(function (x) { return x.key === key; })[0];
     var list = hit ? [hit].concat(SOCIALS.filter(function (x) { return x !== hit; })) : SOCIALS;
@@ -395,23 +546,24 @@
     return '<section class="aml-section' + (extraClass ? ' ' + extraClass : '') + '">' +
       '<h2 class="aml-section-title"><span>' + esc(title) + '</span>' + (link || '') + '</h2>' + body + '</section>';
   }
-  function seeAll(href) { return '<a class="aml-more-link" href="' + href + '">' + esc(t('home.see_all')) + ' &#8250;</a>'; }
-  // 3-18 [최신순 | 인기순]: 목록 위 버튼 2개. base = 그 화면 주소(최신순), 인기순 = base + '/top' (홈은 #/top).
+  function seeAll(href) { return '<a class="aml-more-link" href="' + esc(href) + '">' + esc(t('home.see_all')) + ' &#8250;</a>'; }
+  // 3-18 [최신순 | 인기순]: 목록 위 버튼 2개. 3-27: 주소는 link(화면, id, 인기순) — 진짜 주소는 ?sort=top, 미리보기 창은 옛 해시(/top).
   //       누르면 주소만 바꾸고(replaceState — 뒤로 가기 기록이 늘지 않는다) 그 자리에서 다시 그린다(처음 10곡부터).
-  function sortBar(top, base) {
-    var pop = base === '#/' ? '#/top' : base + '/top';
+  function sortBar(top, view, id) {
+    var base = link(view, id, false), pop = link(view, id, true);
     var b = function (href, on, key) {
       return '<button type="button" class="aml-sort-btn' + (on ? ' is-on' : '') + '" data-sort="' + esc(href) + '" aria-pressed="' + on + '">' + esc(t(key)) + '</button>';
     };
     return '<span class="aml-sort" role="group" aria-label="' + esc(t('sort.label')) + '">' + b(base, !top, 'sort.latest') + b(pop, top, 'sort.popular') + '</span>';
   }
   // 곡 목록 칸 하나: 제목 옆 정렬 버튼(곡이 있을 때) + 목록. top 이면 누적 재생 순.
-  function listSection(title, tracks, cls, top, base, link) {
-    return section(title, trackList(top ? byPop(tracks) : tracks), cls + (top ? ' aml-view-top' : ''), (tracks.length ? sortBar(top, base) : '') + (link || ''));
+  function listSection(title, tracks, cls, top, view, id, more) {
+    return section(title, trackList(top ? byPop(tracks) : tracks), cls + (top ? ' aml-view-top' : ''), (tracks.length ? sortBar(top, view, id) : '') + (more || ''));
   }
   function resort(href) {
     var y = window.scrollY;
-    try { history.replaceState(history.state, '', href); } catch (e) { location.hash = href; return; }
+    if (!REAL) { location.hash = href; return; }
+    try { history.replaceState(history.state, '', href); } catch (e) { location.href = href; return; }
     render(true);
     window.scrollTo(0, y);
     // 다시 그린 뒤에도 누른 버튼이 보이게 + 초점 유지 (목록이 짧아져 화면이 위로 당겨졌을 수 있다)
@@ -424,32 +576,33 @@
 
   // ── 화면(라우트) ────────────────────────────────────────────────────────────
   function render(keep) {
-    var h = location.hash.replace(/^#\/?/, '').split('/');
-    var view = h[0] || '', id = decodeURIComponent(h[1] || '');
-    // 3-18 정렬은 주소 끝 /top : #/top(홈) · #/tracks/top · #/m/{메뉴}/top
-    var top = false;
-    if (view === 'top') { view = ''; top = true; } else if (view === 'tracks') top = h[1] === 'top'; else if (view === 'm') top = h[2] === 'top';
+    var at = here(), view = at.view, id = at.id, top = at.top;   // 3-27: 진짜 주소(또는 해시)
     lists = []; pages = []; eager = 0;
-    var html = '', title = D.site.name;
+    var html = '', title = D.site.name, sub = '';   // sub = 곡·앨범 화면의 아티스트 (탭 제목 "제목 — 아티스트 | 사이트")
 
     if (view === 'm') {
       var m = D.menus.filter(function (x) { return x.id === id; })[0];
-      if (m) { title = menuLabel(m); html = listSection(title, menuTracks(m), 'aml-view-menu', top, '#/m/' + encodeURIComponent(m.id)); }
+      if (m) { title = menuLabel(m); html = listSection(title, menuTracks(m), 'aml-view-menu', top, 'm', m.id); }
       else html = empty(t('menu.not_found'));
     } else if (view === 'tracks') {
       title = t('home.tracks');
-      html = listSection(title, D.tracks, 'aml-view-tracks', top, '#/tracks');
+      html = listSection(title, D.tracks, 'aml-view-tracks', top, 'tracks', '');
     } else if (view === 'albums') {
       title = t('nav.albums');
       html = section(title, albumCards(D.albums), 'aml-view-albums');
+    } else if (view === 'song') {
+      var st = trackById[id];
+      if (st) { title = st.title; sub = st.artist; html = songView(st); }
+      else html = empty(t('song.not_found'));
     } else if (view === 'album') {
       var a = D.albums.filter(function (x) { return x.id === id; })[0];
       if (a) {
-        title = a.title;
+        title = a.title; sub = a.artist;
         var tracks = a.track_ids.map(function (i) { return trackById[i]; }).filter(Boolean);
         html = '<section class="aml-section aml-view-album"><div class="aml-album-head">' +
           (a.has_cover ? '<img class="aml-album-cover" alt="" width="200" height="200" src="/c/' + encodeURIComponent(a.id) + '">' : '<span class="aml-album-cover is-empty"></span>') +
           '<div class="aml-album-info"><h2 class="aml-section-title">' + esc(a.title) + '</h2>' +
+          (a.desc ? '<p class="aml-album-desc">' + esc(a.desc) + '</p>' : '') +   // 3-24 앨범 소개글 (글자만, 줄바꿈은 CSS pre-line)
           '<p class="aml-album-artist">' + esc(a.artist) + '</p>' +
           '<p class="aml-album-count">' + esc(AML.tn('album.track_count', tracks.length)) + '</p>' +
           '<button type="button" class="aml-play-all">' + ic('play') + '<span>' + esc(t('album.play_all')) + '</span></button></div></div>' +
@@ -461,17 +614,21 @@
     } else if (view === 'gb' && GB_ON) {
       title = t('gb.title');
       html = gbView(id);
+    } else if (view === 'nf') {
+      html = empty(t('page.not_found'));
     } else {
       // 3-13 홈: 앨범 선반(12개까지, 4개 넘으면 "모두 보기") → 곡 목록(10곡씩 이어 보기). 곡이 많아도 앨범이 첫 화면에 보이게 앨범이 먼저.
       view = '';
-      if (D.albums.length) html += section(t('home.albums'), albumCards(D.albums.slice(0, 12)), 'aml-view-home-albums', D.albums.length > 4 ? seeAll('#/albums') : '');
-      html += listSection(t('home.tracks'), D.tracks, 'aml-view-home-tracks', top, '#/', D.tracks.length > PAGE ? seeAll(top ? '#/tracks/top' : '#/tracks') : '');
+      if (D.albums.length) html += section(t('home.albums'), albumCards(D.albums.slice(0, 12)), 'aml-view-home-albums', D.albums.length > 4 ? seeAll(link('albums')) : '');
+      html += listSection(t('home.tracks'), D.tracks, 'aml-view-home-tracks', top, '', '', D.tracks.length > PAGE ? seeAll(link('tracks', '', top)) : '');
     }
 
     $content.innerHTML = html;
     watchLoads();
     document.body.setAttribute('data-aml-view', view && /^[a-z]+$/.test(view) ? view : 'home');   // 3-9: 스킨이 화면별로 꾸밀 수 있게
-    document.title = title === D.site.name ? D.site.name : title + ' · ' + D.site.name;
+    // 3-27 탭 제목 = 서버가 만든 <title> 과 같은 모양 (홈 "사이트 — 아티스트" · 곡/앨범 "제목 — 아티스트 | 사이트" · 그 밖 "제목 | 사이트")
+    var an = D.site.artist_name || D.site.name;
+    document.title = !view ? (an !== D.site.name ? D.site.name + ' — ' + an : D.site.name) : (title === D.site.name ? D.site.name : title + (sub ? ' — ' + sub : '') + ' | ' + D.site.name);
     renderMenu(view, id);
     var adm = document.querySelector('.aml-admin-text');
     if (adm) adm.textContent = t('admin.link');
@@ -489,13 +646,13 @@
   var rendered = false;
 
   function renderMenu(view, id) {
-    var items = [{ href: '#/', label: t('nav.home'), on: view === '' || view === 'tracks' }];
-    D.menus.forEach(function (m) { items.push({ href: '#/m/' + encodeURIComponent(m.id), label: menuLabel(m), on: view === 'm' && id === m.id }); });
-    if (D.albums.length) items.push({ href: '#/albums', label: t('nav.albums'), on: view === 'albums' || view === 'album' });
-    if (GB_ON) items.push({ href: '#/gb', label: t('gb.title'), on: view === 'gb' });
-    if (SOCIALS.length) items.push({ href: '#/links', label: t('nav.links'), on: view === 'links' });
+    var items = [{ href: link(''), label: t('nav.home'), on: view === '' || view === 'tracks' }];
+    D.menus.forEach(function (m) { items.push({ href: link('m', m.id), label: menuLabel(m), on: view === 'm' && id === m.id }); });
+    if (D.albums.length) items.push({ href: link('albums'), label: t('nav.albums'), on: view === 'albums' || view === 'album' });
+    if (GB_ON) items.push({ href: link('gb'), label: t('gb.title'), on: view === 'gb' });
+    if (SOCIALS.length) items.push({ href: link('links'), label: t('nav.links'), on: view === 'links' });
     $menu.innerHTML = items.map(function (x) {
-      return '<a class="aml-menu-item' + (x.on ? ' is-active' : '') + '" href="' + x.href + '"' + (x.on ? ' aria-current="page"' : '') + '>' + esc(x.label) + '</a>';
+      return '<a class="aml-menu-item' + (x.on ? ' is-active' : '') + '" href="' + esc(x.href) + '"' + (x.on ? ' aria-current="page"' : '') + '>' + esc(x.label) + '</a>';
     }).join('');
     var on = $menu.querySelector('.is-active');
     if (on && on.scrollIntoView && $menu.scrollWidth > $menu.clientWidth) { try { on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { /* */ } }
@@ -523,6 +680,7 @@
   $player.innerHTML =
     '<button type="button" class="aml-player-art" data-p="open"><img alt="" width="44" height="44" hidden>' + MINI + '</button>' +
     '<div class="aml-player-info" data-p="open"><span class="aml-player-title"></span><span class="aml-player-artist"></span></div>' +
+    (ADD_ON ? '<button type="button" class="aml-player-btn aml-player-add aml-add" data-add="" hidden>' + ic('plus') + '</button>' : '') +   // 3-25 + aimusiclist (공개곡일 때만 보임)
     (LIKE_ON ? '<button type="button" class="aml-player-btn aml-player-like aml-like" data-like="">' + ic('heart') + '</button>' : '') +   // 3-18 ♥ (휴대폰에서도 보인다)
     '<div class="aml-player-controls">' + B('aml-prev', 'prev') + B('aml-toggle', 'play') + B('aml-next', 'next') + '</div>' +
     '<div class="aml-player-right"><span class="aml-player-time">0:00 / 0:00</span>' + B('aml-player-lyrics', 'lyrics') +
@@ -544,7 +702,8 @@
     '<div class="aml-fp-body"><div><div class="aml-fp-title"></div><div class="aml-fp-artist"></div></div>' +
     '<div class="aml-fp-seek"><input class="aml-rng" type="range" min="0" max="1000" value="0"><div class="aml-fp-times"><span class="aml-fp-cur">0:00</span><span class="aml-fp-dur">0:00</span></div></div>' +
     '<div class="aml-fp-ctrl">' + B('aml-prev', 'prev') + B('aml-toggle', 'play') + B('aml-next', 'next') + '</div>' +
-    '<div class="aml-fp-more">' + (LIKE_ON ? '<button type="button" class="aml-tool aml-fp-like aml-like" data-like="">' + ic('heart') + '</button>' : '') +
+    '<div class="aml-fp-more">' + (ADD_ON ? '<button type="button" class="aml-tool aml-fp-add aml-add" data-add="" hidden>' + ic('plus') + '</button>' : '') +   // 3-25 + aimusiclist
+      (LIKE_ON ? '<button type="button" class="aml-tool aml-fp-like aml-like" data-like="">' + ic('heart') + '</button>' : '') +
       '<button type="button" class="aml-tool aml-fp-lyrics">' + ic('lyrics') + '</button></div></div>';
   document.body.appendChild($full);
   var $fSeek = $('.aml-fp-seek input', $full), $fToggle = $('.aml-toggle', $full);
@@ -565,6 +724,10 @@
     setToggle(pos >= 0 && !audio.paused);
     if (noticeOn) $notice.textContent = t('player.unavailable');
     if (LIKE_ON && pos >= 0) paintLike(queue[pos]);   // 3-18 ♥ 숨은 이름을 지금 언어로
+    if (ADD_ON && pos >= 0) {   // 3-25 + aimusiclist 숨은 이름을 지금 언어로
+      var atr = trackById[queue[pos]];
+      if (atr && atr.add) [$('.aml-player-add'), $('.aml-fp-add', $full)].forEach(function (b) { if (b) { b.setAttribute('aria-label', addLabel(atr)); b.title = addLabel(atr); } });
+    }
   }
 
   // 3-18 재생 안내 한 줄: 재생 바 바로 위 가운데 작은 알약 (기존 알림 칸 .aml-player-notice 재사용 · role=status). 약 2초 뒤 사라진다.
@@ -603,6 +766,13 @@
     $('.aml-fp-title', $full).textContent = tr.title; $('.aml-fp-artist', $full).textContent = tr.artist;
     $lyr.hidden = !tr.ly; $('.aml-fp-lyrics', $full).hidden = !tr.ly;
     if (LIKE_ON) { [$('.aml-player-like'), $('.aml-fp-like', $full)].forEach(function (b) { b.setAttribute('data-like', tr.id); }); paintLike(tr.id); }
+    if (ADD_ON) {   // 3-25 + aimusiclist: 공개곡일 때만 보이고, 같은 곡을 가리키게 한다
+      [$('.aml-player-add'), $('.aml-fp-add', $full)].forEach(function (b) {
+        if (!b) return;
+        b.hidden = !tr.add;
+        if (tr.add) { b.setAttribute('data-add', tr.id); b.setAttribute('aria-label', addLabel(tr)); b.title = addLabel(tr); }
+      });
+    }
     clearToast(); $notice.textContent = ''; noticeOn = false;
     setProgress(0, tr.duration);
     if ('mediaSession' in navigator) {
@@ -707,6 +877,7 @@
     if (!b) return;
     var c = b.classList;
     if (c.contains('aml-like')) { if (pos >= 0) toggleLike(b.getAttribute('data-like')); return; }
+    if (c.contains('aml-add')) { if (pos >= 0) openAdd(b.getAttribute('data-add')); return; }
     if (c.contains('aml-toggle')) toggle();
     else if (c.contains('aml-prev')) prev();
     else if (c.contains('aml-next')) next();
@@ -785,10 +956,12 @@
     if ((b = e.target.closest('[data-load-more]'))) { loadMore(+b.getAttribute('data-load-more'), true); return; }
     if ((b = e.target.closest('[data-sort]'))) { if (!b.classList.contains('is-on')) resort(b.getAttribute('data-sort')); return; }
     if ((b = e.target.closest('[data-like]'))) { toggleLike(b.getAttribute('data-like')); return; }
+    if ((b = e.target.closest('[data-add]'))) { openAdd(b.getAttribute('data-add')); return; }
     if ((b = e.target.closest('[data-more]'))) { openMore(b, b.getAttribute('data-more')); return; }
     if ((b = e.target.closest('[data-lyrics]'))) { openLyrics(b.getAttribute('data-lyrics'), b); return; }
     if ((b = e.target.closest('[data-gb]'))) { goGb(b.getAttribute('data-gb')); return; }
     if ((b = e.target.closest('[data-card-play]'))) { playOne(b.getAttribute('data-card-play')); return; }
+    if ((b = e.target.closest('[data-song-play]'))) { playOne(b.getAttribute('data-song-play')); return; }   // 3-27 곡 화면 [재생]
     if ((b = e.target.closest('[data-gb-page]'))) { if (!b.disabled && !b.classList.contains('is-on')) gbLoad(+b.getAttribute('data-gb-page'), true); return; }
     if (e.target.closest('.aml-gb-unlink')) { gb.draftTrack = ''; keepDraft(); location.hash = '#/gb'; return; }
     var row = e.target.closest('.aml-track');
@@ -832,12 +1005,14 @@
         var d = x.getAttribute('data-do'), tid = pop.getAttribute('data-id'), from = popFrom;
         closePop();
         if (d === 'next') { var was = pos >= 0; playNext(tid); if (was) toast(t('notice.play_next')); } else if (d === 'lyrics') openLyrics(tid, from); else if (d === 'gb') goGb(tid);
+        else if (d === 'page') go(link('song', tid));   // 3-27 곡 페이지
       });
       document.body.appendChild(pop);
     }
     var item = function (d, icon, label) { return '<button type="button" role="menuitem" data-do="' + d + '">' + ic(icon) + '<span>' + esc(label) + '</span></button>'; };
     pop.setAttribute('data-id', id);
-    pop.innerHTML = item('next', 'next-up', t('track.play_next')) + (tr.ly ? item('lyrics', 'lyrics', t('player.lyrics')) : '') + (GB_ON ? item('gb', 'chat', t('track.gb_write')) : '');
+    pop.innerHTML = item('next', 'next-up', t('track.play_next')) + (tr.ly ? item('lyrics', 'lyrics', t('player.lyrics')) : '') + (GB_ON ? item('gb', 'chat', t('track.gb_write')) : '') +
+      item('page', 'music', t('track.page'));   // 3-27
     pop.hidden = false; popFrom = btn; popY = window.scrollY;
     var r = btn.getBoundingClientRect(), w = pop.offsetWidth, ht = pop.offsetHeight;
     pop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.right - w)) + 'px';
@@ -1158,4 +1333,5 @@
     fillAds();
     loadFont();
   });
+  }
 })();

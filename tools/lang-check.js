@@ -271,5 +271,35 @@ if (fs.existsSync(path.join(P_DIR, 'en.js'))) {
   }
 }
 
+// ── 3-27: 검색용 페이지 문장 public/_app/lang-seo/{코드}.json (서버가 페이지를 만들 때 사이트 기본 언어로 쓴다) ──────────
+// en 은 원본(모든 키). ko·ja 는 모든 키가 있어야 한다. 그 밖의 언어는 있는 키만 검사(빠진 키는 영어 — GPT 번역 묶음 때 채움).
+if (!only || only === '--seo') {
+  const S_DIR = path.join(ROOT, 'lang-seo');
+  const S_REQUIRED = new Set(['ko', 'ja']);
+  console.log('\n[검색용 페이지 문장] public/_app/lang-seo/');
+  const rd = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { bad(`${path.relative(path.join(__dirname, '..'), f)} 를 읽을 수 없습니다: ${e.message}`); return null; } };
+  const SE = rd(path.join(S_DIR, 'en.json')) || {};
+  const sKeys = Object.keys(SE).filter((k) => k !== '_');
+  sKeys.forEach((k) => { if (typeof SE[k] !== 'string' || !SE[k].trim()) bad(`en 빈 문장: "${k}"`); });
+  for (const f of fs.readdirSync(S_DIR).filter((x) => /\.json$/.test(x) && x !== 'en.json').sort()) {
+    const code = f.replace(/\.json$/, '');
+    if (!LIST[code]) bad(`${f}: AML.LANGS 에 없는 언어입니다`);
+    const tb = rd(path.join(S_DIR, f));
+    if (!tb) continue;
+    const before = problems;
+    const missing = sKeys.filter((k) => tb[k] == null && !(/\.one$/.test(k) && tb[k.replace(/\.one$/, '.other')] != null));
+    if (S_REQUIRED.has(code)) missing.forEach((k) => bad(`[${code}] 빠진 키: "${k}"`));
+    else if (missing.length) console.log(`  ⚠ [${code}] 아직 번역 안 된 문장 ${missing.length}개 (영어로 보임 — 오류 아님)`);
+    for (const k of Object.keys(tb)) {
+      if (k === '_') continue;
+      if (SE[k] == null && !(/\.one$|\.other$/.test(k) && SE[k.replace(/\.(one|other)$/, '.other')] != null)) { bad(`[${code}] 모르는 키: "${k}"`); continue; }
+      const en = SE[k] != null ? SE[k] : SE[k.replace(/\.(one|other)$/, '.other')];
+      if (typeof tb[k] !== 'string' || !tb[k].trim()) bad(`[${code}] 빈 문장: "${k}"`);
+      else if (vars(tb[k]) !== vars(en)) bad(`[${code}] 변수 다름: "${k}"  영어 ${vars(en) || '(없음)'} / 이 언어 ${vars(tb[k]) || '(없음)'}`);
+    }
+    console.log(`  [${code}] ${sKeys.length - missing.length}/${sKeys.length}` + (problems === before ? ' ✓' : ''));
+  }
+}
+
 console.log(problems ? `\n문제 ${problems}개. 위 ✗ 줄을 고친 뒤 다시 실행하세요.` : '\n모두 정상입니다.');
 process.exit(problems ? 1 : 0);

@@ -112,19 +112,20 @@
     var root = $('an-root'); if (!root) return;
     CW = Math.max(300, Math.min(760, (root.clientWidth || 680) - 40));
     var r = P.data;
-    var head = '<div class="row"><h2 class="grow" style="margin:0;white-space:nowrap">' + esc(t('an.title')) + '</h2><span class="an-seg" role="group" aria-label="' + esc(t('an.period')) + '">' +
+    var head = '<div class="row"><h2 class="grow" style="margin:0;white-space:nowrap" data-help="help.an.title">' + esc(t('an.title')) + '</h2><span class="an-seg" role="group" data-help="help.an.period" data-help-name="' + esc(t('an.period')) + '" aria-label="' + esc(t('an.period')) + '">' +
       PERIODS.map(function (d) { var on = d === P.days; return '<button type="button" class="small' + (on ? ' primary' : '') + '" data-an="days" data-v="' + d + '" aria-pressed="' + on + '">' + esc(d ? t('an.days', { n: d }) : t('an.all')) + '</button>'; }).join('') + '</span></div>';
     if (!r) { root.innerHTML = STYLE + '<section class="card">' + head + '<p class="msg err">' + esc(t('an.err', { reason: AML.errText(P.err) })) + '</p></section>'; return; }
     var notes = [];
-    if (!r._days.length) notes.push(['notice', t('an.start')]);
-    else notes.push(['muted', t('an.since', { date: fmtDate((r.hist && r.hist.first) || r._days[0]) })]);
+    // [모양, 글, ? 표시] — ? 키는 글자 그대로 써 둔다(검사기가 찾을 수 있게)
+    if (!r._days.length) notes.push(['notice', t('an.start'), ' data-help="help.an.note.start"']);
+    else notes.push(['muted', t('an.since', { date: fmtDate((r.hist && r.hist.first) || r._days[0]) }), ' data-help="help.an.note.since"']);
     var fd = r.feed;
-    if (!r.insights) notes.push(['muted', t('an.feed.none')]);
+    if (!r.insights) notes.push(['muted', t('an.feed.none'), ' data-help="help.an.note.feed"']);
     else {
-      notes.push(['muted', t('an.feed.at', { date: fmtDate(r.insights.date || (fd && fd.ins && fd.ins.date) || '') })]);
-      if (fd && fd.ins && fd.ins.error && fd.tried === todayUtc()) notes.push(['muted', t('an.feed.old')]);
+      notes.push(['muted', t('an.feed.at', { date: fmtDate(r.insights.date || (fd && fd.ins && fd.ins.date) || '') }), ' data-help="help.an.note.feed"']);
+      if (fd && fd.ins && fd.ins.error && fd.tried === todayUtc()) notes.push(['muted', t('an.feed.old'), ' data-help="help.an.note.feed_old"']);
     }
-    root.innerHTML = STYLE + '<section class="card an">' + head + notes.map(function (x) { return x[0] === 'notice' ? '<p class="notice row" style="margin:10px 0 0">' + esc(x[1]) + '</p>' : '<p class="muted" style="margin:6px 0 0">' + esc(x[1]) + '</p>'; }).join('') + '</section>' +
+    root.innerHTML = STYLE + '<section class="card an">' + head + notes.map(function (x) { return x[0] === 'notice' ? '<p class="notice row" style="margin:10px 0 0"' + x[2] + '>' + esc(x[1]) + '</p>' : '<p class="muted" style="margin:6px 0 0"' + x[2] + '>' + esc(x[1]) + '</p>'; }).join('') + '</section>' +
       newsCard(r) + rankCard(r) + tableCard(r) + mineCard(r) + amlCard(r) +
       '<div class="an-stats">' + s1Card(r) + s2Card(r) + s3Card(r) + s4Card(r) + '</div>';
   }
@@ -140,7 +141,7 @@
         (x.chart ? miniChart(x.chart) : '') +
         (x.url ? '<a class="small an-more" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer">' + esc(t('an.news.more')) + ' ↗</a>' : '') + '</li>';
     }).join('') + '</ul>' : '<p class="muted">' + esc(t('an.news.empty')) + '</p>';
-    return '<section class="card"><h3 style="margin-top:0">' + esc(t('an.news.title')) + '</h3>' + body + '</section>';
+    return '<section class="card"><h3 style="margin-top:0" data-help="help.an.news">' + esc(t('an.news.title')) + '</h3>' + body + '</section>';
   }
   // 소식 그래프 (첫 묶음만 — 막대 또는 선)
   function miniChart(c) {
@@ -211,11 +212,11 @@
       if (!P.pick.length) P.pick = cand.slice(0, 3).map(function (x) { return x.id; });
     }
     var picked = P.pick.filter(function (id) { return cand.some(function (x) { return x.id === id; }); });
-    var seg = '<span class="an-seg" role="group" aria-label="' + esc(t('an.rank.title')) + '">' + [['ar', 'an.rank.aml'], ['rk', 'an.rank.own'], ['both', 'an.rank.both']].map(function (o) {
+    var seg = '<span class="an-seg" role="group" data-help="help.an.rank.basis" data-help-name="' + esc(t('an.rank.aml') + ' / ' + t('an.rank.own')) + '" aria-label="' + esc(t('an.rank.title')) + '">' + [['ar', 'an.rank.aml'], ['rk', 'an.rank.own'], ['both', 'an.rank.both']].map(function (o) {
       var on = o[0] === b; return '<button type="button" class="small' + (on ? ' primary' : '') + '" data-an="basis" data-v="' + o[0] + '" aria-pressed="' + on + '">' + esc(t(o[1])) + '</button>';
     }).join('') + '</span>';
-    var html = '<section class="card"><div class="row"><h3 class="grow" style="margin:0">' + esc(t('an.rank.title')) + '</h3>' + seg + '</div>' +
-      '<p class="muted" style="margin:6px 0 8px">' + esc(t('an.rank.help')) + '</p>';
+    var html = '<section class="card"><div class="row"><h3 class="grow" style="margin:0" data-help="help.an.rank">' + esc(t('an.rank.title')) + '</h3>' + seg + '</div>' +
+      '<p class="muted" style="margin:6px 0 8px" data-help="help.an.rank.pick">' + esc(t('an.rank.help')) + '</p>';
     if (!cand.length) return html + '<p class="muted">' + esc(t('an.rank.none')) + '</p></section>';
     html += '<div class="an-pick" role="group" aria-label="' + esc(t('an.rank.pick')) + '">' + cand.map(function (x) {
       var i = picked.indexOf(x.id), on = i >= 0, full = !on && picked.length >= MAX_PICK;
@@ -226,7 +227,7 @@
       if (fs.length > 1) html += '<h4 class="an-sub">' + esc(t(f === F.ar ? 'an.rank.aml' : 'an.rank.own')) + '</h4>';
       html += lineChart(r, days, picked, f);
     });
-    return html + '<p class="muted" style="margin:4px 0 0">' + esc(t('an.rank.gap')) + '</p></section>';
+    return html + '<p class="muted" style="margin:4px 0 0" data-help="help.an.rank.gap">' + esc(t('an.rank.gap')) + '</p></section>';
   }
   function legendMark(i) {
     return '<svg class="an-lm" viewBox="0 0 28 12" aria-hidden="true"><line x1="1" x2="27" y1="6" y2="6" stroke="' + color(i) + '" stroke-width="2"' + (DASH[i] ? ' stroke-dasharray="' + DASH[i] + '"' : '') + '/>' + marker(i, 14, 6, 3.2) + '</svg>';
@@ -297,16 +298,16 @@
       new: function (a, b) { return String(b.t.created_at || '') < String(a.t.created_at || '') ? -1 : 1; },
     }[P.sort];
     rows.sort(function (a, b) { return cmp(a, b) || String(a.t.title).localeCompare(String(b.t.title)); });
-    var seg = '<span class="an-seg" role="group" aria-label="' + esc(t('an.sort')) + '">' + ['plays', 'time', 'rise', 'new'].map(function (k) {
+    var seg = '<span class="an-seg" role="group" data-help="help.an.sort" data-help-name="' + esc(t('an.sort')) + '" aria-label="' + esc(t('an.sort')) + '">' + ['plays', 'time', 'rise', 'new'].map(function (k) {
       var on = k === P.sort; return '<button type="button" class="small' + (on ? ' primary' : '') + '" data-an="sort" data-v="' + k + '" aria-pressed="' + on + '">' + esc(t('an.sort.' + k)) + '</button>';
     }).join('') + '</span>';
     var body = rows.slice(0, 200).map(function (x) {
       return '<tr><td class="an-tt">' + esc(x.t.title) + '</td><td class="num">' + (x.plays == null ? '–' : esc(n(x.plays))) + '</td><td class="num">' + esc(dur(x.time)) + '</td>' +
         '<td class="num">' + (x.ar ? esc(rk(x.ar)) : '–') + '</td><td class="num">' + riseTxt(x.rise) + '</td><td class="num an-up">' + esc(x.t.created_at ? fmtDay(String(x.t.created_at).slice(0, 10)) : '') + '</td></tr>';
     }).join('');
-    return '<section class="card"><div class="row"><h3 class="grow" style="margin:0">' + esc(t('an.table.title')) + '</h3>' + seg + '</div>' +
-      (own ? '' : '<p class="muted" style="margin:6px 0 0">' + esc(t('an.own.off')) + '</p>') +
-      '<div class="an-scroll"><table class="an-table"><thead><tr><th>' + esc(t('an.col.song')) + '</th><th>' + esc(t('an.col.plays')) + '</th><th>' + esc(t('an.col.time')) + '</th><th>' + esc(t('an.col.rank')) + '</th><th>' + esc(t('an.col.rise')) + '</th><th class="an-up">' + esc(t('an.col.uploaded')) + '</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
+    return '<section class="card"><div class="row"><h3 class="grow" style="margin:0" data-help="help.an.table">' + esc(t('an.table.title')) + '</h3>' + seg + '</div>' +
+      (own ? '' : '<p class="muted" style="margin:6px 0 0" data-help="help.an.own_off">' + esc(t('an.own.off')) + '</p>') +
+      '<div class="an-scroll"><table class="an-table"><thead><tr><th>' + esc(t('an.col.song')) + '</th><th data-help="help.an.col.plays">' + esc(t('an.col.plays')) + '</th><th data-help="help.an.col.time">' + esc(t('an.col.time')) + '</th><th data-help="help.an.col.rank">' + esc(t('an.col.rank')) + '</th><th data-help="help.an.col.rise">' + esc(t('an.col.rise')) + '</th><th class="an-up" data-help="help.an.col.uploaded">' + esc(t('an.col.uploaded')) + '</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
       '<p class="muted" style="margin:6px 0 0">' + esc(t('an.time.note')) + '</p></section>';
   }
   function dur(s) {
@@ -331,7 +332,7 @@
       return '<div class="an-mc"><b class="an-tt">' + esc(x.t.title) + '</b><span class="an-upc an-big">▲' + esc(n(x.ri.up)) + '</span>' +
         '<span class="muted">' + esc(t('an.mine.move', { from: n(x.ri.prev), to: n(x.ri.now) })) + '</span>' + spark(r, x.t.id, f) + '</div>';
     }).join('') + '</div>' : '<p class="muted">' + esc(t('an.mine.none')) + '</p>';
-    return '<section class="card"><h3 style="margin:0">' + esc(t('an.mine.title')) + '</h3><p class="muted" style="margin:4px 0 10px">' + esc(t('an.mine.help') + ' · ' + t(f === F.rk ? 'an.rank.own' : 'an.rank.aml')) + '</p>' + body + '</section>';
+    return '<section class="card"><h3 style="margin:0" data-help="help.an.mine">' + esc(t('an.mine.title')) + '</h3><p class="muted" style="margin:4px 0 10px">' + esc(t('an.mine.help') + ' · ' + t(f === F.rk ? 'an.rank.own' : 'an.rank.aml')) + '</p>' + body + '</section>';
   }
 
   // ── 4. aimusiclist 급상승 (장르별) — 제목 = aimusiclist 화면 새 탭 ──
@@ -340,7 +341,7 @@
     var ins = r.insights;
     var gs = ins && ins.genres ? Object.keys(ins.genres).filter(function (k) { return (ins.genres[k].rising || []).length; }) : [];
     if (P.genre && gs.indexOf(P.genre) < 0) P.genre = '';
-    var sel = '<label class="an-inl">' + esc(t('an.aml.genre')) + ' <select data-an="genre"><option value="">' + esc(t('an.aml.all')) + '</option>' +
+    var sel = '<label class="an-inl" data-help="help.an.aml.genre">' + esc(t('an.aml.genre')) + ' <select data-an="genre"><option value="">' + esc(t('an.aml.all')) + '</option>' +
       gs.map(function (k) { return '<option value="' + esc(k) + '"' + (k === P.genre ? ' selected' : '') + '>' + esc(A.gName(k)) + '</option>'; }).join('') + '</select></label>';
     var rows = !ins ? [] : P.genre ? ins.genres[P.genre].rising : ins.global.rising;
     var body = rows.length ? '<ol class="an-rise">' + rows.map(function (x) {
@@ -351,13 +352,13 @@
         (mine ? ' <span class="tag an-mine">' + esc(t('an.aml.mine')) + '</span>' : '') +
         '<span class="muted an-ar">' + esc(tr.artist || tr.site) + (x.listeners != null ? ' · ' + esc(t('an.aml.listeners', { n: n(x.listeners) })) : '') + '</span></span></li>';
     }).join('') + '</ol>' : '<p class="muted">' + esc(t(ins ? 'an.aml.none' : 'an.feed.none')) + '</p>';
-    return '<section class="card"><div class="row"><h3 class="grow" style="margin:0">' + esc(t('an.aml.title')) + '</h3>' + (ins ? sel : '') + '</div>' +
+    return '<section class="card"><div class="row"><h3 class="grow" style="margin:0" data-help="help.an.aml">' + esc(t('an.aml.title')) + '</h3>' + (ins ? sel : '') + '</div>' +
       '<p class="muted" style="margin:4px 0 10px">' + esc(t('an.aml.help')) + '</p>' + body + '</section>';
   }
 
   // ── 5-① 신곡 출발 비교: 올린 날부터 7일 동안 내 사이트 재생 누적 ──
   function s1Card(r) {
-    var head = '<section class="card"><h3 style="margin:0">' + esc(t('an.s1.title')) + '</h3><p class="muted" style="margin:4px 0 8px">' + esc(t('an.s1.help')) + '</p>';
+    var head = '<section class="card"><h3 style="margin:0" data-help="help.an.s1">' + esc(t('an.s1.title')) + '</h3><p class="muted" style="margin:4px 0 8px">' + esc(t('an.s1.help')) + '</p>';
     if (!anyOwn(r)) return head + '<p class="muted">' + esc(t('an.s1.off')) + '</p></section>';
     var first = r._days[0], end = lastDay(r);
     var list = myTracks().map(function (x) {
@@ -391,7 +392,7 @@
 
   // ── 5-② Top 100 까지 남은 거리 (추정) ──
   function s2Card(r) {
-    var head = '<section class="card"><h3 style="margin:0 0 8px">' + esc(t('an.s2.title')) + '</h3>';
+    var head = '<section class="card"><h3 style="margin:0 0 8px" data-help="help.an.s2">' + esc(t('an.s2.title')) + '</h3>';
     var th = r.insights && r.insights.threshold, L = th ? th.top100_listeners : null, sc = th ? th.rank100_score : null;
     var cand = myTracks().map(function (x) { return { t: x, a: r._aml[x.id] }; }).filter(function (x) { return x.a && (x.a.valid7 > 0 || x.a.chart_rank); })
       .sort(function (a, b) { return (a.a.chart_rank || 1e9) - (b.a.chart_rank || 1e9) || b.a.valid7 - a.a.valid7; }).slice(0, 5);
@@ -403,12 +404,12 @@
       else { var need = Math.max(0, L - (x.a.valid7 || 0)); txt = need > 0 ? t('an.s2.need', { n: n(need) }) : t('an.s2.close', { n: n(L), s: sc == null ? '–' : A.fmtNum(sc) }); }
       return '<li><b class="an-tt">' + esc(x.t.title) + '</b><span>' + esc(txt) + '</span></li>';
     }).join('');
-    return head + '<ul class="an-lines">' + lines + '</ul><p class="muted an-small">' + esc(t('an.s2.note')) + '</p></section>';
+    return head + '<ul class="an-lines">' + lines + '</ul><p class="muted an-small" data-help="help.an.s2.note">' + esc(t('an.s2.note')) + '</p></section>';
   }
 
   // ── 5-③ 담기·좋아요 흐름 (aimusiclist, 2-S) ──
   function s3Card(r) {
-    var head = '<section class="card"><h3 style="margin:0 0 8px">' + esc(t('an.s3.title')) + '</h3>';
+    var head = '<section class="card"><h3 style="margin:0 0 8px" data-help="help.an.s3">' + esc(t('an.s3.title')) + '</h3>';
     var ds = (r.aml && r.aml.data && r.aml.data.days) || [];
     var k = P.days ? Math.min(P.days, 90) : 90;
     ds = ds.slice(-k);
@@ -416,9 +417,9 @@
       .filter(function (x) { return x && (x.l || x.d); }).sort(function (a, b) { return (b.l + b.d) - (a.l + a.d); }).slice(0, 5);
     var any = ds.some(function (x) { return x.likes || x.adds; });
     if (!any && !tops.length) return head + '<p class="muted">' + esc(t('an.s3.none')) + '</p></section>';
-    return head + '<h4 class="an-sub">' + esc(t('an.s3.likes')) + '</h4>' + bars(ds.map(function (x) { return [x.d, x.likes]; }), 'var(--an-c3)', t('an.s3.likes')) +
-      '<h4 class="an-sub">' + esc(t('an.s3.adds')) + '</h4>' + bars(ds.map(function (x) { return [x.d, x.adds]; }), 'var(--an-c1)', t('an.s3.adds')) +
-      (tops.length ? '<h4 class="an-sub">' + esc(t('an.s3.top')) + '</h4><ul class="an-lines">' + tops.map(function (x) { return '<li><b class="an-tt">' + esc(x.t.title) + '</b><span class="num">' + esc(t('an.s3.row', { l: n(x.l), a: n(x.d) })) + '</span></li>'; }).join('') + '</ul>' : '') + '</section>';
+    return head + '<h4 class="an-sub" data-help="help.an.s3.likes">' + esc(t('an.s3.likes')) + '</h4>' + bars(ds.map(function (x) { return [x.d, x.likes]; }), 'var(--an-c3)', t('an.s3.likes')) +
+      '<h4 class="an-sub" data-help="help.an.s3.adds">' + esc(t('an.s3.adds')) + '</h4>' + bars(ds.map(function (x) { return [x.d, x.adds]; }), 'var(--an-c1)', t('an.s3.adds')) +
+      (tops.length ? '<h4 class="an-sub" data-help="help.an.s3.top">' + esc(t('an.s3.top')) + '</h4><ul class="an-lines">' + tops.map(function (x) { return '<li><b class="an-tt">' + esc(x.t.title) + '</b><span class="num">' + esc(t('an.s3.row', { l: n(x.l), a: n(x.d) })) + '</span></li>'; }).join('') + '</ul>' : '') + '</section>';
   }
   function bars(rows, col, label) {
     if (!rows.length) return '<p class="muted">' + esc(t('an.s3.none')) + '</p>';
@@ -436,7 +437,7 @@
   // ── 5-④ 내 장르 안 내 위치 ──
   function pct(rank, total) { var p = rank / total * 100; return p < 1 ? (Math.max(0.1, Math.round(p * 10) / 10)).toLocaleString(AML.lang) : String(Math.round(p)); }
   function s4Card(r) {
-    var head = '<section class="card"><h3 style="margin:0 0 8px">' + esc(t('an.s4.title')) + '</h3>';
+    var head = '<section class="card"><h3 style="margin:0 0 8px" data-help="help.an.s4">' + esc(t('an.s4.title')) + '</h3>';
     var ins = r.insights;
     var list = myTracks().map(function (x) { var a = r._aml[x.id]; return a ? { t: x, a: a, g: a.genre || (x.genres && x.genres[0]) || '' } : null; })
       .filter(function (x) { return x && x.g; }).sort(function (a, b) { return (a.a.genre_rank || 1e9) - (b.a.genre_rank || 1e9) || (a.a.all_rank || 1e12) - (b.a.all_rank || 1e12); }).slice(0, 6);

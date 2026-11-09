@@ -74,6 +74,7 @@ Open your address right away. The **Create your admin account** screen appears (
 - **My domain** tab: step-by-step guide to use your own domain (needed for AdSense approval). / **내 도메인** 탭: 개인 도메인 연결 단계별 안내(애드센스 승인에 필요).
 
 - **Design** (3-9): the default skins `light` and `dark` now look like a modern music app — round profile header, card-style song rows, a floating player and a full-screen player on phones. Crop your profile photo like on YouTube (Site info → Profile). / **디자인**(3-9): 기본 스킨 `light`·`dark` 가 음악 앱처럼 바뀌었습니다 — 동그란 프로필 머리, 카드 모양 곡 줄, 떠 있는 재생 바, 휴대폰 전체 화면 재생. 프로필 사진은 유튜브처럼 잘라서 올립니다(사이트 정보 → 프로필).
+- **Found on Google** (3-27): every song and album has its own address (`/song/…`, `/album/…`) that search sites can find, with a site map (`/sitemap.xml`) made for you. Turn it off, or follow the 5-step **Google Search Console** guide, in Site info → **Show up in search**. Moving between pages never stops the music. / **구글에서 검색** (3-27): 곡·앨범마다 검색되는 주소(`/song/…`, `/album/…`)가 생기고, 사이트 지도(`/sitemap.xml`)도 저절로 만들어집니다. 사이트 정보 → **검색에 보이기**에서 끄거나, **Google Search Console** 등록 5단계 안내를 따라 할 수 있습니다. 화면을 옮겨 다녀도 음악은 끊기지 않습니다.
 
 ## Powered by aimusiclist.com
 
