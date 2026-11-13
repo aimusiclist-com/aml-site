@@ -479,6 +479,8 @@
       if (!tagOk(r, sp.tag)) return { title: sp.rest, tag: false };
       // 맨 앞 트랙 번호(Suno Multitrack zip 의 "0 곡 제목.wav", "01 ", "1. ", "1 - ")도 지운다 — 괄호 제목이 읽힌 파일만 ("7 Rings.wav" 같은 괄호 없는 제목은 그대로)
       var tt = (sp.title || sp.rest).replace(/^\d{1,3}(?:\s*[.\-–—]\s*|\s+)(?=\S)/, '');
+      // 아티스트가 제목 뒤·괄호 앞에 직접 붙인 버전 번호 "곡 제목 (1) (장르…)"·"곡 제목 [2] (…)" 도 지운다 (조율16 11-14 — Suno 가 한 번에 2곡을 만들어서)
+      for (var vx; (vx = tt.replace(/\s*[(\[]\s*\d{1,3}\s*[)\]]\s*$/, '')) !== tt && vx;) tt = vx;
       r.title = tt || sp.title || sp.rest; r.tag = true; r.fmt = 'paren';
       return r;
     }
