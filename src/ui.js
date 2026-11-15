@@ -40,7 +40,7 @@ import { seoRoute, seoPage, seoData, seoStrings, seoRobots, seoSitemap, srtText 
 // 7 = 3-9: 기본 모양을 정적 파일 /_app/base.css(+ kit.css)로, 새 재생 바·{{hero}}·SVG 아이콘·프로필 평균 색
 //     (3-12 인기순·순위 표시는 데이터 칸 rk·mv 와 base.css 만 더해 판을 올리지 않는다 — 최신순 화면은 그대로)
 //     (3-14 재생 횟수도 데이터 칸 pl(방문자에게 보이기를 켠 곡만)과 base.css .aml-plays 만 — 판 그대로)
-export const RENDER_VERSION = '15';  // 3-27: 진짜 주소(/song/ /album/ /m/ /songs /albums)·머리 태그·미리 그린 본문. 14 = 조율15: 3.27.0 = 3-24 앨범 소개글·예약 공개 + 3-25 + aimusiclist 담기 버튼 + M-7 (3-20 = 12 AI 툴 배지, 3-19 = 11 Powered by, 3-18 = 10)
+export const RENDER_VERSION = '16';  // 3.31 = 16: 프로필 400×400·머리 영역 160px (kit.css). 15 = 3-27: 진짜 주소(/song/ /album/ /m/ /songs /albums)·머리 태그·미리 그린 본문. 14 = 조율15: 3.27.0 = 3-24 앨범 소개글·예약 공개 + 3-25 + aimusiclist 담기 버튼 + M-7 (3-20 = 12 AI 툴 배지, 3-19 = 11 Powered by, 3-18 = 10)
 // SNS 아이콘 묶음 (정적 파일 1개, Simple Icons CC0). 아이콘을 바꾸면 v를 올린다.
 export const SOCIAL_SPRITE = '/_app/socials.svg?v=2';   // 3-25: youtube 아이콘 고정색
 // 3-9: 사이트 아이콘 묶음(재생·가사·⋯ 등). 아이콘을 바꾸면 v를 올린다.
@@ -394,7 +394,7 @@ export function renderSkin(skin, data, site) {
   const banner = site.banner && /^[0-9a-f]{8}$/.test(site.banner.v || '')
     ? `<div class="aml-banner"><img class="aml-banner-img" src="/b?v=${site.banner.v}" alt="" width="${site.banner.w | 0}" height="${site.banner.h | 0}"></div>` : '';
   const profile = /^[0-9a-f]{8}$/.test(site.profile_v || '')
-    ? `<img class="aml-profile" src="/p?v=${site.profile_v}" alt="" width="200" height="200">` : '';
+    ? `<img class="aml-profile" src="/p?v=${site.profile_v}" alt="" width="400" height="400">` : '';
   const adUnit = (slot, where) => (ads && slot
     ? `<div class="aml-ad aml-ad-${where}"><ins class="adsbygoogle" style="display:block" data-ad-client="${ads.client}" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="true"></ins></div>` : '');
   const adTop = adUnit(ads && ads.top, 'top');
@@ -495,7 +495,7 @@ export function heroHtml(s, site, n) {
   site = site || {};
   const name = String(s.name || '');
   const pic = /^[0-9a-f]{8}$/.test(site.profile_v || '')
-    ? `<img class="aml-profile" src="/p?v=${site.profile_v}" alt="" width="200" height="200">`
+    ? `<img class="aml-profile" src="/p?v=${site.profile_v}" alt="" width="400" height="400">`
     : `<span class="aml-profile is-letter" style="--aml-letter-c:${letterColor(name)}" aria-hidden="true">${esc(firstLetter(name))}</span>`;
   const c = /^#[0-9a-f]{6}$/.test(site.profile_color || '') ? site.profile_color : '';
   const artist = s.artist_name && s.artist_name !== name ? `<span class="aml-hero-artist">${esc(s.artist_name)}</span>` : '';

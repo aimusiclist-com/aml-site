@@ -367,7 +367,7 @@ AML.addLang('ja', {
   "site.banner.title": "トップバナー",
   "site.banner.help": "サイトタイトルの上に表示されます。最大 1600×400(横長の画像がおすすめ)。すぐに保存されます。",
   "site.profile.title": "プロフィール画像",
-  "site.profile.help": "200×200、丸く表示されます。aimusiclist.com の「新着アーティスト」にも表示されます。すぐに保存されます。",
+  "site.profile.help": "400×400、丸く表示されます。aimusiclist.com の「新着アーティスト」にも表示されます。すぐに保存されます。",
   "site.image.none": "まだ画像はありません。",
   "site.image.choose": "画像を選ぶ",
   "site.image.delete": "削除",

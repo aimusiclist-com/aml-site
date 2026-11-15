@@ -373,7 +373,7 @@ AMLHelp.add('vi', {
     "what": "Một khung cửa sổ để hiển thị ảnh đại diện của bạn trong một hình tròn. Ảnh đại diện của bạn là khuôn mặt hoặc logo của bạn, được hiển thị dạng hình tròn trên trang web của bạn và trên aimusiclist.com.",
     "when": "Ứng dụng sẽ tự động mở sau khi bạn chọn ảnh đại diện.",
     "click": "Vòng tròn vẫn nằm ở giữa và bạn di chuyển ảnh bên dưới nó. Kéo ảnh, sử dụng thanh thu phóng, con lăn chuột hoặc hai ngón tay, hoặc nhấn các phím mũi tên và + / −. Nhấn [[Áp dụng]] để lưu, hoặc [[Hủy]] / Esc để đóng mà không thay đổi.",
-    "care": "Chỉ phần bên trong vòng tròn được sử dụng. Chỉ một bản sao nhỏ 200×200 được tải lên, không phải ảnh gốc của bạn.",
+    "care": "Chỉ phần bên trong vòng tròn được sử dụng. Chỉ một bản sao nhỏ 400×400 được tải lên, không phải ảnh gốc của bạn.",
     "like": "Nó giống như việc di chuyển một bức ảnh phía sau một khung cửa sổ tròn cho đến khi khuôn mặt của bạn nằm chính giữa."
   },
   "help.img.crop_zoom": {
@@ -1753,7 +1753,7 @@ AMLHelp.add('vi', {
   },
   "help.site.profile": {
     "t": "Ảnh đại diện",
-    "what": "Hình ảnh hoặc logo của bạn, kích thước 200×200, được hiển thị dưới dạng hình tròn. aimusiclist.com cũng hiển thị nó trong mục \"Nghệ sĩ mới\" và bên cạnh trang web của bạn.",
+    "what": "Hình ảnh hoặc logo của bạn, kích thước 400×400, được hiển thị dưới dạng hình tròn. aimusiclist.com cũng hiển thị nó trong mục \"Nghệ sĩ mới\" và bên cạnh trang web của bạn.",
     "when": "Thêm hình ảnh khuôn mặt hoặc logo rõ ràng mà mọi người có thể nhận ra ngay cả khi kích thước nhỏ.",
     "click": "Nhấn [[Choose image]]. Kéo ảnh để đặt vị trí, phóng to hoặc xoay ảnh, sau đó nhấn [[Áp dụng]]. Ảnh sẽ được lưu ngay lập tức. Trang web của bạn cũng sẽ tự động chọn màu nền phù hợp. aimusiclist.com sẽ nhận được ảnh mới ngay sau đó.",
     "care": "Các góc bị cắt bởi hình tròn, vì vậy hãy giữ phần quan trọng ở giữa. Hình ảnh được lưu dưới dạng ảnh nhẹ với dung lượng tối đa 100 KB.",

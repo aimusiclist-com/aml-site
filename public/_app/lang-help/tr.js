@@ -374,7 +374,7 @@ AMLHelp.add('tr', {
     "what": "Profil fotoğrafını daireye sığdıran penceredir. Yüzün veya logon, sitende ve aimusiclist.com'da yuvarlak görünür.",
     "when": "Profil resmi seçtiğinde kendiliğinden açılır.",
     "click": "Daire ortada durur, sen altındaki fotoğrafı hareket ettirirsin. Sürükle, yakınlaştırma çubuğu, fare tekerleği, iki parmak, ok tuşları veya + / − kullan. Kaydetmek için [[Uygula]], vazgeçmek için [[İptal]] veya Esc.",
-    "care": "Yalnızca dairenin içi kullanılır. Orijinal fotoğrafın yerine 200×200 boyutunda küçük kopya yüklenir.",
+    "care": "Yalnızca dairenin içi kullanılır. Orijinal fotoğrafın yerine 400×400 boyutunda küçük kopya yüklenir.",
     "like": "Fotoğrafın arkasında durduğu yuvarlak pencereyi yüzün ortalanana kadar ayarlamak gibi."
   },
   "help.img.crop_zoom": {
@@ -1754,7 +1754,7 @@ AMLHelp.add('tr', {
   },
   "help.site.profile": {
     "t": "Profil görseli",
-    "what": "200×200 boyutunda yuvarlak görünen fotoğrafın veya logondur. aimusiclist.com'da 'Yeni sanatçılar' bölümünde ve sitenin yanında da görünür.",
+    "what": "400×400 boyutunda yuvarlak görünen fotoğrafın veya logondur. aimusiclist.com'da 'Yeni sanatçılar' bölümünde ve sitenin yanında da görünür.",
     "when": "Küçükken bile tanınan net bir yüz veya logo ekle.",
     "click": "[[Görsel seç]] düğmesine bas. Fotoğrafı sürükleyip yerleştir, yakınlaştır veya döndür, sonra [[Uygula]] düğmesine bas. Hemen kaydedilir. Siten buna uygun arka plan rengi de seçer. aimusiclist.com kısa süre sonra yeni resmi alır.",
     "care": "Köşeler daireyle kesilir, önemli kısmı ortada tut. En fazla 100 KB hafif resim olarak saklanır.",

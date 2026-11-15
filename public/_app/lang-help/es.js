@@ -374,7 +374,7 @@ AMLHelp.add('es', {
     "what": "Abre una ventana para ajustar tu foto de perfil a un círculo. Es tu cara o logo y aparece redonda en tu sitio y en aimusiclist.com.",
     "when": "Se abre automáticamente al elegir una foto de perfil.",
     "click": "El círculo queda en el centro y tú mueves la foto por debajo. Arrastra, usa la barra de zoom, la rueda o dos dedos, o las flechas y + / −. Pulsa [[Aplicar]] para guardar o [[Cancelar]] / Esc para salir sin cambios.",
-    "care": "Solo se usa lo que quede dentro del círculo. Se sube una copia pequeña de 200×200, no tu foto original.",
+    "care": "Solo se usa lo que quede dentro del círculo. Se sube una copia pequeña de 400×400, no tu foto original.",
     "like": "Es como mover una foto detrás de una ventana redonda hasta centrar tu cara."
   },
   "help.img.crop_zoom": {
@@ -1754,7 +1754,7 @@ AMLHelp.add('es', {
   },
   "help.site.profile": {
     "t": "Imagen de perfil",
-    "what": "Es tu foto o logo de 200×200 en forma circular. aimusiclist.com también la muestra en «Artistas nuevos» y junto a tu sitio.",
+    "what": "Es tu foto o logo de 400×400 en forma circular. aimusiclist.com también la muestra en «Artistas nuevos» y junto a tu sitio.",
     "when": "Elige una cara o logo que se reconozca incluso pequeño.",
     "click": "Pulsa [[Elegir imagen]], arrastra, amplía o gira la foto y pulsa [[Aplicar]]. Se guarda al instante y el sitio obtiene un color de fondo parecido. aimusiclist.com la recibe después.",
     "care": "El círculo recorta las esquinas: centra la parte importante. Se guarda en un archivo de hasta 100 KB.",

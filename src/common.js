@@ -21,7 +21,7 @@ export const KEY = {
   trackImgL: (id) => `images-l/${id}`, // 3-16 곡 큰 그림 200~400px 정사각 WebP (같은 자르기에서 함께 만든 것, 있을 때만) — /i/{id}?s=l
   lyrics: (id) => `lyrics/${id}`,    // 가사 .srt 원문 (UTF-8)
   banner: 'site/banner',             // 상단 배너 (최대 1600×400 WebP)
-  profile: 'site/profile',           // 프로필 이미지 200×200 WebP
+  profile: 'site/profile',           // 프로필 이미지 400×400 WebP (3.31, 전 200×200)
   gbMeta: 'gb/meta.json',            // 방명록 목록표 (파일별 글 수, 오늘 IP별 글 수)
   gbFile: (k) => `gb/${k}.json`,     // 방명록 글 (월별 파일, 200개마다 나눔: 202610.json, 202610_2.json …)
 };
@@ -32,7 +32,7 @@ export const IMAGE_RULES = {
   trackLg: { maxBytes: 60 * 1024, maxW: 400, maxH: 400, minW: 200, square: true },   // 3-16 큰 그림 (aimusiclist 1~3위 카드·내 사이트 큰 재생 화면)
   cover: { maxBytes: 100 * 1024, maxW: 200, maxH: 200 },
   banner: { maxBytes: 300 * 1024, maxW: 1600, maxH: 400 },
-  profile: { maxBytes: 100 * 1024, maxW: 200, maxH: 200 },
+  profile: { maxBytes: 150 * 1024, maxW: 400, maxH: 400 },   // 3.31: 400×400·150KB (전 200·100KB — 예전 그림도 그대로 받음)
 };
 
 // WebP 파일의 가로·세로 (RIFF 머리글만 읽는다). WebP가 아니면 null.

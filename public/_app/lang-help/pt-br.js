@@ -374,7 +374,7 @@ AMLHelp.add('pt-br', {
     "what": "Janela que encaixa sua foto de perfil num círculo. Pode ser seu rosto ou logotipo, exibido em formato redondo no site e no aimusiclist.com.",
     "when": "Abre automaticamente depois que você escolhe uma foto de perfil.",
     "click": "O círculo fica no centro; mova a foto por baixo. Arraste, use a barra de zoom, a roda do mouse, dois dedos, as setas e + / −. Clique em [[Aplicar]] para salvar ou [[Cancelar]] / Esc para sair sem mudar.",
-    "care": "Só a área dentro do círculo será usada. É enviada apenas uma cópia pequena de 200×200, não a foto original.",
+    "care": "Só a área dentro do círculo será usada. É enviada apenas uma cópia pequena de 400×400, não a foto original.",
     "like": "É como mover uma foto atrás de uma janela redonda até centralizar o rosto."
   },
   "help.img.crop_zoom": {
@@ -1754,7 +1754,7 @@ AMLHelp.add('pt-br', {
   },
   "help.site.profile": {
     "t": "Foto de perfil",
-    "what": "Sua foto ou logotipo, em 200×200 e formato circular. Aparece também no aimusiclist.com em “Novos artistas” e ao lado do site.",
+    "what": "Sua foto ou logotipo, em 400×400 e formato circular. Aparece também no aimusiclist.com em “Novos artistas” e ao lado do site.",
     "when": "Escolha rosto ou logo reconhecível mesmo em tamanho pequeno.",
     "click": "Clique em [[Escolher imagem]]. Arraste para ajustar, amplie ou gire e clique em [[Aplicar]]. Salva na hora. O site escolhe uma cor de fundo da foto. O aimusiclist.com recebe a imagem pouco depois.",
     "care": "As bordas são cortadas pelo círculo. Mantenha o importante no centro. A foto final tem até 100 KB.",

@@ -367,7 +367,7 @@ AML.addLang('ko', {
   "site.banner.title": "상단 배너",
   "site.banner.help": "사이트 제목 위에 보입니다. 최대 1600×400(가로로 긴 그림이 잘 어울림). 바로 저장됩니다.",
   "site.profile.title": "프로필 이미지",
-  "site.profile.help": "200×200, 동그랗게 보입니다. aimusiclist.com의 \"새 아티스트\"에도 나옵니다. 바로 저장됩니다.",
+  "site.profile.help": "400×400, 동그랗게 보입니다. aimusiclist.com의 \"새 아티스트\"에도 나옵니다. 바로 저장됩니다.",
   "site.image.none": "아직 이미지가 없습니다.",
   "site.image.choose": "이미지 고르기",
   "site.image.delete": "지우기",

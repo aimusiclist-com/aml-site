@@ -1014,7 +1014,7 @@ async function trackLyrics(request, env, ctx, id, origin) {
   return json({ ok: true, track: r.value, ...r.result });
 }
 
-// PUT/DELETE /api/admin/site/banner (최대 1600×400, 300KB) · /api/admin/site/profile (200×200, 100KB)
+// PUT/DELETE /api/admin/site/banner (최대 1600×400, 300KB) · /api/admin/site/profile (400×400, 150KB — 3.31)
 // 3-9: 프로필은 머리글 X-Aml-Color: #rrggbb (브라우저가 계산한 평균 색, 선택)도 함께 저장한다 → db site.profile_color
 async function siteImage(request, env, ctx, which, origin) {
   const key = which === 'banner' ? KEY.banner : KEY.profile;

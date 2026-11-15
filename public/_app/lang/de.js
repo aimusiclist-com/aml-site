@@ -393,7 +393,7 @@ AML.addLang('de', {
   "site.banner.title": "Oberes Banner",
   "site.banner.help": "Wird über dem Website-Titel angezeigt. Bis zu 1600×400 (breite Bilder wirken am besten). Wird sofort gespeichert.",
   "site.profile.title": "Profilbild",
-  "site.profile.help": "200×200, wird als Kreis angezeigt. aimusiclist.com zeigt es auch unter „Neue Künstler“. Wird sofort gespeichert.",
+  "site.profile.help": "400×400, wird als Kreis angezeigt. aimusiclist.com zeigt es auch unter „Neue Künstler“. Wird sofort gespeichert.",
   "site.image.none": "Noch kein Bild.",
   "site.image.choose": "Bild auswählen",
   "site.image.delete": "Entfernen",

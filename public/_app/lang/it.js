@@ -393,7 +393,7 @@ AML.addLang('it', {
   "site.banner.title": "Banner superiore",
   "site.banner.help": "Mostrato sopra il titolo del sito. Fino a 1600×400 (le immagini larghe rendono meglio). Salvato subito.",
   "site.profile.title": "Immagine del profilo",
-  "site.profile.help": "200×200, mostrata come cerchio. aimusiclist.com la mostra anche in «Nuovi artisti». Salvata subito.",
+  "site.profile.help": "400×400, mostrata come cerchio. aimusiclist.com la mostra anche in «Nuovi artisti». Salvata subito.",
   "site.image.none": "Nessuna immagine per ora.",
   "site.image.choose": "Scegli immagine",
   "site.image.delete": "Rimuovi",

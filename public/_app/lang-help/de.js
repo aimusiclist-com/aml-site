@@ -374,7 +374,7 @@ AMLHelp.add('de', {
     "what": "Dieses Fenster passt dein Profilfoto in einen Kreis ein. Es zeigt dein Gesicht oder Logo rund auf deiner Website und auf aimusiclist.com.",
     "when": "Es öffnet sich automatisch, nachdem du ein Profilfoto ausgewählt hast.",
     "click": "Der Kreis bleibt in der Mitte, und du verschiebst das Foto darunter. Ziehe das Foto, nutze den Zoomregler, das Mausrad, zwei Finger oder die Pfeiltasten und + / −. Klicke auf [[Anwenden]], um zu speichern, oder auf [[Abbrechen]] bzw. Esc, um ohne Änderungen zu schließen.",
-    "care": "Nur der Teil innerhalb des Kreises wird übernommen. Hochgeladen wird eine kleine Kopie mit 200×200 Pixeln, nicht dein Originalfoto.",
+    "care": "Nur der Teil innerhalb des Kreises wird übernommen. Hochgeladen wird eine kleine Kopie mit 400×400 Pixeln, nicht dein Originalfoto.",
     "like": "Das ist, als würdest du ein Foto hinter einem runden Fenster bewegen, bis dein Gesicht genau in der Mitte ist."
   },
   "help.img.crop_zoom": {
@@ -1807,7 +1807,7 @@ AMLHelp.add('de', {
   },
   "help.site.profile": {
     "t": "Profilbild",
-    "what": "Dein Foto oder Logo mit 200×200 Pixeln, das rund angezeigt wird. aimusiclist.com zeigt es ebenfalls bei „Neue Künstler“ und neben deiner Website.",
+    "what": "Dein Foto oder Logo mit 400×400 Pixeln, das rund angezeigt wird. aimusiclist.com zeigt es ebenfalls bei „Neue Künstler“ und neben deiner Website.",
     "when": "Wähle ein deutliches Gesicht oder Logo, das auch klein gut zu erkennen ist.",
     "click": "Klicke auf [[Bild auswählen]]. Verschiebe, vergrößere oder drehe das Bild und klicke auf [[Anwenden]]. Es wird sofort gespeichert. Deine Website wählt daraus auch eine passende Hintergrundfarbe. aimusiclist.com übernimmt das neue Bild kurz darauf.",
     "care": "Die Ecken fallen durch den Kreis weg. Platziere deshalb alles Wichtige in der Mitte. Das Bild wird als kleine Datei bis 100 KB gespeichert.",

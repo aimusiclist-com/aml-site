@@ -1,10 +1,10 @@
 /* /_app/kit.css — 기본 디자인 (3-9). 스킨에 {{hero}} 또는 <body class="aml-kit"> 가 있으면 사이트가 base.css 뒤에 넣는다. 스킨은 :root 의 --aml-* 색 변수만 정하면 된다. */
 /* 5 머리 영역 {{hero}} — 프로필 동그라미 + 이름·아티스트·곡 수·소개·SNS·[전체 재생][섞어 재생] */
 .aml-hero{--_hink:color-mix(in srgb,var(--_ink) 15%,var(--_ink2));position:relative;padding:32px 32px 28px;background:linear-gradient(to bottom,color-mix(in srgb,var(--aml-hero-c,var(--_bg)) var(--aml-hero-a,8%),var(--_bg)),var(--_bg));color:var(--_ink)}
-.aml-hero-in{display:grid;grid-template-columns:128px minmax(0,1fr);grid-template-areas:"pic name" "pic meta" "pic desc" "pic soc" "pic act";column-gap:24px;row-gap:4px;align-items:center;max-width:calc(var(--aml-max,1100px) - 64px);margin:0 auto}
+.aml-hero-in{display:grid;grid-template-columns:160px minmax(0,1fr);grid-template-areas:"pic name" "pic meta" "pic desc" "pic soc" "pic act";column-gap:28px;row-gap:4px;align-items:center;max-width:calc(var(--aml-max,1100px) - 64px);margin:0 auto}
 .aml-hero-in>*{min-width:0}
-.aml-hero .aml-profile{grid-area:pic;width:128px;height:128px;align-self:center}
-.aml-profile.is-letter{display:grid;place-items:center;border-radius:50%;background:var(--aml-letter-c,#5b5f73);color:#fff;font-weight:700;font-size:48px;line-height:1;user-select:none}
+.aml-hero .aml-profile{grid-area:pic;width:160px;height:160px;align-self:center}
+.aml-profile.is-letter{display:grid;place-items:center;border-radius:50%;background:var(--aml-letter-c,#5b5f73);color:#fff;font-weight:700;font-size:60px;line-height:1;user-select:none}
 .aml-hero-name{grid-area:name;margin:0;font-size:34px;line-height:1.15;font-weight:700;letter-spacing:-.015em;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .aml-hero-meta{grid-area:meta;margin:0;min-height:1.4em;font-size:13px;color:var(--_hink)}
 .aml-hero-meta>span+span::before{content:" · "}
@@ -22,8 +22,8 @@
 .aml-btn-primary{background:var(--_acf);color:var(--_aci)}
 .aml-btn:active{transform:scale(.97)}
 @media (max-width:733px){.aml-hero{padding:16px}.aml-banner+.aml-hero,.aml-banner~.aml-hero{padding-top:10px;padding-bottom:10px}
-.aml-hero-in{grid-template-columns:72px minmax(0,1fr);grid-template-areas:"pic name" "pic meta" "pic soc" "desc desc" "act act";column-gap:14px;row-gap:2px}
-.aml-hero .aml-profile{width:72px;height:72px;grid-row:1/4}.aml-profile.is-letter{font-size:30px}
+.aml-hero-in{grid-template-columns:88px minmax(0,1fr);grid-template-areas:"pic name" "pic meta" "pic soc" "desc desc" "act act";column-gap:14px;row-gap:2px}
+.aml-hero .aml-profile{width:88px;height:88px;grid-row:1/4}.aml-profile.is-letter{font-size:36px}
 .aml-hero-name{font-size:20px;line-height:1.2;align-self:end}.aml-hero-meta{align-self:start}
 .aml-hero .aml-socials{margin:4px 0 0;gap:16px}.aml-hero .aml-social-icon{width:24px;height:24px}
 .aml-hero-desc{margin-top:6px;line-height:1.35}.aml-hero-actions{margin-top:8px}.aml-hero-actions .aml-btn{flex:1;max-width:220px}}

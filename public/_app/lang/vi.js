@@ -393,7 +393,7 @@ AML.addLang('vi', {
   "site.banner.title": "Banner trên cùng",
   "site.banner.help": "Hiển thị phía trên tên trang. Tối đa 1600×400 (ảnh ngang trông đẹp nhất). Lưu ngay.",
   "site.profile.title": "Ảnh đại diện",
-  "site.profile.help": "200×200, hiển thị hình tròn. aimusiclist.com cũng hiển thị ảnh này ở mục “Nghệ sĩ mới”. Lưu ngay.",
+  "site.profile.help": "400×400, hiển thị hình tròn. aimusiclist.com cũng hiển thị ảnh này ở mục “Nghệ sĩ mới”. Lưu ngay.",
   "site.image.none": "Chưa có ảnh.",
   "site.image.choose": "Chọn ảnh",
   "site.image.delete": "Bỏ",

@@ -22,7 +22,7 @@
   // ★ 언어 목록: { 코드: '그 언어로 쓴 이름' }. 새 언어는 여기에 한 줄 추가 + lang/{코드}.js 파일.
   AML.LANGS = { en: 'English', ko: '한국어', ja: '日本語', de: 'Deutsch', fr: 'Français', es: 'Español', it: 'Italiano', 'pt-br': 'Português (Brasil)', ru: 'Русский', tr: 'Türkçe', vi: 'Tiếng Việt', id: 'Bahasa Indonesia', th: 'ไทย', hi: 'हिन्दी', 'zh-tw': '繁體中文' };
 
-  AML.V = '16';               // (3-22) 언어팩 파일 주소 뒤에 붙이는 버전 (?v=5). 언어팩을 고쳐 배포하면 올린다.
+  AML.V = '17';               // (3-22) 언어팩 파일 주소 뒤에 붙이는 버전 (?v=5). 언어팩을 고쳐 배포하면 올린다. 17 = 3.31 프로필 문장
   AML.STORE_KEY = 'aml_lang'; // 방문자가 고른 언어를 기억하는 브라우저 저장소 이름
   AML.strings = AML.strings || {};
 
@@ -452,7 +452,7 @@
     "site.banner.title": "Top banner",
     "site.banner.help": "Shown above the site title. Up to 1600×400 (wide pictures look best). Saved right away.",
     "site.profile.title": "Profile image",
-    "site.profile.help": "200×200, shown as a circle. aimusiclist.com also shows it in \"New artists\". Saved right away.",
+    "site.profile.help": "400×400, shown as a circle. aimusiclist.com also shows it in \"New artists\". Saved right away.",
     "site.image.none": "No image yet.",
     "site.image.choose": "Choose image",
     "site.image.delete": "Remove",

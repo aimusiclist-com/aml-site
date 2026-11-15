@@ -393,7 +393,7 @@ AML.addLang('tr', {
   "site.banner.title": "Üst banner",
   "site.banner.help": "Site başlığının üstünde gösterilir. En fazla 1600×400 (geniş görseller en iyi görünür). Hemen kaydedilir.",
   "site.profile.title": "Profil görseli",
-  "site.profile.help": "200×200, daire olarak gösterilir. aimusiclist.com da bunu \"Yeni sanatçılar\" bölümünde gösterir. Hemen kaydedilir.",
+  "site.profile.help": "400×400, daire olarak gösterilir. aimusiclist.com da bunu \"Yeni sanatçılar\" bölümünde gösterir. Hemen kaydedilir.",
   "site.image.none": "Henüz görsel yok.",
   "site.image.choose": "Görsel seç",
   "site.image.delete": "Kaldır",

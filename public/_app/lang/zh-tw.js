@@ -393,7 +393,7 @@ AML.addLang('zh-tw', {
   "site.banner.title": "頂部橫幅",
   "site.banner.help": "顯示在網站標題上方。最大 1600×400（寬幅圖片效果最好）。會立即儲存。",
   "site.profile.title": "個人頭像",
-  "site.profile.help": "200×200，以圓形顯示。aimusiclist.com 的「新進藝人」也會顯示。會立即儲存。",
+  "site.profile.help": "400×400，以圓形顯示。aimusiclist.com 的「新進藝人」也會顯示。會立即儲存。",
   "site.image.none": "目前沒有圖片。",
   "site.image.choose": "選擇圖片",
   "site.image.delete": "移除",

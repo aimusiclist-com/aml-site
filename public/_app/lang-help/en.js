@@ -368,7 +368,7 @@ AMLHelp.add('en', {
     "what": "A window to fit your profile photo into a circle. Your profile photo is your face or logo, shown round on your site and on aimusiclist.com.",
     "when": "It opens by itself after you pick a profile photo.",
     "click": "The circle stays in the middle and you move the photo under it. Drag the photo, use the zoom bar, the mouse wheel or two fingers, or press the arrow keys and + / −. Press [[Apply]] to save, or [[Cancel]] / Esc to close without changes.",
-    "care": "Only the part inside the circle is used. Only a small 200×200 copy is uploaded, not your original photo.",
+    "care": "Only the part inside the circle is used. Only a small 400×400 copy is uploaded, not your original photo.",
     "like": "It is like moving a photo behind a round window until your face sits right in the middle."
   },
   "help.img.crop_zoom": {
@@ -1801,7 +1801,7 @@ AMLHelp.add('en', {
   },
   "help.site.profile": {
     "t": "Profile image",
-    "what": "Your picture or logo, 200×200, shown as a circle. aimusiclist.com also shows it in \"New artists\" and next to your site.",
+    "what": "Your picture or logo, 400×400, shown as a circle. aimusiclist.com also shows it in \"New artists\" and next to your site.",
     "when": "Add a clear face or logo that people can recognize even when it is small.",
     "click": "Press [[Choose image]]. Drag the picture to place it, zoom or rotate it, then press [[Apply]]. It is saved right away. Your site also picks a matching background color from it. aimusiclist.com gets the new picture shortly after.",
     "care": "The corners are cut off by the circle, so keep the important part in the middle. It is saved as a light picture of up to 100 KB.",

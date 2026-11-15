@@ -374,7 +374,7 @@ AMLHelp.add('fr', {
     "what": "Une fenêtre circulaire permet d'insérer votre photo de profil. Votre photo de profil est votre visage ou votre logo, affiché en rond sur votre site et sur aimusiclist.com.",
     "when": "Elle s'ouvre automatiquement après que vous ayez choisi une photo de profil.",
     "click": "Le cercle reste au centre et vous déplacez la photo en dessous. Faites glisser la photo, utilisez la barre de zoom, la molette de la souris ou deux doigts, ou appuyez sur les touches fléchées et + / −. Appuyez sur [[Appliquer]] pour enregistrer, ou sur [[Annuler]] / Échap pour fermer sans modifier les modifications.",
-    "care": "Seule la partie entourée par le cercle est utilisée. Seule une petite copie de 200×200 pixels est téléchargée, et non votre photo originale.",
+    "care": "Seule la partie entourée par le cercle est utilisée. Seule une petite copie de 400×400 pixels est téléchargée, et non votre photo originale.",
     "like": "C'est comme déplacer une photo derrière une fenêtre ronde jusqu'à ce que votre visage soit pile au centre."
   },
   "help.img.crop_zoom": {
@@ -1754,7 +1754,7 @@ AMLHelp.add('fr', {
   },
   "help.site.profile": {
     "t": "Image de profil",
-    "what": "Votre image ou logo (200×200 pixels) apparaît sous forme de cercle. aimusiclist.com le présente également dans la section « Nouveaux artistes » et à côté de votre site.",
+    "what": "Votre image ou logo (400×400 pixels) apparaît sous forme de cercle. aimusiclist.com le présente également dans la section « Nouveaux artistes » et à côté de votre site.",
     "when": "Ajoutez un visage ou un logo clair que les gens puissent reconnaître même en petit format.",
     "click": "Appuyez sur [[Choisir une image]]. Faites glisser l'image pour la positionner, zoomez ou faites-la pivoter, puis appuyez sur [[Appliquer]]. Elle est enregistrée immédiatement. Votre site choisit également une couleur d'arrière-plan assortie. aimusiclist.com reçoit la nouvelle image peu après.",
     "care": "Les coins sont coupés par le cercle ; veillez donc à conserver la partie importante au centre. L’image est enregistrée en tant qu’image légère de 100 Ko maximum.",

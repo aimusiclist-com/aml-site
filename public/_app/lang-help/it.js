@@ -374,7 +374,7 @@ AMLHelp.add('it', {
     "what": "È una finestra per adattare la foto del profilo a un cerchio. La foto è il tuo volto o logo, mostrato in forma rotonda sul sito e su aimusiclist.com.",
     "when": "Si apre automaticamente dopo che scegli una foto del profilo.",
     "click": "Il cerchio resta al centro e tu sposti la foto dietro di esso. Trascina la foto, usa la barra dello zoom, la rotellina o due dita, oppure i tasti freccia e + / −. Premi [[Applica]] per salvare, oppure [[Annulla]] / Esc per chiudere senza modifiche.",
-    "care": "Viene usata solo la parte dentro il cerchio. Si carica una copia piccola da 200×200, non la foto originale.",
+    "care": "Viene usata solo la parte dentro il cerchio. Si carica una copia piccola da 400×400, non la foto originale.",
     "like": "È come spostare una foto dietro una finestra rotonda finché il viso si trova proprio al centro."
   },
   "help.img.crop_zoom": {
@@ -1754,7 +1754,7 @@ AMLHelp.add('it', {
   },
   "help.site.profile": {
     "t": "Foto del profilo",
-    "what": "È la tua foto o il tuo logo, 200×200, mostrato in un cerchio. aimusiclist.com lo mostra anche in «Nuovi artisti» e accanto al sito.",
+    "what": "È la tua foto o il tuo logo, 400×400, mostrato in un cerchio. aimusiclist.com lo mostra anche in «Nuovi artisti» e accanto al sito.",
     "when": "Aggiungi un volto o un logo nitido e riconoscibile anche quando è piccolo.",
     "click": "Premi [[Scegli immagine]]. Trascina la foto, ingrandiscila o ruotala, poi premi [[Applica]]. Viene salvata subito. Il sito sceglie anche un colore di sfondo abbinato. aimusiclist.com riceve la nuova foto poco dopo.",
     "care": "Gli angoli vengono tagliati dal cerchio, quindi tieni al centro la parte importante. La foto viene salvata in una versione leggera fino a 100 KB.",

@@ -393,7 +393,7 @@ AML.addLang('th', {
   "site.banner.title": "แบนเนอร์ด้านบน",
   "site.banner.help": "แสดงเหนือชื่อเว็บไซต์ ขนาดไม่เกิน 1600×400 (รูปแนวกว้างจะดูดีที่สุด) บันทึกทันที",
   "site.profile.title": "รูปโปรไฟล์",
-  "site.profile.help": "200×200 แสดงเป็นวงกลม aimusiclist.com จะแสดงรูปนี้ใน “ศิลปินใหม่” ด้วย บันทึกทันที",
+  "site.profile.help": "400×400 แสดงเป็นวงกลม aimusiclist.com จะแสดงรูปนี้ใน “ศิลปินใหม่” ด้วย บันทึกทันที",
   "site.image.none": "ยังไม่มีรูป",
   "site.image.choose": "เลือกรูป",
   "site.image.delete": "นำออก",

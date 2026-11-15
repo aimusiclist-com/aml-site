@@ -393,7 +393,7 @@ AML.addLang('id', {
   "site.banner.title": "Banner atas",
   "site.banner.help": "Ditampilkan di atas judul situs. Hingga 1600×400 (gambar lebar terlihat paling bagus). Langsung disimpan.",
   "site.profile.title": "Foto profil",
-  "site.profile.help": "200×200, ditampilkan berbentuk lingkaran. aimusiclist.com juga menampilkannya di \"Artis baru\". Langsung disimpan.",
+  "site.profile.help": "400×400, ditampilkan berbentuk lingkaran. aimusiclist.com juga menampilkannya di \"Artis baru\". Langsung disimpan.",
   "site.image.none": "Belum ada gambar.",
   "site.image.choose": "Pilih gambar",
   "site.image.delete": "Hapus",

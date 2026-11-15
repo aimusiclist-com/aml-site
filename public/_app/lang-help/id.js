@@ -374,7 +374,7 @@ AMLHelp.add('id', {
     "what": "Jendela untuk menyesuaikan foto profil ke dalam lingkaran. Foto profil adalah wajah atau logomu yang ditampilkan bulat di situs dan aimusiclist.com.",
     "when": "Terbuka otomatis setelah kamu memilih foto profil.",
     "click": "Lingkaran tetap di tengah dan kamu menggeser foto di belakangnya. Seret foto, gunakan penggeser zoom, roda mouse atau dua jari, atau tombol panah dan + / −. Tekan [[Terapkan]] untuk menyimpan, atau [[Batal]] / Esc untuk menutup tanpa perubahan.",
-    "care": "Hanya bagian dalam lingkaran yang dipakai. Yang diunggah salinan kecil 200×200, bukan foto asli.",
+    "care": "Hanya bagian dalam lingkaran yang dipakai. Yang diunggah salinan kecil 400×400, bukan foto asli.",
     "like": "Seperti menggeser foto di balik jendela bundar sampai wajahmu tepat di tengah."
   },
   "help.img.crop_zoom": {
@@ -1754,7 +1754,7 @@ AMLHelp.add('id', {
   },
   "help.site.profile": {
     "t": "Foto profil",
-    "what": "Gambar diri atau logo berukuran 200×200 yang ditampilkan bulat. aimusiclist.com juga menampilkannya pada \"Artis baru\" dan di samping situsmu.",
+    "what": "Gambar diri atau logo berukuran 400×400 yang ditampilkan bulat. aimusiclist.com juga menampilkannya pada \"Artis baru\" dan di samping situsmu.",
     "when": "Tambahkan wajah atau logo yang jelas meskipun terlihat kecil.",
     "click": "Tekan [[Pilih gambar]]. Geser foto, perbesar atau putar, lalu tekan [[Terapkan]]. Gambar langsung disimpan. Situs juga memilih warna latar yang cocok. aimusiclist.com menerima gambar baru sesaat kemudian.",
     "care": "Sudut foto terpotong oleh lingkaran, jadi letakkan bagian penting di tengah. Ukuran gambar akhir maksimal 100 KB.",

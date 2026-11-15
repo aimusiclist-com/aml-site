@@ -745,12 +745,12 @@
 
   // ── 3-6 이미지 도구: 고르기 → (자르기 틀 이동 | 전체 줄이기) → WebP로 만들어 올리기 ───────────────
   // 원본은 서버에 올리지 않는다. 브라우저가 정해진 크기로 줄이고, 서버 한도보다 작아질 때까지 화질을 낮춰 WebP로 만든다.
-  //   track 100×100(50KB) · cover 200×200(100KB) · profile 200×200(100KB, 동그랗게 보임) · banner 최대 1600×400(300KB)
+  //   track 100×100(50KB) · cover 200×200(100KB) · profile 400×400(150KB, 동그랗게 보임 — 3.31: 2배 화면에서도 선명) · banner 최대 1600×400(300KB)
   //   3-16: track 은 같은 자르기에서 큰 그림(lg: 최대 400×400, 60KB, 원본이 200px 보다 작으면 만들지 않음)도 함께 만든다
   var IMG = {
     track: { w: 100, h: 100, kb: 50, lg: { max: 400, min: 200, kb: 60 } },
     cover: { w: 200, h: 200, kb: 100 },
-    profile: { w: 200, h: 200, kb: 100, round: true },
+    profile: { w: 400, h: 400, kb: 150, round: true },
     banner: { w: 1600, h: 400, kb: 300, free: true },   // free: "전체 줄이기"는 비율 그대로 1600×400 안에
   };
   var PICK_MAX = 2 * 1024 * 1024;   // 고를 수 있는 원본 크기 (2MB)
@@ -944,7 +944,7 @@
 
   // ── 3-9 프로필 사진 자르기 (유튜브 방식) ───────────────────────────────────────
   // 가운데 고정된 동그라미 틀 + 바깥은 어둡게. 사진을 끌어서 옮기고, 막대·마우스 휠·두 손가락으로 확대(틀을 꽉 채우는 크기 ~ 4배),
-  // 90° 돌리기. 아래에 실제 크기 미리보기(128px·40px). 저장은 동그라미를 감싸는 정사각 200×200 WebP (투명 원 아님 — CSS가 동그랗게 보여 준다).
+  // 90° 돌리기. 아래에 실제 크기 미리보기(160px·40px). 저장은 동그라미를 감싸는 정사각 400×400 WebP (3.31, 전 200×200) (투명 원 아님 — CSS가 동그랗게 보여 준다).
   // 같은 계산(stage 좌표 → 원본)을 미리보기와 저장에 그대로 쓰므로, 저장된 그림 = 동그라미 안에 보이던 그림.
   var cr = null, lastOpener = null;
   var CR_MAX = 4;
@@ -960,7 +960,7 @@
       '<input id="crop-zoom" type="range" min="0" max="1000" value="0" data-help="help.img.crop_zoom" aria-label="' + esc(t('crop.zoom')) + '">' +
       '<button type="button" class="icon-btn" data-act="crop-zoom" data-d="1" aria-label="' + esc(t('crop.zoom_in')) + '">' + sIcon('plus') + '</button>' +
       '<button type="button" class="small" data-act="crop-rotate" data-help="help.img.crop_rotate">' + sIcon('rotate') + ' ' + esc(t('crop.rotate')) + '</button></div>' +
-      '<div class="crop-prev"><span class="muted" data-help="help.img.crop_preview">' + esc(t('crop.preview')) + '</span><canvas id="crop-p128" class="round" width="128" height="128"></canvas>' +
+      '<div class="crop-prev"><span class="muted" data-help="help.img.crop_preview">' + esc(t('crop.preview')) + '</span><canvas id="crop-p160" class="round" width="160" height="160"></canvas>' +
       '<canvas id="crop-p40" class="round" width="40" height="40"></canvas></div>' +
       '<p class="row" style="margin-top:14px"><button type="button" class="primary" data-act="crop-apply" data-help="help.img.crop_apply">' + esc(t('crop.apply')) + '</button>' +
       '<button type="button" data-act="imged-cancel">' + esc(t('track.cancel')) + '</button><span id="imged-msg" class="msg"></span></p></div>';
@@ -997,10 +997,11 @@
     g.restore();
   }
   function cropOutput() {
-    var o = document.createElement('canvas'); o.width = 200; o.height = 200;
+    var N = IMG.profile.w;                                // 3.31: 400 (전 200)
+    var o = document.createElement('canvas'); o.width = N; o.height = N;
     var g = o.getContext('2d');
-    g.fillStyle = '#fff'; g.fillRect(0, 0, 200, 200);   // 투명 PNG 바탕 → 흰색 (WebP 손실 압축에서 검게 보이지 않게)
-    crPaint(g, 100, 100, 200 / cr.D);
+    g.fillStyle = '#fff'; g.fillRect(0, 0, N, N);       // 투명 PNG 바탕 → 흰색 (WebP 손실 압축에서 검게 보이지 않게)
+    crPaint(g, N / 2, N / 2, N / cr.D);
     return o;
   }
   function cropDraw() {
@@ -1017,7 +1018,7 @@
     g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1.5;
     g.beginPath(); g.arc(S / 2, S / 2, cr.D / 2, 0, Math.PI * 2); g.stroke();
     var out = cropOutput();
-    ['crop-p128', 'crop-p40'].forEach(function (id) {
+    ['crop-p160', 'crop-p40'].forEach(function (id) {
       var p = $(id); if (!p) return;
       var pg = p.getContext('2d'); pg.imageSmoothingQuality = 'high';
       pg.clearRect(0, 0, p.width, p.height); pg.drawImage(out, 0, 0, p.width, p.height);
@@ -1061,7 +1062,7 @@
   document.addEventListener('input', function (e) {
     if (e.target.id === 'crop-zoom' && cr) crZoom(Math.pow(CR_MAX, +e.target.value / 1000));
   });
-  // 평균 색 (머리 영역 바탕용): 200×200 결과의 모든 점 평균 → "#rrggbb"
+  // 평균 색 (머리 영역 바탕용): 400×400 결과의 모든 점 평균 → "#rrggbb"
   function avgColor(cv) {
     try {
       var d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data, r = 0, g = 0, b = 0, n = 0;
@@ -2587,7 +2588,7 @@
 
   // ── 3-10 스킨 둘러보기 ─────────────────────────────────────────────────────
   var G = { items: null, err: false, busy: '', f: 'all', upd: {}, pv: null };
-  var GV = '16';   // (3-27 16) 관리 화면이 따로 부르는 파일(lang-admin·분석·통계·WAV 변환) 주소 뒤 버전. 그 파일들을 고치면 올린다
+  var GV = '17';   // (3.31 17 프로필 도움말) (3-27 16) 관리 화면이 따로 부르는 파일(lang-admin·분석·통계·WAV 변환) 주소 뒤 버전. 그 파일들을 고치면 올린다
   var ID_RE = /^[a-z0-9-]{1,32}$/, VER_RE = /^\d{1,6}(\.\d{1,6}){0,3}$/;
   function cmpVer(a, b) {
     var x = String(a).split('.'), y = String(b).split('.');
